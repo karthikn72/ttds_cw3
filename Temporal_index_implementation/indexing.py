@@ -16,7 +16,7 @@ news = news.dropna(subset=['article'])
 stemmer = PorterStemmer()
 stop_words = set()
 
-stopping = False
+stopping = True
 stemming = True
 
 with open('ttds_2023_english_stop_words.txt') as stopFile:
