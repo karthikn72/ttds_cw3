@@ -11,6 +11,7 @@ news = pd.read_csv('all-the-news-2-1\\all-the-news-2-1.csv', nrows=10)
 news = news.dropna(subset=['article'])
 
 # ------------------ Pre-processing --------------------
+# TODO: Replace document text preprocessing to use tools.Tokenizer, to match query tokenization and maintain consistency
 stemmer = PorterStemmer()
 stop_words = set()
 
