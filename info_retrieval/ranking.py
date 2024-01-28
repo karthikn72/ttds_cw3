@@ -2,7 +2,8 @@ import heapq
 import numpy as np
 
 import sys
-sys.path.append('/Users/nivedark/Desktop/ttds_cw3')
+import os
+sys.path.append(os.path.abspath(os.path.join(os.getcwd(), os.pardir)))
 from tools.tokenizer import Tokenizer
 
 
@@ -41,8 +42,11 @@ class TFIDFScoring:
             for doc in self.index[term]:
                 if doc not in score:
                     score[doc] = 0
-                score[doc] += (1 + np.log10(self.index[term][doc])) * np.log10(self.N/len(self.index[term]))
-
+                tf = (1 + np.log10(self.index[term][doc])) # l
+                idf = np.log10(self.N/len(self.index[term])) # t
+                score[doc] += tf * idf
+        
+        # (TODO) add cosine normalisation (lnc.ltc)
         return list(map(lambda doc: (doc, format(score[doc], '.4f')), heapq.nlargest(k, score, key=score.get)))
 
 if __name__ == '__main__':
