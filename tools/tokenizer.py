@@ -1,7 +1,5 @@
-
-
 import re
-import Stemmer
+from nltk.stem import PorterStemmer
 import os
 
 MODULE_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -34,14 +32,14 @@ class Tokenizer:
     # Remove stop words
     def stopping(self, tokens):
         with open(self.stop_file, "r") as stop_word_doc:
-            stop_words = stop_word_doc.read().splitlines()
+            stop_words = set(stop_word_doc.read().split('\n')[:-1])
             tokens = [token for token in tokens if token not in stop_words]
         return tokens
 
     # Normalise tokens
     def normalise(self, tokens):
-        stemmer = Stemmer.Stemmer('english')
-        tokens = stemmer.stemWords(tokens)
+        stemmer = PorterStemmer()
+        tokens = list(map(stemmer.stem, tokens))
         return tokens
     
     # Tokenize queries
