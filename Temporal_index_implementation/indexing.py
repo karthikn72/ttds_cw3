@@ -1,7 +1,5 @@
 import re
 from nltk import PorterStemmer
-import numpy as np
-import timeit
 import pandas as pd
 
 # ------------------ Read From Dataset -----------------
