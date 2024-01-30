@@ -35,7 +35,7 @@ python
 ```
 flask run
 ```
-## API Endpoints
+### API Endpoints
 - `POST /events`: Create a new event. The request body should be a JSON object with a `description` field. Returns the created event.
 
 - `GET /events`: Get all events. Returns a list of all events.
