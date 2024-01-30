@@ -20,9 +20,9 @@ class Indexer:
         pattern = re.compile('[a-zA-Z0-9 \n]+')
         result = ''.join(pattern.findall(re.sub('\n', ' ', line.lower())))
         if stopping and stemming:
-            filtered_lines = [self.stemmer.stem(word) for word in result.split() if word not in stop_words]
+            filtered_lines = [self.stemmer.stem(word) for word in result.split() if word not in self.stop_words]
         elif stopping:
-            filtered_lines = [word for word in result.split() if word not in stop_words]
+            filtered_lines = [word for word in result.split() if word not in self.stop_words]
         elif stemming:
             filtered_lines = [self.stemmer.stem(word) for word in result.split()]
         else:
