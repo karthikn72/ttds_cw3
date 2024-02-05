@@ -3,7 +3,7 @@ from nltk.stem import PorterStemmer
 import os
 
 MODULE_DIR = os.path.dirname(os.path.realpath(__file__))
-DEFAULT_STOPWORD_FILE = os.path.join(MODULE_DIR, "englishST.txt")
+DEFAULT_STOPWORD_FILE = os.path.join(MODULE_DIR, "resources/ttds_2023_english_stop_words.txt")
 DEFAULT_TOKENIZE_RULE = r'\w+'
 
 class Tokenizer:

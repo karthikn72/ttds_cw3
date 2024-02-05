@@ -1,13 +1,13 @@
 import heapq
 import numpy as np
 
-import sys
-import os
-sys.path.append(os.path.abspath(os.path.join(os.getcwd(), os.pardir)))
-from tools.tokenizer import Tokenizer
+# import sys
+# import os
+# sys.path.append(os.path.abspath(os.path.join(os.getcwd(), os.pardir)))
+from tokenizer import Tokenizer
 
 
-DEFAULT_INDEX_FILE = '../index_generation/index.txt'
+DEFAULT_INDEX_FILE = 'index.txt'
 
 class TFIDFScoring:
     def __init__(self, index_filename=DEFAULT_INDEX_FILE):
