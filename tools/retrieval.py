@@ -1,18 +1,13 @@
 import heapq
 import numpy as np
 
-# import sys
-# import os
-# sys.path.append(os.path.abspath(os.path.join(os.getcwd(), os.pardir)))
-from tokenizer import Tokenizer
+from tokenizer import QueryTokenizer
 
 
 DEFAULT_INDEX_FILE = 'index.txt'
 
 class TFIDFScoring:
     def __init__(self, index_filename=DEFAULT_INDEX_FILE):
-        self.tokenizer = Tokenizer()
-
         docset = set()
         with open(index_filename, 'r') as f:
             lines = f.read().splitlines()
@@ -34,9 +29,7 @@ class TFIDFScoring:
 
         self.weights = {}
 
-    def score(self, query, k=150):
-        query_terms = self.tokenizer.tokenize(query)
-
+    def score(self, query_terms, k=150):
         score = {}
         for term in query_terms:
             for doc in self.index[term]:
@@ -50,5 +43,10 @@ class TFIDFScoring:
         return list(map(lambda doc: (doc, format(score[doc], '.4f')), heapq.nlargest(k, score, key=score.get)))
 
 if __name__ == '__main__':
+    query = 'call denver direct'
+
+    qtokenizer = QueryTokenizer()
+    query_terms = qtokenizer.tokenize(query)
+
     r = TFIDFScoring()
-    print(r.score('call denver direct'))
+    print(r.score(query_terms))

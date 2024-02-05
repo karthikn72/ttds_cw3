@@ -42,6 +42,19 @@ class Tokenizer:
         tokens = list(map(stemmer.stem, tokens))
         return tokens
     
+    def __repr__(self):
+        return f"Tokenizer(case_fold={self.case_fold}, stop={self.stop}, stop_file={self.stop_file}, stem={self.stem}, tokenize_re={self.tokenize_re})"
+    
+
+class QueryTokenizer(Tokenizer):
+    def __init__(self, 
+                 case_fold=True, 
+                 stop=True, 
+                 stop_file=DEFAULT_STOPWORD_FILE, 
+                 stem=True, 
+                 tokenize_re=DEFAULT_TOKENIZE_RULE):
+        Tokenizer.__init__(self, case_fold, stop, stop_file, stem, tokenize_re)
+
     # Tokenize queries
     def tok_query(self, query):
         window_size = 0
@@ -84,6 +97,6 @@ class Tokenizer:
         q_dict = {"query_tokens":query_tokens, "window_size":window_size, "bool_op":bool_op} 
 
         return q_dict
-    
+
     def __repr__(self):
-        return f"Tokenizer(case_fold={self.case_fold}, stop={self.stop}, stop_file={self.stop_file}, stem={self.stem}, tokenize_re={self.tokenize_re})"
+        return f"QueryTokenizer(case_fold={self.case_fold}, stop={self.stop}, stop_file={self.stop_file}, stem={self.stem}, tokenize_re={self.tokenize_re})"
