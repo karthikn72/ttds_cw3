@@ -1,3 +1,6 @@
+import os
+print(os.getcwd())
+
 
 from tools import database
 
