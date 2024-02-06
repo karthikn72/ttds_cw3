@@ -1,10 +1,4 @@
-import os
-print(os.getcwd())
-import sys
-sys.path.append('../')
-# print(sys.path)
-
-import tools.database as database
+import database
 
 if __name__ == "__main__":
     db = database.Database()

@@ -9,7 +9,6 @@ class Database:
     def __init__(self):
         self.engine = self.connect_with_connector()
 
-
     def connect_with_connector(self) -> db.engine.base.Engine:
         """
         Initializes a connection pool for a Cloud SQL instance of Postgres.
@@ -59,7 +58,8 @@ class Database:
             db_conn.commit()
 
     def get_tables(self):
-        return self.engine.table_names()
+        with self.engine.connect() as db_conn:
+            return db.inspect(db_conn).get_table_names()
     
     def insert_article(self, 
                        article_id, 
