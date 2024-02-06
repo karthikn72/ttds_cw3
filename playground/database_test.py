@@ -5,7 +5,6 @@ import pg8000
 
 import sqlalchemy as db
 
-
 def connect_with_connector() -> db.engine.base.Engine:
     """
     Initializes a connection pool for a Cloud SQL instance of Postgres.
@@ -19,8 +18,6 @@ def connect_with_connector() -> db.engine.base.Engine:
     db_name = 'news_db'
 
     ip_type = IPTypes.PUBLIC
-
-    # initialize Cloud SQL Python Connector object
     connector = Connector()
 
     def getconn() -> pg8000.dbapi.Connection:
@@ -34,13 +31,11 @@ def connect_with_connector() -> db.engine.base.Engine:
         )
         return conn
 
-    # The Cloud SQL Python Connector can be used with SQLAlchemy
-    # using the 'creator' argument to 'create_engine'
     pool = db.create_engine(
         "postgresql+pg8000://",
         creator=getconn,
     )
-    print("Success")
+    print("Connected to database successfully")
     return pool 
 
 with connect_with_connector().connect() as db_conn:
