@@ -1,72 +1,56 @@
+import sys
+import os
 from flask import Flask, request
-from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
 from flask_cors import CORS
+import pandas as pd
+
+from tools.tokenizer import QueryTokenizer
+from tools.retrieval import TFIDFScoring
+import tools.index_manager as im
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:postgres@localhost/app-database'
-db = SQLAlchemy(app)
 CORS(app)
 
-class Event(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    description = db.Column(db.String(100), nullable=False)
-    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+# Load data
+dataset_file = 'data/all-the-news-2-1.csv'
+first_1k_docs = im.firstThousand(dataset_file)
 
-    def __repr__(self):
-        return f"Event: {self.description}"
-    
-    def __init__(self, description):
-        self.description = description
+def get_title(docid):
+    return first_1k_docs.iloc[docid]['title']
 
-def format_event(event):
+def get_snippet(docid):
+    # get first 50 words of article
+    return ' '.join(first_1k_docs.iloc[docid]['article'].split()[:50])
+
+def format_result(id , title, snippet):
     return {
-        'id': event.id,
-        'description': event.description,
-        'created_at': event.created_at
+        'id': id,
+        'title': title,
+        'snippet': snippet
     }
 
-#create an event
-@app.route('/events', methods=['POST'])
-def create_event():
-    description = request.json['description'] # Get description from request body
-    event = Event(description)                # Create new event
-    db.session.add(event)                     # Add to database
-    db.session.commit()                       # Save
-    return format_event(event)                # Return formatted event as JSON so frontend can use it for something
+#get results based on search query
+@app.route('/search', methods=['GET'])
+def get_results():
+    search_query = request.args.get('query''' , '') # Get query from request
 
-#get all events
-@app.route('/events', methods=['GET'])
-def get_events():
-    events = Event.query.order_by(Event.id.asc()).all()
-    event_list = []
-    for event in events:
-        event_list.append(format_event(event))
-    return {'events': event_list}
+    #tokenize query
+    qtokenizer = QueryTokenizer()
+    query_tokens = qtokenizer.tokenize(search_query)
 
-#get single event
-@app.route('/events/<id>', methods=['GET'])
-def get_event(id):
-    event = Event.query.filter_by(id=id).one() #.first() gives the first result. .one() errors out if more than one but since using unique id, it's the same
-    formatted_event = format_event(event)
-    return {'event': formatted_event}
+    #use score function to get docids
+    r = TFIDFScoring(index_filename='tools/index.txt')
+    scores = r.score(query_tokens)
+    docids = [score[0] for score in scores]
 
-#delete an event
-@app.route('/events/<id>', methods=['DELETE'])
-def delete_event(id):
-    event = Event.query.filter_by(id=id).one()
-    db.session.delete(event)
-    db.session.commit()
-    return f'Event with id {id} has been deleted'
+    #get results
+    results = []
+    for docid in docids:
+        title = get_title(docid)
+        snippet = get_snippet(docid)
+        results.append(format_result(docid, title, snippet))
 
-#update an event
-@app.route('/events/<id>', methods=['PUT'])
-def update_event(id):
-    event = Event.query.filter_by(id=id)
-    description = request.json['description']
-    event.update(dict(description=description, created_at=datetime.utcnow()))
-    db.session.commit()
-    return {'event': format_event(event.one())}
+    return {'results': results}
 
 if __name__ == '__main__':
     app.run()
