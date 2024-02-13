@@ -1,6 +1,8 @@
+import pickle
 import re
 from nltk import PorterStemmer
 import pandas as pd
+
 
 
 class Indexer:
@@ -34,50 +36,30 @@ class Indexer:
         news = pd.read_csv(filepath)
         news = news.dropna(subset=['article'])
 
-        postings = {}
-        doc_count = {}
-
-        for index, doc in news.iterrows():
-            # write to database
-
-            idx = 1
+        index_data = {}  # {word: {'doc_count': int, 'indexes': {doc_no: {'positions': [int]}}}}
+        for doc_no, doc in news.iterrows():
             text = doc["article"]
-            
             text = self.preprocessing(text)
-
-            positions_within_doc = {}
-            for word in text.split():
-                if word not in positions_within_doc:
-                    positions_within_doc[word] = []
-                positions_within_doc[word].append(idx)
-                idx += 1
-            
-            for word in positions_within_doc.keys():
-                all_positions = ''
-                for position in positions_within_doc[word]:
-                    all_positions += f'{position},'
-                all_positions = all_positions[:-1]
-                if word not in postings:
-                    postings[word] = []
-                postings[word].append(f'{index}: {all_positions}\n')
-
-                if word not in doc_count:
-                    doc_count[word] = 0
-                doc_count[word] += 1
-
-        self.output('index.txt', postings, doc_count)
+            seen = set()
+            for position,word in enumerate(text.split(), start=1):
+                if word not in index_data:
+                    index_data[word] = {'doc_count': 0, 'indexes': {}}
+                if word not in seen:
+                    index_data[word]['doc_count'] += 1
+                    seen.add(word)
+                if doc_no not in index_data[word]['indexes']:
+                    index_data[word]['indexes'][doc_no]['positions'] = []   
+                index_data[word]['indexes'][doc_no]['positions'].append(position)
+        self.output_pickle('index.pkl', index_data)
 
 
-    def output(self, filepath, postings, doc_count):
-
-        with open('index.txt', 'w') as outFile:
-            sorted_postings = dict(sorted(postings.items()))
-            for word in sorted_postings.keys():
-                outFile.write(f'{word}:{doc_count[word]}\n')
-                for positions in sorted_postings[word]:
-                    outFile.write(' ' * 3 + positions)
-
+    def output_pickle(self, filepath, index_data):
+        sorted_postings = dict(sorted(index_data.items()))
+        with open(filepath, 'wb') as outFile:
+            pickle.dump(sorted_postings, outFile)
         outFile.close()
+    
+
 
 if __name__ == "__main__":
     idxer = Indexer()
