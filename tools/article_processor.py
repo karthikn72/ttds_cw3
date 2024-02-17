@@ -26,7 +26,7 @@ class ArticleProcessor:
         # df['title'] = df['title'].apply(lambda x: x.replace('\r', ''))
         return df
     
-    def prep_chunk(self, df, author=True, date=True, article=True, title=True):
+    def prep(self, df, author=True, date=True, article=True, title=True):
         if author:
             df = self.prep_authors(df)
         if date:
