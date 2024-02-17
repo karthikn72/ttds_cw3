@@ -5,7 +5,6 @@ import pandas as pd
 import numpy as np
 
 
-
 class Indexer:
     def __init__(self) -> None:
         self.stemmer = PorterStemmer()
@@ -68,7 +67,7 @@ class Indexer:
                 index_data[word]['indexes'][doc_no]['positions'].append(position)
                 index_data[word]['indexes'][doc_no]['tf'] += 1
         self.tfidf(index_data, N)
-        self.output_pickle('index_tfidf.pkl', index_data)
+        self.output_pickle('index/index_tfidf.pkl', index_data)
         
 
     def tfidf(self, index_data, N):
@@ -88,12 +87,3 @@ class Indexer:
                 print(e)
             else:
                 print("Indexing complete")
-        
-        
-        
-    
-
-
-if __name__ == "__main__":
-    idxer = Indexer()
-    idxer.indexing("/Users/dagafed/Documents/GitHub/ttds_cw3/tools/first1000.csv")

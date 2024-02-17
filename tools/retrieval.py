@@ -4,7 +4,7 @@ import pickle
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.getcwd(), os.pardir)))
-from tools.tokenizer import Tokenizer
+from tokenizer import Tokenizer
 
     # {
     #     word: {
@@ -19,7 +19,7 @@ from tools.tokenizer import Tokenizer
     #     }
     # }
 
-DEFAULT_INDEX_FILE = '../index_generation/index.pkl'
+DEFAULT_INDEX_FILE = 'tools/index_generation/index.pkl'
 
 class Retrieval:
     def __init__(self, index_filename=DEFAULT_INDEX_FILE):
@@ -54,11 +54,3 @@ class Retrieval:
             output[doc] = self.data[word]['indexes'][doc]['positions']
         
         return output
-
-        
-        
-
-if __name__ == '__main__':
-    r = Retrieval('/Users/dagafed/Documents/GitHub/ttds_cw3/tools/index_tfidf.pkl')
-    print(r.get_query_docs('call denver direct'))
-    print(r.get_index("0"))
