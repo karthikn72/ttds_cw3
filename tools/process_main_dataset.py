@@ -31,6 +31,6 @@ if __name__ == "__main__":
     
     ap = AP.ArticleProcessor()
     for (id, chunk) in tqdm.tqdm(enumerate(chunks), total=269, ncols=100):
-        chunk = ap.prep(chunk)
+        chunk = ap.prep(chunk, author=False, date=False)
         chunk.to_csv('dataset/prepped_articles.csv', mode='a', index=False, header=header)
         header = False
