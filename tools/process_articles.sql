@@ -15,6 +15,11 @@ ALTER TABLE articles
 UPDATE articles
 SET title = REPLACE(REPLACE(title, E'\n', ''), E'\r', '');
 
+DELETE FROM articles 
+WHERE LENGTH(title) > 255;
+
+ALTER TABLE articles ALTER COLUMN title TYPE VARCHAR(255);
+
 -- Remove code and other special characters from article text
 UPDATE articles
 SET article = REPLACE(REPLACE(REGEXP_REPLACE(article, '\{[^}]+\}', '', 'g'), E'\n', ''), E'\r', '');
