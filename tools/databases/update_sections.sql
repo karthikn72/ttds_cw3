@@ -11,4 +11,7 @@ WHERE articles.section = s.section_name;
 
 ALTER TABLE articles ALTER COLUMN section TYPE INTEGER USING section::integer;
 
+ALTER TABLE articles
+RENAME COLUMN section TO section_id;
+
 COMMIT;

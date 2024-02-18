@@ -16,4 +16,10 @@ SET author = (
     WHERE author_name = ANY(articles.author)
 );
 
+ALTER TABLE articles
+ALTER COLUMN author TYPE integer[] USING author::integer[];
+
+ALTER TABLE articles
+RENAME COLUMN author TO author_ids;
+
 COMMIT;
