@@ -9,7 +9,7 @@ DEFAULT_TOKENIZE_RULE = r'\w+'
 class Tokenizer:
     def __init__(self, 
                  case_fold=True, 
-                 stop=True, 
+                 stop=False, 
                  stop_file=DEFAULT_STOPWORD_FILE, 
                  stem=True, 
                  tokenize_re=DEFAULT_TOKENIZE_RULE):

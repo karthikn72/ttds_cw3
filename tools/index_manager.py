@@ -56,11 +56,19 @@ if __name__ == "__main__":
 
 
     data = firstThousand(dataset)
-    print(data)
+    #return data item 368
+    #unpickle the index
+    # index = 'index_tfidf.pkl'
+    with open('index_tfidf.pkl', 'rb') as f:
+        new = pickle.load(f)
+    print(new)
+
+    
     data.to_csv('first1000.csv')
     # postings = {}
     # doc_count = {}
     # output(index, postings, doc_count)
 
-    print(get_index('00000',index))
-    print(get_index('design',index))
+    # print(get_index('00000',index))
+    # print(get_index('design',index))
+
