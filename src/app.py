@@ -22,10 +22,18 @@ class NotFoundError(Exception):
 class BadRequestError(Exception):
     pass
 
+def get_document_snippet(article):
+    article_words = article.split()
+    if len(article_words) > 50:
+        snippet = ' '.join(article_words[:50]) + '...'
+    else:
+        snippet = ' '.join(article_words)
+    return snippet
+
 def get_document_info(docid):
     doc = first_1k_docs.iloc[docid]
     title = doc['title']
-    snippet = ' '.join(doc['article'].split()[:50]) #get the first 50 words of the article
+    snippet = get_document_snippet(doc['article']) #get the first 50 words of the article
     author = doc['author']
     url = doc['url']
     section = doc['section']
@@ -55,19 +63,22 @@ def get_status_code(results, error):
             return 500
     elif results:
         return 200
-    else:
-        return 204
     
-def filter_unique(results):
-    #for now lets define unique results by section (could be NaN) and date
-    unique_results = []
-    unique_keys = set()
-    for result in results:
-        key = str(result['section']) + result['date']
-        if key not in unique_keys:
-            unique_keys.add(key)
-            unique_results.append(result)
-    return unique_results
+def filter(results):
+    #find earliest and oldest articles
+    results['date'] = pd.to_datetime(results['date'])
+    earliestArticleDate = results['date'].min()
+    latestArticleDate = results['date'].max()
+
+    #for now get the unique values for each category
+    filter_options = {
+        'authors': results['author'].unique().tolist(),
+        'publications': results['publication'].unique().tolist(),
+        'sections': results['section'].unique().tolist(),
+        'earliestArticleDate': earliestArticleDate,
+        'latestArticleDate': latestArticleDate
+    }
+    return filter_options
 
 #get results based on search query
 @app.route('/search', methods=['GET'])
@@ -85,19 +96,23 @@ def get_results():
 
         #use score function to get docids
         r = TFIDFScoring(index_filename='tools/index.txt')
-        scores = r.score(query_tokens)
-        docids = [score[0] for score in scores]
-
-        #get results
         results = []
-        for docid in docids:
-            title, snippet, author, url, section, date, publication = get_document_info(docid)
-            results.append(format_result(docid, title, snippet, author, url, section, date, publication))
 
-        if not results:
-            raise NotFoundError("No results found for the given query")
-        
-        unique_results = filter_unique(results)
+        try:
+            scores = r.score(query_tokens)
+            docids = [score[0] for score in scores]
+
+            #get results
+            for docid in docids:
+                title, snippet, author, url, section, date, publication = get_document_info(docid)
+                results.append(format_result(docid, title, snippet, author, url, section, date, publication))
+            
+            results_df = pd.DataFrame(results)
+            results_df = results_df.fillna('')
+            filter_options = filter(results_df)
+
+        except KeyError:
+            raise NotFoundError("The term does not exist in the index.")
 
         end_time = time.time()  #end timing
         retrieval_time = end_time - start_time  #to calculate retrieval time
@@ -109,9 +124,8 @@ def get_results():
             'status': status,
             'retrieval_time': retrieval_time,
             'total_results': len(results),
-            'total_unique_results': len(unique_results),
-            'unique_results':unique_results,
-            'results': results
+            'filter_options':filter_options,
+            'results': results_df.to_dict('records')
         }
 
         return jsonify(response)
