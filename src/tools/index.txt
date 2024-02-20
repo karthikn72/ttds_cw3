@@ -1,0 +1,2660 @@
+040:1
+   5: 33
+1:2
+   1: 36,87
+   8: 52,57
+10:2
+   7: 408
+   8: 50
+100:1
+   6: 167
+10am:1
+   8: 44
+122:1
+   1: 13
+15:1
+   1: 73
+17:1
+   5: 3
+175:1
+   1: 92
+18:1
+   8: 9
+184:1
+   1: 82
+19:1
+   8: 58
+1970:1
+   7: 126
+1975:1
+   7: 43
+2000:1
+   0: 357
+2007:1
+   3: 42
+2012:1
+   3: 43,128
+2014:1
+   3: 132
+2015:1
+   9: 285
+2017:1
+   3: 140
+2018:2
+   6: 111
+   7: 713
+25:2
+   6: 38
+   7: 434
+3:1
+   1: 37
+30:1
+   0: 19,71
+30th:1
+   1: 62
+32:1
+   1: 131
+360:1
+   8: 42
+40:1
+   6: 36
+45:1
+   9: 272
+530:1
+   7: 19
+6:1
+   8: 54
+700:1
+   6: 160
+89:1
+   1: 16
+abil:2
+   1: 23
+   7: 614
+abus:1
+   9: 331,350
+accept:1
+   0: 193
+account:1
+   9: 462
+accur:1
+   1: 65
+accus:2
+   6: 177
+   9: 320,410
+achiev:1
+   7: 79,117
+action:1
+   0: 418
+activ:1
+   7: 89,158,169,190,388,394,449,468,512,527
+activist:2
+   6: 16
+   9: 292,397
+activitylik:1
+   7: 100
+actor:1
+   9: 242
+actual:2
+   0: 234
+   7: 547
+adapt:1
+   7: 701
+add:2
+   0: 205
+   7: 676
+address:1
+   1: 24
+administr:1
+   9: 261
+admit:2
+   0: 370
+   7: 115
+adopt:1
+   9: 56,85,142,171,253
+adrenalin:1
+   7: 597
+advertis:1
+   0: 376
+afternoon:1
+   6: 32,131
+agenc:2
+   1: 110
+   9: 67,153
+ago:1
+   1: 91
+agre:1
+   5: 57
+aim:1
+   9: 308
+air:1
+   6: 23,125
+alarm:1
+   0: 107,118,156
+alarmist:1
+   0: 421
+alert:1
+   7: 534
+align:1
+   7: 7
+alleg:2
+   3: 175
+   9: 201,303,326,349,354
+alli:1
+   3: 34
+altogeth:1
+   7: 191
+amanda:1
+   0: 93
+america:1
+   0: 10
+amnesti:1
+   9: 437
+amount:1
+   7: 4,668
+analysi:1
+   0: 162,231
+andor:1
+   7: 554
+andrew:1
+   1: 4
+android:1
+   8: 13
+announc:1
+   3: 92
+annual:1
+   5: 35
+appear:3
+   3: 107
+   8: 77
+   9: 58,144
+area:1
+   7: 315
+aren:2
+   0: 144
+   7: 579
+arent:1
+   7: 636
+argu:2
+   0: 132,155,187,196
+   9: 421
+arm:1
+   6: 91
+arrest:1
+   6: 5,30,68,107,128,140
+arriv:1
+   4: 3
+articl:3
+   0: 97,135,166
+   8: 75
+   9: 195,215,334
+artifici:1
+   8: 16
+ask:2
+   2: 47
+   7: 179
+assembl:1
+   6: 82
+associ:1
+   3: 53
+assum:1
+   6: 86
+athlet:1
+   7: 31
+attack:1
+   0: 39,70,221,223,307,314,332,440
+attempt:1
+   9: 35,121
+attend:1
+   7: 353,356
+attent:2
+   0: 388
+   7: 93,129,153,171,220,234,399
+attorney:1
+   9: 204,274
+attribut:1
+   9: 80,166
+aunt:1
+   4: 18
+author:2
+   6: 4
+   7: 321
+authoritarian:1
+   0: 266
+autobiographi:1
+   3: 27
+autocraci:1
+   0: 442
+ay:1
+   7: 224
+bachelet:1
+   6: 101
+back:3
+   0: 400
+   2: 25
+   7: 208,414,574
+background:1
+   7: 195,684
+baker:1
+   3: 194
+balanc:1
+   7: 245
+bank:2
+   0: 379
+   5: 21,28
+baohui:1
+   9: 70,156
+barb:1
+   3: 33
+base:2
+   1: 75
+   9: 435
+baselin:1
+   7: 379
+bash:1
+   9: 258
+basic:1
+   0: 261
+battl:1
+   4: 25
+beat:1
+   7: 256
+beck:1
+   7: 32
+bed:1
+   0: 322
+begun:1
+   9: 94,180
+behavior:1
+   7: 487
+beij:1
+   9: 30,116
+believ:1
+   7: 327
+benoit:1
+   5: 8
+berlin:1
+   5: 1
+berlowitz:1
+   6: 198
+bia:1
+   9: 414
+bid:1
+   3: 127,165
+big:2
+   3: 115
+   8: 4,73
+bind:1
+   7: 624
+biscuit:1
+   7: 647
+bit:1
+   7: 455
+blame:1
+   1: 55
+bling:1
+   3: 48,49
+blog:1
+   0: 5
+blue:1
+   7: 505
+board:1
+   5: 6
+boast:1
+   1: 77
+bodi:2
+   0: 45
+   7: 339,375,393,419
+bodili:1
+   7: 354,371
+bodyth:1
+   7: 333
+bonker:1
+   7: 580
+book:2
+   3: 90
+   7: 712
+boost:1
+   5: 39
+boozi:1
+   7: 544
+border:1
+   7: 683
+bore:1
+   7: 180
+borrow:1
+   9: 60,146
+boston:1
+   7: 152
+brain:1
+   7: 90,143,164,301,328,343,464,473,572,666,689,703
+brainchild:1
+   7: 659
+brash:1
+   3: 50
+break:1
+   7: 610
+breath:2
+   0: 24
+   7: 337,416
+brigad:1
+   6: 25
+bring:1
+   7: 207
+brinson:1
+   4: 11,16
+bronco:1
+   1: 69,99
+bruni:1
+   3: 61
+bubbl:1
+   0: 355
+build:2
+   0: 293
+   1: 40,111
+buri:1
+   8: 19
+burst:1
+   7: 596
+busi:1
+   7: 105
+buy:1
+   7: 306
+buzzword:1
+   9: 88,174
+call:5
+   2: 17
+   4: 35
+   5: 24
+   6: 73,90,103
+   7: 33,41,338,344
+calm:1
+   7: 386
+cancer:1
+   4: 26
+cap:1
+   1: 85
+capit:1
+   6: 41
+captain:1
+   6: 48
+caraca:1
+   6: 1,42,129
+carbon:1
+   0: 393
+cardboard:1
+   8: 33
+career:1
+   9: 19,105
+carla:1
+   3: 60
+carraud:1
+   3: 188
+carri:1
+   7: 192
+case:2
+   0: 278,342
+   9: 279
+cater:1
+   9: 375
+caught:1
+   0: 383
+caution:1
+   0: 437
+celebr:1
+   3: 55
+center:2
+   3: 16,65
+   9: 269
+centrist:1
+   3: 88
+certainti:1
+   0: 41
+challeng:1
+   7: 222
+chanc:2
+   0: 74,76,79,452
+   8: 18
+chang:2
+   0: 403
+   7: 300,360
+charg:3
+   3: 170
+   5: 36
+   9: 446
+chart:1
+   0: 180
+chen:1
+   9: 456
+chia:1
+   0: 326
+chief:1
+   6: 99,150
+china:1
+   9: 1,9,82,168,398,415
+chines:1
+   9: 53,139,203,268,281,386,406,440
+chrysik:1
+   7: 460,525,586
+cicpc:1
+   6: 136
+circuitri:1
+   7: 95
+cite:1
+   2: 34
+citizen:1
+   0: 287
+civic:1
+   0: 257
+claim:1
+   9: 41,127,265,314,352,371,373,467
+cleverli:1
+   9: 207
+client:1
+   9: 276,461
+climat:1
+   0: 402
+close:2
+   3: 52,111
+   7: 49
+coeur:1
+   5: 9,48
+cognit:1
+   7: 146
+cohen:1
+   6: 195
+collag:1
+   4: 33
+collaps:1
+   0: 227,229
+collect:2
+   0: 252,271
+   7: 163
+colleg:1
+   7: 664
+colonel:1
+   6: 127
+color:1
+   7: 682
+colt:1
+   1: 2,30,35,49,58,96,102,117
+come:2
+   0: 37
+   7: 298
+comfort:1
+   0: 424
+comment:1
+   6: 155
+communist:1
+   9: 192
+compani:1
+   8: 3
+compar:1
+   7: 168
+complex:1
+   0: 46
+concentr:1
+   7: 136,186,615,656,679
+concern:1
+   6: 117
+confer:1
+   8: 6
+confess:1
+   9: 310,392
+confus:1
+   3: 103
+consequ:1
+   0: 254
+consider:1
+   0: 273,362
+consist:2
+   0: 455
+   9: 328
+constitut:1
+   6: 85
+contact:1
+   9: 403
+contract:1
+   1: 15,21,57,105
+control:2
+   6: 80
+   7: 364
+cook:2
+   7: 11
+   9: 355
+corrupt:1
+   3: 171
+cortex:1
+   7: 471,484,514,529,627,633
+corvett:1
+   6: 47
+cost:1
+   0: 337,353,377
+costa:1
+   6: 50
+council:1
+   5: 56
+counsel:1
+   2: 12,29
+count:1
+   7: 329
+countri:2
+   6: 7
+   9: 84,101,170,187,237
+coup:1
+   6: 189
+coupl:1
+   7: 324
+court:1
+   9: 452
+coverag:2
+   8: 68
+   9: 98,184,246
+crackdown:1
+   9: 288
+cram:1
+   7: 587
+creativ:1
+   7: 457,477,499,566
+crime:1
+   9: 312,394
+crise:1
+   0: 339
+critic:2
+   0: 119
+   9: 97,183,245
+crucial:1
+   7: 244,490
+cskszentmihlyi:1
+   7: 39,75,114
+custodi:1
+   9: 48,134,307,332
+cut:2
+   5: 15
+   7: 188
+damag:1
+   0: 385
+danger:1
+   0: 188
+dark:1
+   7: 555
+data:1
+   0: 124,154,198,209,216,230
+daughter:1
+   6: 43
+davo:1
+   2: 1,46
+day:1
+   7: 1,539
+deadlin:1
+   7: 265,297,589
+dearli:1
+   0: 380
+death:1
+   7: 602
+debas:1
+   9: 240
+debat:2
+   0: 88,206
+   3: 101
+decid:3
+   0: 245
+   5: 14
+   7: 581
+decis:2
+   0: 344
+   7: 497
+default:1
+   7: 159
+defend:1
+   9: 443
+defens:1
+   1: 28,42,54,61,63,79,113
+deflect:1
+   9: 247
+deguti:1
+   7: 151,229
+deliber:2
+   7: 677
+   9: 231
+deliv:1
+   7: 717
+demand:2
+   6: 58
+   7: 48
+democraci:1
+   0: 115,165,243,263,280,291,447
+democrat:1
+   0: 226,228
+deni:3
+   2: 7
+   3: 184
+   6: 172
+denounc:1
+   6: 114
+denver:1
+   1: 68
+deposit:1
+   5: 26
+describ:2
+   7: 76
+   9: 197
+deserv:1
+   5: 58
+design:2
+   7: 594
+   9: 374
+detail:1
+   7: 403
+detain:2
+   6: 51,162
+   9: 280,362,396
+detaine:1
+   6: 13
+detent:1
+   6: 156
+develop:4
+   0: 14
+   1: 53
+   8: 5
+   9: 420
+devic:1
+   8: 34
+devot:2
+   0: 13
+   7: 210
+diall:1
+   7: 515
+die:1
+   4: 22
+diet:1
+   0: 62,83,305
+differ:1
+   0: 248
+difficult:3
+   0: 449
+   1: 39,124
+   7: 119,294,508,655
+direct:3
+   2: 33
+   3: 85
+   7: 398
+directli:1
+   9: 59,145
+disagr:1
+   0: 203
+discov:1
+   7: 707
+discredit:1
+   9: 36,89,122,175,244,426
+dismal:1
+   3: 148
+dismiss:2
+   3: 11
+   9: 2,10,24,96,110,182
+disrupt:1
+   9: 451
+dissent:1
+   6: 22
+distract:1
+   7: 285,650,678,688
+distractionsor:1
+   7: 696
+divis:1
+   3: 104
+dmn:1
+   7: 162,189
+doctor:1
+   0: 30,31,42,309
+document:3
+   0: 138,167
+   3: 28
+   9: 330
+doesnt:1
+   7: 260
+don:1
+   0: 204,451
+donald:2
+   2: 5
+   9: 20,106
+dorsal:1
+   7: 170
+dose:1
+   7: 618
+doubt:1
+   0: 412
+downsideat:1
+   7: 498
+draft:1
+   1: 94,106
+dramat:1
+   0: 145
+draw:1
+   0: 161
+dress:1
+   4: 6
+drink:1
+   7: 545
+drunk:1
+   7: 549
+duress:1
+   9: 401
+dvoa:1
+   1: 64
+dynamit:1
+   3: 74
+earli:1
+   0: 389,419
+earn:1
+   3: 45
+easi:1
+   7: 116
+easier:1
+   7: 242
+east:1
+   6: 40
+eat:1
+   0: 60,324
+ecb:1
+   5: 5,13,32
+edit:3
+   3: 192
+   5: 63
+   6: 196
+educ:1
+   0: 258
+effect:3
+   0: 417
+   5: 18
+   7: 630
+effort:1
+   7: 221,246,445
+effortless:1
+   7: 112
+elect:4
+   0: 237,433
+   3: 72,126,152,164
+   6: 112
+   9: 229
+elit:2
+   1: 78,97
+   7: 30
+elyse:1
+   3: 56
+emerg:3
+   0: 89
+   7: 53
+   9: 225,297
+emmanuel:1
+   3: 21,70
+emot:1
+   7: 284,295,348
+encourag:1
+   9: 367
+engag:1
+   0: 290
+enjoy:1
+   7: 247
+entertain:1
+   8: 65
+entitl:1
+   3: 25
+equat:1
+   7: 296
+erik:1
+   0: 130
+err:1
+   0: 64,435
+essenti:2
+   0: 113
+   9: 211
+establish:1
+   9: 348
+esterman:1
+   7: 149
+european:1
+   3: 151
+evangelia:1
+   7: 459
+eventu:1
+   0: 381
+everyday:1
+   7: 478
+exampl:1
+   0: 341
+excess:1
+   5: 37
+excus:1
+   7: 698
+exempt:1
+   5: 29
+exercis:1
+   7: 373
+experi:1
+   7: 78,145,427,674
+experienc:1
+   7: 25
+expert:2
+   7: 429
+   9: 49,135,402
+explain:2
+   0: 240
+   7: 109,642
+explan:2
+   0: 52
+   7: 82
+extern:1
+   7: 695
+extrem:1
+   0: 176
+eye:1
+   7: 134
+fact:1
+   0: 108
+fail:3
+   3: 134
+   6: 70
+   7: 252,551
+fairi:1
+   7: 456
+fake:2
+   2: 18,38,41
+   9: 6,14,28,114,212,216,266,323,417
+fals:1
+   9: 218
+fatal:1
+   0: 78
+favor:1
+   7: 8
+favorit:1
+   9: 87,173
+fear:1
+   3: 112
+feel:2
+   0: 21,53,289,297
+   7: 17,22,73,84,111,274,387,390,395
+feet:1
+   0: 26
+fellow:1
+   9: 346
+felt:2
+   1: 118
+   7: 322
+fight:2
+   3: 66
+   7: 213
+fightflight:1
+   7: 592
+figur:3
+   0: 281
+   3: 109
+   7: 45
+fillon:1
+   3: 39
+final:1
+   1: 126
+financ:1
+   3: 163
+financi:2
+   0: 359
+   5: 50
+find:4
+   0: 99,105,246,251,401,405
+   1: 19
+   3: 84
+   7: 142,243
+fine:2
+   0: 29
+   7: 402
+finger:1
+   7: 3
+fire:2
+   1: 34
+   2: 15
+flash:1
+   7: 680
+flew:1
+   4: 13
+fli:1
+   7: 14,261,264
+flow:1
+   7: 23,42,63,118,131,249,263,273
+fluctuat:1
+   7: 176
+foa:1
+   0: 102,121,137,158,184,249,426
+focu:1
+   7: 413,590,599,611,623,651,686
+focus:1
+   7: 173,401
+folk:2
+   2: 40
+   7: 541
+follow:3
+   0: 199
+   2: 32
+   8: 67
+foment:1
+   6: 179
+foot:1
+   7: 139
+forc:4
+   0: 406
+   6: 10,24,92,126
+   7: 135
+   9: 309
+forehead:1
+   7: 474
+foreign:1
+   9: 37,123
+forens:1
+   6: 137
+forev:1
+   0: 369
+forthcom:1
+   0: 163
+forum:1
+   6: 122,159
+fossil:1
+   0: 396
+found:1
+   7: 184,463
+franc:1
+   3: 64
+francoi:1
+   3: 38
+free:1
+   1: 109
+freiburg:1
+   7: 319
+french:1
+   3: 3,110
+frequent:1
+   6: 176
+friday:3
+   1: 29
+   2: 9
+   6: 31,52,102,130
+frontier:1
+   7: 314
+frontlin:1
+   3: 155
+fuel:1
+   0: 397
+fund:1
+   0: 411
+funer:1
+   4: 15
+futur:1
+   0: 312
+ga:1
+   7: 12,141
+gave:1
+   1: 59
+gear:1
+   7: 166
+gener:2
+   0: 125,259
+   6: 26
+gentli:1
+   7: 206
+genuin:1
+   9: 464
+germani:1
+   7: 320
+giant:1
+   8: 72
+give:2
+   0: 315
+   7: 288
+gm:1
+   1: 31
+goal:1
+   7: 641
+good:3
+   0: 84,268
+   1: 112
+   7: 308
+goodi:1
+   7: 85
+googl:1
+   8: 1,25,28
+govern:4
+   0: 195
+   5: 55
+   6: 59,171
+   9: 47,133,387
+gradual:2
+   7: 377
+   9: 239
+graph:1
+   0: 148
+great:1
+   7: 18,74
+grigson:1
+   1: 33,47
+group:2
+   6: 120
+   9: 391
+growth:1
+   5: 43
+guaido:1
+   6: 77,183
+guarante:1
+   1: 18
+guardian:1
+   9: 325
+guarena:1
+   6: 54
+guatir:1
+   6: 35,141
+guoreanalyz:1
+   0: 153
+habit:1
+   9: 23,109
+hand:1
+   7: 604
+handcuf:1
+   1: 103
+happen:2
+   7: 391
+   9: 351
+happensand:1
+   7: 83
+happi:1
+   7: 81
+hard:3
+   0: 239,292
+   4: 30
+   7: 223,237,250
+harder:1
+   0: 416
+haul:1
+   7: 412
+havent:1
+   7: 267
+head:2
+   6: 78
+   7: 266
+health:2
+   0: 304
+   7: 318
+healthi:1
+   0: 18,50
+healthier:1
+   0: 61,82
+heart:2
+   0: 38,69,220,222,306,313,331,439
+   4: 39
+heartbeat:1
+   7: 336
+heavi:1
+   0: 336
+heel:2
+   6: 94
+   7: 209
+help:1
+   7: 638
+here:1
+   7: 61
+high:5
+   0: 329
+   1: 114,121
+   6: 132
+   7: 617
+   9: 251
+highest:1
+   1: 6,128
+hilton:1
+   4: 2
+histori:1
+   1: 10
+hit:2
+   4: 28
+   7: 268
+hold:1
+   6: 173
+holland:1
+   2: 51
+hong:2
+   8: 59
+   9: 73,159,433
+hope:1
+   1: 52
+hormon:1
+   7: 620
+hour:1
+   7: 13,384
+hous:2
+   0: 354,367,371
+   2: 28
+httpstcoez3yrqcfk0:1
+   8: 46
+huge:1
+   4: 38
+hugh:1
+   3: 195
+hum:1
+   7: 196
+human:3
+   0: 44
+   6: 14,97,118,142
+   9: 43,129,289,359,389,441
+hummel:1
+   5: 65
+hunan:1
+   9: 283
+hurl:1
+   3: 32
+hyperlink:1
+   0: 200
+hypofront:1
+   7: 519,523
+idea:2
+   0: 15,269
+   7: 352,503,511,522,578,582
+ideal:1
+   7: 509
+ignor:2
+   0: 346
+   7: 600
+illegitim:1
+   6: 115
+illus:1
+   7: 289
+im:1
+   7: 385
+imag:1
+   7: 144,681
+imagin:1
+   0: 17
+import:2
+   0: 211
+   1: 107
+impos:1
+   0: 335,351
+improv:2
+   0: 303
+   7: 709
+impuls:1
+   7: 635
+inbox:1
+   7: 718
+incit:1
+   9: 447
+includ:2
+   3: 35,162
+   6: 166
+increas:2
+   0: 168
+   7: 475
+increasingli:1
+   9: 234
+incred:1
+   4: 36
+independ:2
+   0: 4
+   9: 337
+indianapoli:1
+   1: 1
+indict:1
+   9: 445
+industri:1
+   0: 360,395,408,410
+infight:1
+   3: 82
+influenc:2
+   3: 172
+   9: 423
+inform:3
+   3: 180
+   6: 61,148
+   7: 361
+inhibit:1
+   1: 22
+inmat:1
+   9: 347
+insid:1
+   8: 70
+insight:1
+   8: 66
+instanc:1
+   1: 101
+institut:3
+   0: 285,295
+   7: 313
+   9: 378
+insula:1
+   7: 345,362
+insult:1
+   9: 257
+intellig:1
+   8: 17
+intens:2
+   0: 394
+   7: 396
+interest:1
+   8: 23
+interfer:1
+   7: 622
+interim:1
+   6: 88
+intermediari:1
+   0: 294
+intern:2
+   7: 697
+   9: 198,438
+interpret:1
+   0: 197
+interrupt:1
+   7: 124
+interview:2
+   5: 10,49
+   9: 300,344
+invest:2
+   0: 255,272,363,378
+   7: 439
+investig:2
+   3: 161,182
+   9: 341
+invok:1
+   6: 84
+involv:2
+   3: 99
+   7: 92,585
+io:1
+   8: 2
+io16:1
+   8: 38
+iran:1
+   9: 93,179
+isstrangelyto:1
+   7: 653
+issu:2
+   0: 143
+   9: 226
+januari:1
+   6: 83
+jeff:1
+   0: 152
+jiang:1
+   9: 356
+jiangang:1
+   9: 457
+job:2
+   0: 316
+   7: 482,569,631
+joe:1
+   7: 150
+jog:1
+   7: 383
+join:2
+   6: 93
+   8: 49
+journal:2
+   0: 164
+   9: 259
+journey:1
+   7: 706
+juan:1
+   6: 76
+judg:1
+   3: 177
+juicesi:1
+   7: 500
+juli:1
+   9: 284
+jump:1
+   0: 120
+june:2
+   2: 16
+   5: 2
+kale:1
+   0: 325
+kansa:1
+   7: 462
+keefer:1
+   1: 46
+keep:1
+   7: 200
+key:2
+   0: 343
+   7: 350
+keynot:1
+   8: 39,61
+kick:1
+   8: 7,62
+kilomet:1
+   6: 37
+kim:1
+   4: 19
+kind:1
+   7: 59
+kong:2
+   8: 60
+   9: 74,160,434
+lab:1
+   7: 155
+landscap:1
+   3: 76
+late:3
+   0: 218
+   7: 538
+   9: 294
+latest:1
+   9: 83,169
+launch:1
+   8: 22
+laurent:1
+   3: 144
+lavi:1
+   7: 662
+lawson:1
+   3: 196
+lawyer:2
+   6: 144
+   9: 45,131,291,302,361,455
+lax:1
+   4: 4
+le:1
+   3: 79,97,141
+lead:1
+   3: 130
+leader:3
+   0: 173
+   3: 143
+   6: 75
+learn:2
+   0: 260
+   7: 154
+learnt:1
+   3: 167
+leash:1
+   7: 203
+leav:1
+   7: 644,692
+left:1
+   7: 128
+legitim:1
+   9: 222
+length:1
+   7: 121
+let:1
+   7: 204
+level:1
+   7: 194
+liber:1
+   0: 242,262,279,446
+lie:1
+   9: 209
+life:2
+   0: 59,318
+   7: 601
+light:1
+   9: 263
+likelihood:1
+   0: 68
+limit:1
+   7: 667
+line:1
+   0: 365
+lingnan:1
+   9: 75,161
+list:1
+   7: 21
+listen:1
+   0: 423
+littlea:1
+   7: 516
+live:2
+   0: 114
+   8: 40
+liveblog:1
+   8: 63
+livestream:1
+   8: 27,30
+load:1
+   7: 657
+lock:1
+   3: 81
+london:2
+   7: 665
+   8: 56
+long:4
+   3: 117
+   4: 24
+   7: 202,235,608,639
+   9: 409
+loss:1
+   4: 27
+lost:2
+   3: 125
+   7: 277
+lot:2
+   0: 256
+   6: 34
+lough:1
+   3: 191
+love:1
+   7: 231
+low:2
+   0: 72,73,75
+   7: 193
+luc:1
+   6: 194
+luck:1
+   1: 5,20,43,56,80,104,120
+luke:1
+   3: 193
+lunch:1
+   7: 542
+macron:1
+   3: 22,71,87
+made:2
+   1: 3
+   9: 22,108,395,400,466
+maduro:1
+   6: 19,72,104,110,170,181
+magazin:1
+   3: 96
+mainlin:1
+   7: 645
+maintain:1
+   7: 120
+major:1
+   9: 427
+make:3
+   0: 186,275,283,288
+   1: 44
+   7: 46,68,104,218,241,421,436,496,504,577,654,671
+maker:1
+   0: 345
+man:2
+   1: 72,89
+   4: 37
+manag:1
+   7: 424,560
+marc:1
+   7: 310
+marri:2
+   3: 58
+   4: 17
+martin:1
+   5: 62
+massachusett:1
+   7: 156
+master:1
+   7: 62,279
+match:1
+   7: 88
+matter:2
+   2: 37
+   7: 230,441
+may:1
+   3: 150
+mean:1
+   7: 199
+measur:1
+   7: 157
+media:1
+   9: 4,12,26,38,55,112,124,141,199,379,408,429
+medicin:1
+   0: 454
+medit:1
+   7: 411,430
+member:2
+   5: 7
+   6: 6,168
+memoir:1
+   3: 8
+mental:1
+   7: 28,55,140,238,305,317,355,406,451,491
+mere:1
+   7: 34
+met:1
+   3: 57
+michel:2
+   5: 61
+   6: 100
+mid:1
+   0: 356
+migrain:1
+   0: 25
+miguel:1
+   6: 27
+mihli:1
+   7: 38
+mike:1
+   7: 148
+mile:2
+   6: 39
+   7: 276
+militari:2
+   0: 443
+   6: 8,169
+million:2
+   1: 14,17,74,83,88,93
+   7: 275
+mind:1
+   7: 201,216,410,558,563,591,710
+mindless:1
+   7: 567
+minist:1
+   3: 37
+ministri:1
+   6: 149
+minut:1
+   7: 15,409
+misinterpret:1
+   0: 123
+mislead:2
+   0: 134
+   9: 232
+misplac:1
+   3: 105
+mode:1
+   7: 160
+model:1
+   3: 59
+moment:1
+   7: 433,565
+momentari:1
+   7: 123
+monday:1
+   5: 12
+money:1
+   1: 45,108,123
+month:2
+   3: 166
+   6: 69
+monti:1
+   4: 10,21,34
+mora:1
+   6: 29
+morn:1
+   7: 535,540
+mortal:1
+   7: 35
+mortgag:1
+   0: 374
+mounk:1
+   0: 104,122,136,159,185,250,427
+mount:1
+   0: 232
+mouthpiec:1
+   9: 190
+mueller:1
+   2: 14
+multipl:1
+   3: 160
+myth:1
+   0: 366
+narrow:1
+   7: 485,598
+nation:1
+   6: 81
+natur:1
+   7: 214,533
+navi:1
+   6: 46
+nearbi:1
+   6: 53
+necessarili:1
+   7: 637
+need:1
+   5: 23,47
+neg:1
+   5: 19
+network:2
+   7: 91,98,161,172
+   9: 439
+neuroscientist:1
+   7: 44,147
+newest:1
+   8: 11
+news:2
+   2: 19,39,42
+   9: 7,15,29,52,66,115,138,152,213,217,223,267,324,405,412,418
+newslett:1
+   7: 715
+nfl:1
+   1: 9,132
+nicknam:1
+   3: 46
+nicola:2
+   3: 5
+   6: 18
+night:1
+   7: 536
+nilli:1
+   7: 661
+nois:1
+   7: 685
+nondemocrat:1
+   0: 194
+nonetheless:1
+   3: 106
+noradrenalin:1
+   7: 621
+novemb:1
+   9: 366
+nudg:1
+   7: 248
+number:2
+   1: 127
+   7: 476
+object:1
+   7: 479
+observ:1
+   0: 207
+occur:1
+   0: 215
+offer:2
+   0: 85,340
+   3: 176
+offic:2
+   3: 41
+   6: 152
+offici:2
+   6: 134
+   9: 340
+offseason:1
+   1: 11
+ongo:1
+   9: 287
+onlin:1
+   9: 219
+opinion:2
+   0: 141
+   9: 382
+opposit:2
+   6: 74,79,178
+   7: 138
+optim:1
+   7: 77
+option:2
+   5: 17
+   7: 397,652
+orchestr:1
+   9: 208
+order:2
+   2: 10,26
+   9: 453
+organ:1
+   9: 380
+origin:2
+   7: 70
+   8: 76
+otheralthough:1
+   7: 27
+oust:1
+   6: 188
+outlet:1
+   9: 316,413,430
+outreach:1
+   0: 286
+outyour:1
+   7: 571
+overvalu:1
+   0: 372
+owl:1
+   7: 537
+page:1
+   9: 32,118
+paid:2
+   0: 387
+   1: 7,70,115,129
+paint:1
+   9: 260
+panic:1
+   0: 127
+parabl:1
+   0: 86,308
+parallel:1
+   3: 181
+pari:2
+   3: 1
+   4: 1,12,29
+park:1
+   6: 33
+part:4
+   0: 2
+   1: 26
+   5: 30
+   7: 469
+parti:2
+   3: 17,78,89,131,136,147
+   9: 193
+partial:1
+   7: 700
+partisan:1
+   3: 100
+partli:1
+   7: 616
+passag:1
+   7: 286,303
+passion:1
+   3: 26,62
+past:2
+   0: 90
+   7: 291
+patrick:1
+   9: 431
+patriot:1
+   1: 100
+pay:4
+   1: 119
+   4: 7
+   5: 31
+   7: 233
+peac:1
+   6: 108
+peddl:2
+   3: 173
+   9: 322
+penal:1
+   6: 121,158
+pendulum:1
+   7: 101
+peopl:4
+   0: 110,171,191,296
+   2: 35
+   6: 161
+   7: 178,480
+perceiv:1
+   7: 365
+percent:2
+   5: 34
+   7: 435
+percept:1
+   7: 381,432
+perez:1
+   6: 57
+perfect:1
+   7: 87
+perform:1
+   7: 225
+period:1
+   7: 236,606
+person:2
+   0: 63
+   7: 57
+peyton:1
+   1: 71
+phil:1
+   6: 197
+physic:1
+   7: 347
+pictur:1
+   4: 32
+pictwittercomh5ppo9svw:1
+   8: 47
+plastic:1
+   7: 702
+play:1
+   7: 442
+playbook:1
+   9: 33,119
+player:1
+   1: 8,130
+pleasur:1
+   7: 97
+pledg:1
+   8: 64
+plenti:1
+   0: 51
+pm:2
+   7: 20
+   8: 53,55
+point:4
+   0: 202
+   1: 48,66
+   3: 98
+   7: 26,341,576
+polic:2
+   6: 9,138
+   9: 384
+polit:4
+   0: 7,128
+   3: 14,75,91,119,123,156
+   6: 163,174
+   9: 18,71,104,157,241,277,311,393
+polyarchi:1
+   0: 3
+poon:1
+   9: 432
+possibl:1
+   0: 77
+post:3
+   0: 1
+   4: 31
+   7: 699
+power:3
+   3: 24,31
+   7: 670,691
+   9: 450
+precaut:1
+   0: 66
+prefront:1
+   7: 470,483,513,528,584,626,632
+present:1
+   9: 221
+presid:4
+   2: 4
+   3: 4,20,47,69,139
+   6: 17,89
+   9: 61,147
+presidenti:1
+   9: 228
+pressur:1
+   9: 383
+pretti:1
+   0: 49,448
+prevail:1
+   5: 53
+prevent:1
+   0: 311,453
+previous:2
+   6: 123
+   9: 329
+prime:1
+   3: 36
+prison:1
+   6: 106,175
+problem:2
+   0: 414
+   9: 236
+process:1
+   7: 96,302,351,669,687,690,694
+produc:1
+   0: 6,398
+product:1
+   0: 364
+profil:2
+   0: 98
+   9: 252
+profit:1
+   5: 40
+program:1
+   0: 9
+prometheu:1
+   7: 711
+promin:1
+   9: 42,128,358
+promot:1
+   3: 178
+prosecutor:1
+   6: 151
+protest:1
+   6: 109
+prove:1
+   9: 235
+provid:1
+   6: 60
+provinc:1
+   9: 282
+psycholog:1
+   7: 316
+psychologist:1
+   7: 37,312,660
+pt:1
+   8: 45,51
+public:2
+   0: 277,284
+   9: 370,381
+publish:3
+   3: 7
+   5: 11
+   9: 194
+puppet:1
+   6: 184
+purpos:1
+   7: 400
+push:1
+   0: 40,399
+put:2
+   3: 158
+   7: 2
+quarterback:1
+   1: 116
+quick:1
+   3: 10
+quickli:1
+   7: 293
+quiet:1
+   7: 553
+quit:1
+   3: 133
+rafael:1
+   6: 49
+rage:1
+   7: 564
+rais:1
+   0: 106
+rank:1
+   6: 133
+rare:1
+   0: 208
+rate:2
+   5: 16,20,27
+   7: 417
+read:1
+   9: 214
+readi:2
+   0: 192
+   8: 36
+real:2
+   0: 235
+   7: 197
+realiti:3
+   0: 382
+   8: 15,32
+   9: 249
+reason:3
+   0: 201
+   6: 164
+   7: 9
+receiv:1
+   7: 363
+recent:2
+   0: 338,431
+   9: 264,419
+recod:1
+   8: 48
+recodenet:1
+   8: 78
+recommend:1
+   0: 80
+reconsid:1
+   1: 125
+recov:1
+   0: 450
+reduc:2
+   0: 57,301
+   7: 467,494,501,526
+refer:2
+   6: 182
+   9: 62,148
+reflect:1
+   5: 59
+reform:1
+   0: 8
+region:1
+   7: 165,342,472
+regular:1
+   7: 334
+regularli:1
+   9: 255,319
+reincarn:1
+   3: 120
+rel:2
+   6: 12
+   9: 365
+relat:2
+   0: 142
+   3: 174
+relax:1
+   7: 240
+releas:3
+   3: 63
+   6: 105
+   9: 293
+remain:1
+   0: 178
+rememb:1
+   7: 562,573
+repetit:1
+   7: 181
+replac:1
+   0: 445
+report:5
+   2: 8,22,45,48,49
+   3: 186
+   5: 60
+   6: 190
+   9: 5,13,27,39,68,91,113,125,154,177,200,220,296,315,336,343
+repres:3
+   0: 299
+   7: 86
+   9: 275
+republicain:1
+   3: 80,142
+request:1
+   6: 154
+rescu:1
+   3: 15
+research:2
+   7: 458
+   9: 436
+reserv:1
+   5: 38
+resign:1
+   2: 31
+resist:1
+   7: 634
+resourc:2
+   0: 274
+   7: 211
+respect:1
+   4: 8
+respond:2
+   0: 160,253
+   6: 153
+respons:2
+   0: 92
+   7: 593
+rest:1
+   0: 323
+result:1
+   0: 238,384,409,434
+retir:2
+   3: 122
+   6: 124
+return:1
+   3: 13,93,114,129,154,179
+reuter:5
+   2: 3
+   3: 2
+   5: 4
+   6: 2
+   9: 459
+reward:1
+   7: 94
+rhythm:1
+   7: 332
+richard:2
+   3: 190
+   4: 20
+right:2
+   6: 15,98,119,143
+   9: 44,130,290,360,390,442
+rip:1
+   4: 40
+rise:3
+   0: 174
+   3: 30
+   9: 230
+risk:1
+   0: 330,334,430
+riskier:1
+   0: 375
+rival:2
+   3: 116
+   6: 87
+robert:1
+   2: 13
+roberto:1
+   0: 100
+room:1
+   7: 556,575,693
+roster:1
+   1: 27
+rule:2
+   0: 267,444
+   9: 191
+run:4
+   0: 32
+   3: 138
+   7: 107,271
+   9: 64,150
+russia:1
+   9: 92,178
+ryan:1
+   1: 32
+safe:1
+   0: 55
+salad:1
+   0: 328
+salari:1
+   1: 76,84
+sarkozi:1
+   3: 6,29,44,77,94,118,121,153,183
+saturday:1
+   6: 67
+scatter:1
+   7: 612
+scienc:1
+   7: 708
+scientist:2
+   0: 129,420
+   9: 72,158
+scope:1
+   7: 502
+screw:1
+   7: 133
+search:1
+   8: 71
+secret:1
+   7: 50
+securit:1
+   0: 373
+seed:1
+   0: 327
+seek:2
+   6: 20,187
+   9: 243
+sens:2
+   0: 117
+   7: 69,672
+sensit:1
+   9: 278
+sequera:1
+   6: 192
+seri:1
+   0: 233
+set:2
+   7: 251,557
+   9: 339
+sew:1
+   3: 102
+shape:1
+   0: 422
+share:1
+   0: 116
+shed:1
+   3: 18
+shift:1
+   0: 140,182,213,214
+short:3
+   0: 23
+   7: 272,595
+   9: 17,103
+shortcut:1
+   7: 492
+show:2
+   3: 149
+   7: 36,47
+showcas:1
+   8: 10
+shown:1
+   7: 675
+side:2
+   0: 56,65,436
+   3: 159
+sign:2
+   0: 36,219,225,348,350,391
+   7: 714
+signal:1
+   7: 372,376,420
+signific:1
+   0: 183,352,407
+similar:1
+   7: 546
+similarli:1
+   0: 150,224,270,392
+simon:1
+   3: 187
+simpli:1
+   7: 254
+sisco:1
+   6: 28,45,64
+sit:1
+   7: 437,552
+site:1
+   7: 625
+situat:1
+   7: 489
+skill:1
+   7: 452
+sky:1
+   7: 506
+sleep:1
+   7: 5
+slow:1
+   7: 258,280,378,380,415,418,423
+slowdown:1
+   5: 44
+slower:1
+   7: 392
+small:1
+   0: 139
+smartphon:1
+   7: 127
+smear:1
+   9: 385
+smoothli:1
+   7: 108
+social:1
+   0: 317
+societ:1
+   0: 212
+solut:1
+   7: 253
+sound:1
+   7: 307
+sourc:1
+   9: 298
+span:1
+   7: 130
+special:1
+   2: 11
+specul:1
+   3: 12
+speed:1
+   7: 370,425
+spend:2
+   0: 319
+   7: 446
+spread:1
+   9: 100,186
+squeez:1
+   3: 86
+stake:1
+   0: 361
+stand:1
+   3: 168
+star:1
+   7: 6
+start:3
+   0: 20,27
+   1: 38
+   9: 286
+state:3
+   6: 186
+   7: 29,56,66,349,407,517
+   9: 54,63,140,149,407,449
+stay:1
+   7: 450
+stefan:1
+   0: 101
+step:2
+   3: 146
+   8: 74
+stephani:1
+   6: 44,63
+steve:1
+   2: 50
+stimul:1
+   7: 465
+stop:1
+   7: 255,374,628
+stori:1
+   9: 210,224,233,270
+storm:1
+   3: 23
+strang:1
+   7: 448
+stress:2
+   0: 58,81,302
+   7: 607,619,643,649
+stretch:1
+   7: 431
+strict:1
+   0: 321
+stride:1
+   7: 269
+string:1
+   0: 432
+strong:2
+   0: 172,276
+   7: 283
+struggl:2
+   3: 83,157
+   5: 41
+student:1
+   7: 550
+studi:1
+   7: 548
+style:1
+   3: 51
+subject:1
+   9: 304
+subvers:1
+   9: 448
+success:2
+   1: 95
+   8: 21
+suggest:2
+   0: 149,181
+   7: 132,325,369,428
+suitabl:1
+   7: 488
+suju:1
+   6: 146
+sum:1
+   1: 122
+sunday:2
+   4: 23
+   6: 157
+support:2
+   0: 169,175,241
+   3: 19
+surprisingli:1
+   7: 183
+surround:1
+   7: 404
+survey:1
+   0: 112
+surviv:1
+   3: 67
+sustain:1
+   7: 185,219
+swell:1
+   0: 28
+swing:1
+   7: 102
+switzerland:2
+   2: 2
+   4: 14
+synchron:1
+   7: 99
+system:3
+   0: 47,265
+   5: 46
+   7: 609
+take:4
+   0: 333,349,404
+   1: 81
+   7: 613
+   9: 31,117
+talent:1
+   1: 51
+tamara:1
+   6: 145
+tank:1
+   0: 12
+task:1
+   7: 182,212,521,603
+tassilo:1
+   5: 64
+tast:1
+   9: 376
+taub:1
+   0: 94
+tea:1
+   7: 646
+team:2
+   1: 41,98,133
+   9: 338
+tell:1
+   0: 34,43
+temporarili:1
+   7: 466
+tendenc:1
+   7: 215
+term:2
+   7: 198,640
+   9: 34,57,79,95,99,120,143,165,181,185,238,254,416,422,425
+test:1
+   0: 33
+thanit:1
+   0: 157
+theiranalysi:1
+   0: 133
+theori:1
+   7: 359,658
+thing:2
+   0: 300,456
+   7: 72,174,299,367
+think:2
+   0: 87
+   7: 60,106,167,507
+thought:1
+   7: 405,486
+threat:2
+   0: 438,441
+   9: 305
+threaten:1
+   2: 30
+thrive:1
+   0: 244
+thursday:3
+   2: 23
+   3: 9
+   9: 40,126,196,335,460
+tianyong:1
+   9: 357
+tick:1
+   7: 335
+ticket:1
+   3: 137
+tier:1
+   5: 22,25,45
+time:6
+   0: 96,111,147
+   2: 21
+   3: 40,124
+   5: 51
+   7: 122,177,228,270,278,287,304,323,330,340,357,366,382,422,440,495
+   9: 318
+timeit:1
+   7: 103
+tired:1
+   7: 530
+today:2
+   5: 52
+   8: 8
+told:4
+   0: 310
+   2: 36,44
+   3: 95
+   9: 50,136,458
+tonic:1
+   7: 257,716
+tool:1
+   7: 520,568
+tortur:1
+   9: 46,132,202,342,353,372,463
+totel:1
+   0: 189
+track:1
+   7: 346
+transcript:1
+   9: 299
+transient:1
+   7: 518
+trial:1
+   3: 169
+troubl:1
+   7: 605
+true:1
+   7: 80,309
+trump:2
+   2: 6,24,43
+   9: 8,16,21,81,86,107,167,172,250,321,424
+truth:1
+   7: 52
+tune:1
+   7: 331
+twitter:1
+   6: 66
+tycoon:1
+   3: 54
+typic:1
+   9: 399
+un:1
+   6: 116
+unambigu:1
+   0: 210,217
+uncertainti:1
+   0: 413
+uncl:1
+   4: 9
+uncomfort:1
+   9: 248
+understand:2
+   0: 264
+   7: 65
+unexpect:1
+   5: 42
+unfavor:1
+   9: 3,11,25,90,111,176
+unflatt:1
+   9: 262
+unifi:1
+   3: 108
+unimpress:1
+   0: 179
+unit:1
+   6: 139,185
+univers:2
+   7: 461,663
+   9: 76,162
+unnecessari:1
+   0: 126
+unusu:1
+   7: 292
+updat:1
+   8: 12
+upris:1
+   6: 71
+usag:1
+   9: 78,164
+valu:1
+   0: 368
+vastli:1
+   7: 493
+venezuela:1
+   6: 96,135,147,165
+venezuelan:1
+   6: 3
+verifi:1
+   9: 327
+vice:1
+   9: 51,137,404
+view:1
+   5: 54
+violenc:2
+   6: 180
+   9: 306
+virtual:1
+   8: 14,31
+visit:2
+   6: 95
+   9: 363
+vivian:1
+   6: 191
+voeten:1
+   0: 131,177,425
+voic:1
+   0: 16,298
+vr:1
+   8: 35
+waleska:1
+   6: 56
+wander:1
+   7: 205,217,559
+wari:1
+   3: 113
+warn:1
+   0: 347,358,390
+washington:1
+   0: 11
+wasnt:1
+   7: 187
+watch:2
+   7: 175
+   8: 24,37
+wauquiez:1
+   3: 145
+way:1
+   0: 282
+weak:1
+   1: 25,60
+wed:1
+   8: 43
+wednesday:1
+   4: 5
+weed:1
+   6: 21
+week:2
+   0: 91
+   8: 69
+weekend:1
+   6: 11
+weekli:1
+   7: 719
+weird:1
+   0: 22
+western:1
+   9: 377,411,428
+whereabout:1
+   6: 62
+white:1
+   2: 27
+wide:1
+   6: 113
+wield:1
+   9: 256
+wife:2
+   6: 55
+   9: 369
+win:1
+   3: 73,135
+wittman:1
+   7: 358,368,389,426
+wittmann:1
+   7: 311,326
+woman:1
+   7: 704
+wonkblog:1
+   0: 151
+work:1
+   7: 58,67,137,227,232,239,453,481,531,532,583,629,648
+world:2
+   0: 190,236
+   7: 673
+worri:1
+   0: 54,67,429
+wors:2
+   0: 386,415
+   7: 226,282
+worth:2
+   0: 247
+   7: 438,543,561
+write:2
+   3: 189
+   6: 193
+wrong:1
+   0: 428
+wrongdo:1
+   3: 185
+wrote:1
+   6: 65
+wroteand:1
+   7: 125
+xie:1
+   9: 205,271,301,313,345,364,368,444,454,465
+xinhua:1
+   9: 65,77,151,163,189,333,388
+yang:1
+   9: 206
+yascha:1
+   0: 103
+year:5
+   0: 320
+   1: 12,67,86,90
+   3: 68
+   8: 20
+   9: 227,273,295
+yearlong:1
+   7: 705
+york:3
+   0: 95,146
+   2: 20
+   9: 317
+youit:1
+   0: 35
+young:2
+   0: 48,170
+   1: 50
+younger:1
+   0: 109
+your:1
+   7: 10,16,113,262,454
+youtub:1
+   8: 26,29,41
+zhang:1
+   9: 69,102,155,188
+zip:1
+   7: 290
+zone:1
+   7: 24,40,51,54,71,110,281,443,447,510,524,570
+zonegiven:1
+   7: 444
+zonether:1
+   7: 588
+zonetim:1
+   7: 259
+zoneto:1
+   7: 64
