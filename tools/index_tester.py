@@ -40,41 +40,55 @@ if __name__ == "__main__":
     start_time = time.time()
     idxer = Indexer()
     end_time = time.time()
-    print("Time taken to initialise idxer:", end_time - start_time, "seconds")
+    print(f"Time taken to initialise idxer: {end_time - start_time:.10f} seconds")
     start_time = time.time()
     idxer.set_up_stopwords("../tools/resources/ttds_2023_english_stop_words.txt")
     end_time = time.time()
-    print("Time taken to set up stopwords:", end_time - start_time, "seconds")
+    print(f"Time taken to set up stopwords: {end_time - start_time:.10f} seconds")
     start_time = time.time()
     idxer.indexing("../tools/first1000.csv") #change
     end_time = time.time()
-    print("Time taken to index the first 1000 documents using Indexer:", end_time - start_time, "seconds")
+    print(f"Time taken to index the first 1000 documents using Indexer: {end_time - start_time:.10f} seconds")
     # testing time for just opening pkl file
     start_time = time.time()
     with open('index_tfidf.pkl', 'rb') as f:
         new = pickle.load(f)
     end_time = time.time()
-    print("Time taken to unpickle the pickle:", end_time - start_time, "seconds")
+    print(f"Time taken to unpickle the pickle: {end_time - start_time:.10f} seconds")
 
     #retrieval tests
     start_time = time.time()
     ret = Retrieval()  
     end_time = time.time()
-    print("Time taken to initialise retrieval:", end_time - start_time, "seconds") 
+    print(f"Time taken to initialise retrieval: {end_time - start_time:.10f} seconds") 
     start_time = time.time()
     design=ret.get_index('design')
     end_time = time.time()
-    print("Time taken to get index for 'design':", end_time - start_time, "seconds")
+    print(f"Time taken to get index for 'design': {end_time - start_time:.10f} seconds")
     start_time = time.time()
     ret.get_query_score("against all logic")
     end_time = time.time()
-    print("Time taken to get tfidf for 'against all logic':", end_time - start_time, "seconds")    
+    print(f"Time taken to get tfidf for 'against all logic': {end_time - start_time:.10f} seconds")    #this is not correct 
+# Time taken to initialise idxer: 1.3113021850585938e-05 seconds
+# Time taken to set up stopwords: 0.00033783912658691406 seconds
+# Time taken to index the first 1000 documents using Indexer: 6.981287956237793 seconds
+# Time taken to unpickle the pickle: 0.5805950164794922 seconds
+# Time taken to initialise retrieval: 0.8500440120697021 seconds
+# Time taken to get index for 'design': 5.1975250244140625e-05 seconds
+# Time taken to get tfidf for 'against all logic': 0.0017879009246826172 seconds
+    idxer.indexing("first1000.csv",'txt') 
+    idxer.indexing("first1000.csv",'dbs')
+    #print some of the database from words.db to show how it works
+    import sqlite3
+    conn = sqlite3.connect('words.db')
+    c = conn.cursor()
+    c.execute('SELECT * FROM words')
+    print(c.fetchmany(10))
+    c.execute('SELECT * FROM documents')
+    print(c.fetchmany(10))
+    c.execute('SELECT * FROM wordindoc')
+    print(c.fetchmany(10))
+    
 
-
-    # postings = {}
-    # doc_count = {}
-    # output(index, postings, doc_count)
-
-    # print(get_index('00000',index))
-    # print(get_index('design',index))
+    
 

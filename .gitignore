@@ -2,3 +2,5 @@ dataset/
 tools/first1000.csv
 tools/index copy.txt
 index/
+tools/index_tfidf.txt
+tools/words.db
