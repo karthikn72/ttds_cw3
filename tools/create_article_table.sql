@@ -2,14 +2,14 @@
 DROP TABLE articles;
 
 CREATE TABLE articles (
-    date VARCHAR(20),
+    date VARCHAR(100),
     year INT,
-    month INT,
+    month FLOAT,
     day INT,
-    author VARCHAR(255),
-    title VARCHAR(255),
+    author TEXT,
+    title TEXT,
     article TEXT,
-    url VARCHAR(255),
-    section VARCHAR(255),
-    publication VARCHAR(255)
+    url TEXT,
+    section TEXT,
+    publication TEXT
 );
