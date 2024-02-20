@@ -67,7 +67,7 @@ class Indexer:
                 index_data[word]['indexes'][doc_no]['positions'].append(position)
                 index_data[word]['indexes'][doc_no]['tf'] += 1
         self.tfidf(index_data, N)
-        self.output_pickle('index/index_tfidf.pkl', index_data)
+        self.output_pickle('index_tfidf.pkl', index_data)
         
 
     def tfidf(self, index_data, N):

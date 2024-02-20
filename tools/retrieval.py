@@ -19,11 +19,11 @@ from tokenizer import Tokenizer
     #     }
     # }
 
-DEFAULT_INDEX_FILE = 'tools/index_generation/index.pkl'
+DEFAULT_INDEX_FILE = '../tools/index_tfidf.pkl'
 
 class Retrieval:
-    def __init__(self, index_filename=DEFAULT_INDEX_FILE):
-        self.tokenizer = Tokenizer()
+    def __init__(self, index_filename=DEFAULT_INDEX_FILE, stopwords=True, stemming=True, case_folding=True):
+        self.tokenizer = Tokenizer(stop=stopwords, stem=stemming, case_fold=case_folding)
         with open(index_filename, 'rb') as f:
             self.data = pickle.load(f)
         # Construct a set of all documents in the index
@@ -34,7 +34,7 @@ class Retrieval:
         # Placeholder for document weights, for normalization
         
         
-    def get_query_docs(self, query, k=20):
+    def get_query_score(self, query, k=20):
         query_terms = self.tokenizer.tokenize(query)
 
         score = {}
