@@ -3,10 +3,10 @@ BEGIN;
 
 -- Convert author column to array
 ALTER TABLE articles
-    SET author = string_to_array(author, ', ');
+ALTER COLUMN author TYPE text[] USING string_to_array(author, ', ')::text[];
 
 INSERT INTO authors (author_name)
-SELECT DISTINCT UNNEST(author) FROM articles;
+SELECT DISTINCT UNNEST(author::text[]) FROM articles;
 
 -- Update the articles table with author IDs
 UPDATE articles
