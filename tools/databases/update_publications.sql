@@ -11,4 +11,7 @@ WHERE articles.publication = p.publication_name;
 
 ALTER TABLE articles ALTER COLUMN publication TYPE INTEGER USING publication::integer;
 
+ALTER TABLE articles
+RENAME COLUMN publication TO publication_id;
+
 COMMIT;
