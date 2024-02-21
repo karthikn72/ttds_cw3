@@ -34,7 +34,7 @@ class Retrieval:
         # Placeholder for document weights, for normalization
         
         
-    def get_query_score(self, query, k=20):
+    def get_query_score(self, query, k=20): #needs to be redone, this is based on the tfidf calculator that used to be there, not actually the right way to do it
         query_terms = self.tokenizer.tokenize(query)
 
         score = {}
@@ -44,7 +44,7 @@ class Retrieval:
                     score[doc] = 0
                 
                 score[doc] += self.data[term]['indexes'][doc]['tfidf']
-        
+        #like actually this is NOT Phrase search man
         # (TODO) add cosine normalisation (lnc.ltc)
         return list(map(lambda doc: (doc, format(score[doc], '.4f')), heapq.nlargest(k, score, key=score.get)))
     

@@ -106,6 +106,7 @@ class Indexer:
     def output_database(self, index_data):
         #create word table, document table and word in document table
         #using SQLite3 for now
+        sorted_postings = dict(sorted(index_data.items()))
         conn = sqlite3.connect('words.db')
         cur = conn.cursor()
         cur.execute('''CREATE TABLE IF NOT EXISTS Words
@@ -115,8 +116,8 @@ class Indexer:
         cur.execute('''CREATE TABLE IF NOT EXISTS WordInDoc
                     (word_id INTEGER, doc_id INTEGER, tf INTEGER, tfidf REAL, positions TEXT)''')
         conn.commit()
-        for word in index_data:
-            cur.execute("INSERT OR IGNORE INTO Words (word, df) VALUES (?,?)",(word, index_data[word]['df']))
+        for word in         sorted_postings.keys() :
+            cur.execute("INSERT OR IGNORE INTO Words (word, df) VALUES (?,?)",(word, sorted_postings[word]['df']))
             for doc in index_data[word]['indexes']:
                 cur.execute("INSERT OR IGNORE INTO Documents (doc_no) VALUES (?)",(doc,))
                 cur.execute("SELECT word_id FROM Words WHERE word = ?",(word,))
@@ -128,7 +129,7 @@ class Indexer:
         #save the database
         conn.commit()
         conn.close()
-        
+
         print("Indexing complete")
 
 

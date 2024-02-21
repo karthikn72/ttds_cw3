@@ -1,7 +1,7 @@
 import pickle
 import pandas as pd
 from indexer import Indexer
-from retrieval import Retrieval
+from tools.retrieval_2 import Retrieval
 import time
 
 #Task 1: create a function that returns a dataframe of the first 1000 documents in a dataset
@@ -88,7 +88,7 @@ if __name__ == "__main__":
     print(c.fetchmany(10))
     c.execute('SELECT * FROM wordindoc')
     print(c.fetchmany(10))
-    
+
 
     
 
