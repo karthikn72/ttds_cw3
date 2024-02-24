@@ -168,6 +168,18 @@ class Database:
                 db_conn.rollback()
                 raise e
 
+    def get_index_by_words(self, words: list[str]):
+        conn_t = timer.Timer("Connected in {:.4f}s")
+        conn_t.start()
+        with self.engine.connect() as db_conn:
+            conn_t.stop()
+            query = f"SELECT * FROM index WHERE word_id = (SELECT word_id FROM words WHERE word in {tuple(words)})"
+            t = timer.Timer("Got index in {:.4f}s")
+            t.start()
+            index_df = pd.read_sql(query, db_conn)
+            t.stop()
+            return index_df
+
     def index_length(self):
         conn_t = timer.Timer("Connected in {:.4f}s")
         conn_t.start()
