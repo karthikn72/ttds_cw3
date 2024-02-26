@@ -50,6 +50,20 @@ class Indexer:
                 self.index_data[word][doc_no].append(position)
         return "Indexing complete"
     
+    def indexing_aao(self, database, offset):
+        doc_no = offset
+        for row in database:
+            doc_no += 1
+            text = row["title"]+' '+row["article"]
+            text = self.preprocessing(text)
+            for position,word in enumerate(text.split(), start=1):
+                if word not in self.index_data:
+                    self.index_data[word] = {}
+                if doc_no not in self.index_data[word]:
+                    self.index_data[word][doc_no] = []   
+                self.index_data[word][doc_no].append(position)
+        return "Indexing complete"
+    
 
     def get_index(self):
         return self.index_data
