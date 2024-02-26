@@ -10,18 +10,13 @@ from tools.retrieval import TFIDFScoring
 import tools.index_manager as im
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, origins=["http://localhost:3000"])
 
 # Load data
 dataset_file = 'data/all-the-news-2-1.csv'
 first_1k_docs = im.firstThousand(dataset_file)
 
-class NotFoundError(Exception):
-    pass
-
-class BadRequestError(Exception):
-    pass
-
+#get first 50 words of article
 def get_document_snippet(article):
     article_words = article.split()
     if len(article_words) > 50:
@@ -33,7 +28,7 @@ def get_document_snippet(article):
 def get_document_info(docid):
     doc = first_1k_docs.iloc[docid]
     title = doc['title']
-    snippet = get_document_snippet(doc['article']) #get the first 50 words of the article
+    snippet = get_document_snippet(doc['article']) 
     author = doc['author']
     url = doc['url']
     section = doc['section']
@@ -52,25 +47,14 @@ def format_result(id , title, snippet, author, url, section, date, publication):
         'date': date,
         'publication': publication
     }
-
-def get_status_code(results, error):
-    if error:
-        if isinstance(error, NotFoundError):
-            return 404
-        elif isinstance(error, BadRequestError):
-            return 400
-        else:
-            return 500
-    elif results:
-        return 200
     
-def filter(results):
+def get_filter_options(results):
     #find earliest and oldest articles
     results['date'] = pd.to_datetime(results['date'])
     earliestArticleDate = results['date'].min()
     latestArticleDate = results['date'].max()
 
-    #for now get the unique values for each category
+    #get the unique values for each category
     filter_options = {
         'authors': results['author'].unique().tolist(),
         'publications': results['publication'].unique().tolist(),
@@ -83,60 +67,49 @@ def filter(results):
 #get results based on search query
 @app.route('/search', methods=['GET'])
 def get_results():
+    start_time = time.time()  #start timing query search time 
+    search_query = request.args.get('query', '') # Get query from request
+
+    if not search_query:
+        return jsonify({'status': 400, 'message': "No search query provided"}), 400
+
+    #tokenize query
+    qtokenizer = QueryTokenizer()
+    query_tokens = qtokenizer.tokenize(search_query)
+
+    #use score function to get docids
+    r = TFIDFScoring(index_filename='tools/index.txt')
+    results = []
+
     try:
-        start_time = time.time()  #start timing query search time 
-        search_query = request.args.get('query', '') # Get query from request
+        scores = r.score(query_tokens)
+        docids = [score[0] for score in scores]
 
-        if not search_query:
-            raise BadRequestError("No search query provided")
+        #get results
+        for docid in docids:
+            title, snippet, author, url, section, date, publication = get_document_info(docid)
+            results.append(format_result(docid, title, snippet, author, url, section, date, publication))
+        
+        results_df = pd.DataFrame(results)
+        results_df = results_df.fillna('')
+        filter_options = get_filter_options(results_df)
 
-        #tokenize query
-        qtokenizer = QueryTokenizer()
-        query_tokens = qtokenizer.tokenize(search_query)
+    except KeyError:
+        return jsonify({'status': 404, 'message': "The term does not exist in the index."}), 404
 
-        #use score function to get docids
-        r = TFIDFScoring(index_filename='tools/index.txt')
-        results = []
+    end_time = time.time()  #end timing
+    retrieval_time = end_time - start_time  #to calculate retrieval time
 
-        try:
-            scores = r.score(query_tokens)
-            docids = [score[0] for score in scores]
+    #prepare response
+    response = {
+        'status': 200,
+        'retrieval_time': retrieval_time,
+        'total_results': len(results),
+        'filter_options':filter_options,
+        'results': results_df.to_dict('records')
+    }
 
-            #get results
-            for docid in docids:
-                title, snippet, author, url, section, date, publication = get_document_info(docid)
-                results.append(format_result(docid, title, snippet, author, url, section, date, publication))
-            
-            results_df = pd.DataFrame(results)
-            results_df = results_df.fillna('')
-            filter_options = filter(results_df)
-
-        except KeyError:
-            raise NotFoundError("The term does not exist in the index.")
-
-        end_time = time.time()  #end timing
-        retrieval_time = end_time - start_time  #to calculate retrieval time
-
-        status = get_status_code(results, error=None)  #get status code
-
-        #prepare response
-        response = {
-            'status': status,
-            'retrieval_time': retrieval_time,
-            'total_results': len(results),
-            'filter_options':filter_options,
-            'results': results_df.to_dict('records')
-        }
-
-        return jsonify(response)
-
-    except (BadRequestError, NotFoundError) as e:
-        status = get_status_code(None, error=e)
-        response = {
-            'status': status,
-            'message': str(e)
-        }
-        return jsonify(response)
+    return jsonify(response), 200
 
 if __name__ == '__main__':
     app.run()
