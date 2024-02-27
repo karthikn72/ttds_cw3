@@ -2,10 +2,12 @@
 from database import Database
 from indexer import Indexer
 
-def build_index():
+def build_index(test=False):
     db = Database()
     db.connect_with_connector()
     N = db.get_num_articles()
+    if test:
+        N = 1000
     counter = 0
     indexer = Indexer()
     indexer.set_up_stopwords('resources/ttds_2023_english_stop_words.txt')
