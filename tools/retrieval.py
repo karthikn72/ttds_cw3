@@ -1,7 +1,7 @@
 import heapq
 import numpy as np
 
-from tokenizer import QueryTokenizer
+from .tokenizer import QueryTokenizer
 
 
 DEFAULT_INDEX_FILE = 'tools\index.txt'

@@ -1,13 +1,23 @@
-import sys
-import os
+import re
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import pandas as pd
 import time
 
+#this is to access tools folder outside of src where this app.py is located:
+import os
+import sys
+# Get the absolute path of the directory containing this script
+script_dir = os.path.dirname(os.path.abspath(__file__))
+# Get the absolute path of the parent directory
+parent_dir = os.path.dirname(script_dir)
+# Add the parent directory to the system path
+sys.path.insert(0, parent_dir)
+
 from tools.tokenizer import QueryTokenizer
 from tools.retrieval import TFIDFScoring
 import tools.index_manager as im
+# from tools.database import Database
 
 app = Flask(__name__)
 CORS(app, origins=["http://localhost:3000"])
@@ -15,6 +25,8 @@ CORS(app, origins=["http://localhost:3000"])
 # Load data
 dataset_file = 'data/all-the-news-2-1.csv'
 first_1k_docs = im.firstThousand(dataset_file)
+
+# db = Database()
 
 #get first 50 words of article
 def get_document_snippet(article):
@@ -28,7 +40,7 @@ def get_document_snippet(article):
 def get_document_info(docid):
     doc = first_1k_docs.iloc[docid]
     title = doc['title']
-    snippet = get_document_snippet(doc['article']) 
+    snippet = get_document_snippet(doc['article'])
     author = doc['author']
     url = doc['url']
     section = doc['section']
@@ -36,7 +48,7 @@ def get_document_info(docid):
     publication = doc['publication']
     return title, snippet, author, url, section, date, publication
 
-def format_result(id , title, snippet, author, url, section, date, publication):
+def format_result(id, title, snippet, author, url, section, date, publication):
     return {
         'id': id,
         'title': title,
@@ -56,9 +68,9 @@ def get_filter_options(results):
 
     #get the unique values for each category
     filter_options = {
-        'authors': results['author'].unique().tolist(),
-        'publications': results['publication'].unique().tolist(),
-        'sections': results['section'].unique().tolist(),
+        'authors': [author for author in results['author'].unique().tolist() if author != ""],
+        'publications': [publication for publication in results['publication'].unique().tolist() if publication != ""],
+        'sections': [section for section in results['section'].unique().tolist() if section != ""],
         'earliestArticleDate': earliestArticleDate,
         'latestArticleDate': latestArticleDate
     }
@@ -68,17 +80,44 @@ def get_filter_options(results):
 @app.route('/search', methods=['GET'])
 def get_results():
     start_time = time.time()  #start timing query search time 
-    search_query = request.args.get('query', '') # Get query from request
 
-    if not search_query:
-        return jsonify({'status': 400, 'message': "No search query provided"}), 400
+    #get all query parameters
+    # query_params = request.args
+
+    multi_params = ["sentiment", "author", "publication", "category"]
+    single_params = ["q", "from", "to", "sortBy"]
+
+    # Initialize dictionaries to store the parameters
+    multi_params = {param: [] for param in multi_params}
+    single_params = {param: None for param in single_params}
+
+    # Retrieve the arguments for each parameter and check if they are not empty and alphanumeric
+    for param in multi_params:
+        values = sorted(request.args.getlist(param))
+        for value in values:
+            if value == "" or not re.match("^[a-zA-Z0-9_ ]*$", value):
+                return jsonify({'status': 400, 'message': f"Invalid value for parameter {param}: {value}"}), 400
+        multi_params[param] = values
+
+    for param in single_params:
+        values = request.args.getlist(param)
+        if values:
+            value = values[0]
+            if value == "" or not re.match("^[a-zA-Z0-9_ ]*$", value):
+                return jsonify({'status': 400, 'message': f"Invalid value for parameter {param}: {value}"}), 400
+            single_params[param] = value
+
+    #get search query
+    search_query = single_params['q']
+    print(multi_params)
+    print(single_params)
 
     #tokenize query
     qtokenizer = QueryTokenizer()
     query_tokens = qtokenizer.tokenize(search_query)
 
     #use score function to get docids
-    r = TFIDFScoring(index_filename='tools/index.txt')
+    r = TFIDFScoring(index_filename='../tools/index.txt')
     results = []
 
     try:
@@ -90,8 +129,10 @@ def get_results():
             title, snippet, author, url, section, date, publication = get_document_info(docid)
             results.append(format_result(docid, title, snippet, author, url, section, date, publication))
         
+        #remove na values and remove emtpy strings 
         results_df = pd.DataFrame(results)
         results_df = results_df.fillna('')
+        
         filter_options = get_filter_options(results_df)
 
     except KeyError:
@@ -104,7 +145,7 @@ def get_results():
     response = {
         'status': 200,
         'retrieval_time': retrieval_time,
-        'total_results': len(results),
+        'total_results': len(results_df),
         'filter_options':filter_options,
         'results': results_df.to_dict('records')
     }
