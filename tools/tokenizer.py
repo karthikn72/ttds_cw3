@@ -2,6 +2,8 @@ import re
 from nltk.stem import PorterStemmer
 import os
 
+from spellchecker import SpellChecker
+
 MODULE_DIR = os.path.dirname(os.path.realpath(__file__))
 
 DEFAULT_STOPWORD_FILE = os.path.join(MODULE_DIR, 'resources', 'ttds_2023_english_stop_words.txt')
@@ -56,16 +58,6 @@ class QueryTokenizer(Tokenizer):
                  tokenize_re=DEFAULT_TOKENIZE_RULE):
         Tokenizer.__init__(self, case_fold, stop, stop_file, stem, tokenize_re)
 
-    def __tokenize_term(self, term):
-        tokens = re.findall(pattern=self.tokenize_re, string=term)
-        if self.case_fold:
-            tokens = list(map(lambda x: x.lower(), tokens))
-        if self.stop:
-            tokens = self.stopping(tokens)
-        if self.stem:
-            tokens = self.normalise(tokens)
-        return tokens
-
     def tokenize(self, query):
         parts = re.split(" +(AND|OR) +", query)
 
@@ -88,6 +80,32 @@ class QueryTokenizer(Tokenizer):
                 term2_tokens = self.__tokenize_term(term2)
 
         return term1_tokens, term2_tokens, operator 
+    
+    def __tokenize_term(self, term):
+        tokens = re.findall(pattern=self.tokenize_re, string=term)
+        if self.case_fold:
+            tokens = list(map(lambda x: x.lower(), tokens))
+        if self.stop:
+            tokens = self.stopping(tokens)
+        tokens = self.__query_spell_correction(tokens)
+        if self.stem:
+            tokens = self.normalise(tokens)
+        return tokens
+    
+    def __query_spell_correction(self, tokens):
+        spell = SpellChecker()
+        # find those words that may be misspelled
+        misspelled_list = list(spell.unknown(tokens))
+        # To keep the query order
+        misspelled = [word for word in tokens if word in misspelled_list]
+        new_query = []
+        for word in tokens:
+            if word not in misspelled:
+                new_query.append(word)
+            else:
+                curr = spell.correction(word)
+                new_query.append(curr)
+        return new_query
  
     def __repr__(self):
         return f"QueryTokenizer(case_fold={self.case_fold}, stop={self.stop}, stop_file={self.stop_file}, stem={self.stem}, tokenize_re={self.tokenize_re})"
@@ -95,4 +113,4 @@ class QueryTokenizer(Tokenizer):
 
 if __name__ == '__main__':
     q = QueryTokenizer()
-    print(q.tokenize('"middle east" AND peace'))
+    print(q.tokenize('"middle east" AND pece')) # ([' ', 'middl', 'east'], ['piec'], 'AND')
