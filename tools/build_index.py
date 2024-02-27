@@ -7,16 +7,18 @@ def build_index(test=False, fresh=False):
     db = Database()
     N = db.num_articles()
     if fresh:
-        db.clear_index()
+        db.reset_index()
     if test:
         N = 1000
     counter = 0
     indexer = Indexer()
     indexer.set_up_stopwords('resources/ttds_2023_english_stop_words.txt')
     while counter < N:
-        articles = db.get_articles(limit=1000)
+        articles = db.get_articles(limit=1000,offset=counter)
         indexer.indexing(articles, counter)
+        print(f"Indexed {counter+1000} documents")
         db.build_index(indexer.get_index())
+        print(f"Successfully built {counter+1000}")
         counter += 1000
     del indexer
     return "Indexing complete"

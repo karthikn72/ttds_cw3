@@ -161,12 +161,12 @@ class Database:
         """)
         t = timer.Timer('Built index in {:.4f}s')
         t.start()
-        for word in index:
-            for article_id in index[word]:
+        for word in tqdm(index):
+            for article_id in tqdm(index[word]):
                 args = {
                     'word':word,
                     'article_id':article_id,
-                    'positions':index[word][article_id]['positions'],
+                    'positions':index[word][article_id],
                     }
                 conn.execute(
                     insert_statement,
@@ -253,3 +253,14 @@ class Database:
                         db_conn.execute(query)
             return "Index reset"
         return "Cancelled index reset"
+    def get_index(self):
+        conn_t = timer.Timer("Connected in {:.4f}s")
+        conn_t.start()
+        with self.engine.connect() as db_conn:
+            conn_t.stop()
+            query = db.text(f'SELECT * FROM index_table')
+            t = timer.Timer("Got index in {:.4f}s")
+            t.start()
+            index_df = pd.read_sql(query, db_conn)
+            t.stop()
+            return index_df
