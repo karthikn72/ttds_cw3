@@ -2,10 +2,12 @@
 from database_2 import Database
 from indexer import Indexer
 
-def build_index(test=False):
+def build_index(test=False, fresh=False):
+    
     db = Database()
-    db.connect_with_connector()
-    N = db.get_num_articles()
+    N = db.num_articles()
+    if fresh:
+        db.clear_index()
     if test:
         N = 1000
     counter = 0
@@ -21,8 +23,8 @@ def build_index(test=False):
 
 def build_index_aao():
     db = Database()
-    db.connect_with_connector()
-    N = db.get_num_articles()
+    
+    N = db.num_articles()
     
     counter = 0
     indexer = Indexer()
