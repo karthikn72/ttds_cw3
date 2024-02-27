@@ -1,6 +1,8 @@
 import os
 import timer
+import random
 import pandas as pd
+from tqdm import tqdm
 
 import sqlalchemy as db
 from sqlalchemy.dialects.postgresql import insert
@@ -59,9 +61,9 @@ class Database:
     def doc_frequency(self, word):
         with self.engine.connect() as db_conn:
             if word is int:
-                query = db.text(f'SELECT COUNT(word_id) FROM index WHERE word_id = :word') 
+                query = db.text(f'SELECT COUNT(word_id) FROM index_table WHERE word_id = :word') 
             else:
-                query = db.text(f'SELECT COUNT(index.word_id) FROM index, words WHERE index.word_id = words.word_id and words.word = :word')
+                query = db.text(f'SELECT COUNT(index_table.word_id) FROM index_table, words WHERE index_table.word_id = words.word_id and words.word = :word')
             t = timer.Timer("Got df in {:.4f}s")
             t.start()
             result = db_conn.execute(query, {'word':word}).fetchone()
@@ -73,7 +75,7 @@ class Database:
 
     def term_frequency(self, word_id, article_id):
         with self.engine.connect() as db_conn:
-            query = db.text(f'SELECT CARDINALITY(positions) FROM index WHERE word_id = :word_id and article_id = :article_id')
+            query = db.text(f'SELECT CARDINALITY(positions) FROM index_table WHERE word_id = :word_id and article_id = :article_id')
             t = timer.Timer("Got tf in {:.4f}s")
             t.start()
             result = db_conn.execute(query, {'word_id':word_id, 'article_id':article_id}).fetchone()
@@ -97,6 +99,17 @@ class Database:
                 return result[0]
             else:
                 return 0
+
+    def num_random_articles(self):
+        conn_t = timer.Timer("Connected in {:.4f}s")
+        t = timer.Timer("Got count in {:.4f}s")
+        ls = random.sample(range(10**6), 10000)
+        t.start()
+        for val in tqdm(ls):
+            with self.engine.connect() as db_conn:
+                query = db.text(f'SELECT COUNT(*) FROM articles where article_id = {val}')
+                result = db_conn.execute(query).fetchone()
+        t.stop()
     
     def get_articles(self,
                      article_ids: list[int] = None,
@@ -129,39 +142,51 @@ class Database:
             author_df = pd.read_sql(query, db_conn)
             t.stop()
             return author_df
-    
-    def build_index(self, index):
+
+    def add_words(self, words, conn):
         self.words = db.Table('words', self.metadata, autoload_with=self.engine)
+        query = insert(self.words).values(words).on_conflict_do_nothing().returning(self.words.c.word_id)
+        t = timer.Timer('Inserted words in {:.4f}s')
+        t.start()
+        conn.execute(query)
+        t.stop()
+
+    def add_index(self, index, conn):
+        insert_statement = db.text("""
+            INSERT INTO index_table (word_id, article_id, positions)
+            SELECT words.word_id, :article_id, :positions
+            FROM words
+            WHERE words.word = :word
+            ON CONFLICT (word_id,article_id) DO UPDATE SET positions = EXCLUDED.positions
+        """)
+        t = timer.Timer('Built index in {:.4f}s')
+        t.start()
+        for word in index:
+            for article_id in index[word]:
+                args = {
+                    'word':word,
+                    'article_id':article_id,
+                    'positions':index[word][article_id]['positions'],
+                    }
+                conn.execute(
+                    insert_statement,
+                    args
+                )
+        t.stop()
+
+    def calc_tfidf(self, conn):
+        sql_path = "tools/databases/calc_tfidf.sql"
+        with open(sql_path) as file:
+            query = db.text(file.read())
+            conn.execute(query)
+
+    def build_index(self, index):
         with self.engine.connect() as db_conn:
             try:
                 words = [{'word':word} for word in index]
-                query = insert(self.words).values(words).on_conflict_do_nothing().returning(self.words.c.word_id)
-                t = timer.Timer('Inserted words in {:.4f}s')
-                t.start()
-                db_conn.execute(query)
-                t.stop()
-                insert_statement = db.text("""
-                    INSERT INTO index (word_id, article_id, positions, tfidf)
-                    SELECT words.word_id, :article_id, :positions, :tfidf
-                    FROM words
-                    WHERE words.word = :word
-                    ON CONFLICT (word_id,article_id) DO UPDATE SET positions = EXCLUDED.positions, tfidf = EXCLUDED.tfidf
-                """)
-                t = timer.Timer('Built index in {:.4f}s')
-                t.start()
-                for word in index:
-                    for article_id in index[word]:
-                        args = {
-                            'word':word,
-                            'article_id':article_id,
-                            'positions':index[word][article_id]['positions'],
-                            'tfidf':index[word][article_id]['tfidf']
-                            }
-                        db_conn.execute(
-                            insert_statement,
-                            args
-                        )
-                t.stop()
+                self.add_words(words=words, conn=db_conn)
+                self.add_index(index=index, conn=db_conn)
+                self.calc_tfidf(conn=db_conn)
                 db_conn.commit()
                 return "Index build successful"
             except Exception as e:
@@ -173,7 +198,7 @@ class Database:
         conn_t.start()
         with self.engine.connect() as db_conn:
             conn_t.stop()
-            query = f"SELECT * FROM index WHERE word_id = (SELECT word_id FROM words WHERE word in {tuple(words)})"
+            query = f"SELECT * FROM index_table WHERE word_id = (SELECT word_id FROM words WHERE word in {tuple(words)})"
             t = timer.Timer("Got index in {:.4f}s")
             t.start()
             index_df = pd.read_sql(query, db_conn)
@@ -185,7 +210,7 @@ class Database:
         conn_t.start()
         with self.engine.connect() as db_conn:
             conn_t.stop()
-            query = db.text(f'SELECT COUNT(*) FROM index')
+            query = db.text(f'SELECT COUNT(*) FROM index_table')
             t = timer.Timer("Got length in {:.4f}s")
             t.start()
             result = db_conn.execute(query).fetchone()
@@ -209,3 +234,22 @@ class Database:
                 return result[0]
             else:
                 return 0
+
+    def reset_index(self, words=True):
+        sql_paths = ["tools/databases/create_index_table.sql"]
+        if words:
+            sql_paths.append("tools/databases/create_word_table.sql")
+        while True:
+            confirm = input("Are you sure you want to reset the entire index? (y/n): ").lower()
+            if confirm in ['y', 'n']:
+                break
+            else:
+                print("Invalid input. Please enter 'y' or 'n'.")
+        if confirm == 'y':
+            with self.engine.connect() as db_conn:
+                for sql_path in sql_paths:
+                    with open(sql_path) as file:
+                        query = db.text(file.read())
+                        db_conn.execute(query)
+            return "Index reset"
+        return "Cancelled index reset"
