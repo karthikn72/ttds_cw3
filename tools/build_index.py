@@ -1,5 +1,5 @@
 # Import the necessary classes
-from database import Database
+from database_2 import Database
 from indexer import Indexer
 
 def build_index(test=False):
@@ -36,4 +36,4 @@ def build_index_aao():
     return "Indexing complete"
 
 if __name__ == '__main__':
-    build_index()
+    build_index(test=True)
