@@ -1,5 +1,5 @@
 # Import the necessary classes
-from database_2 import Database
+from database import Database
 from indexer import Indexer
 
 def build_index(test=False, fresh=False):
@@ -23,9 +23,7 @@ def build_index(test=False, fresh=False):
 
 def build_index_aao():
     db = Database()
-    
     N = db.num_articles()
-    
     counter = 0
     indexer = Indexer()
     indexer.set_up_stopwords('resources/ttds_2023_english_stop_words.txt')
