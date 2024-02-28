@@ -118,19 +118,48 @@ class Database:
                      ):
         with self.engine.connect() as db_conn:
             if article_ids:
-                query = db.text(f'SELECT article_id, upload_date, author_ids, title, article, url, sections.section_name, publications.publication_name \
-                                    FROM articles, sections, publications \
-                                    WHERE article_id IN {tuple(article_ids)} AND sections.section_id = articles.section_id AND publications.publication_id = articles.publication_id\
+                query = db.text(f'SELECT articles.article_id, upload_date, auth.author_names, title, article, url, s.section_name, p.publication_name \
+                                    FROM articles \
+                                    LEFT JOIN \
+                                        sections s \
+                                    ON \
+                                        articles.section_id = s.section_id \
+                                    LEFT JOIN \
+                                        (SELECT a.article_id, ARRAY_AGG(authors.author_name) as author_names \
+                                         FROM \
+                                            (SELECT article_id, unnest(author_ids) as author_id FROM articles WHERE articles.article_id IN {tuple(article_ids)}) a \
+                                         LEFT JOIN authors ON a.author_id = authors.author_id GROUP BY a.article_id) auth \
+                                    ON \
+                                        articles.article_id = auth.article_id \
+                                    LEFT JOIN \
+                                        publications p \
+                                    ON \
+                                        articles.publication_id = p.publication_id \
+                                    WHERE \
+                                        articles.article_id IN {tuple(article_ids)} \
                                     LIMIT {limit} OFFSET {offset}')
             else:
-                query = db.text(f'SELECT article_id, upload_date, author_ids, title, article, url, sections.section_name, publications.publication_name \
-                                    FROM articles, sections, publications \
-                                    WHERE sections.section_id = articles.section_id AND publications.publication_id = articles.publication_id\
+                query = db.text(f'SELECT articles.article_id, upload_date, auth.author_names, title, article, url, s.section_name, p.publication_name \
+                                    FROM articles \
+                                    LEFT JOIN \
+                                        sections s \
+                                    ON \
+                                        articles.section_id = s.section_id \
+                                    LEFT JOIN \
+                                        (SELECT a.article_id, ARRAY_AGG(authors.author_name) as author_names \
+                                         FROM \
+                                            (SELECT article_id, unnest(author_ids) as author_id FROM articles LIMIT {limit} OFFSET {offset}) a \
+                                         LEFT JOIN authors ON a.author_id = authors.author_id GROUP BY a.article_id) auth \
+                                    ON \
+                                        articles.article_id = auth.article_id \
+                                    LEFT JOIN \
+                                        publications p \
+                                    ON \
+                                        articles.publication_id = p.publication_id \
                                     LIMIT {limit} OFFSET {offset}')
             t = timer.Timer("Got results in {:.4f}s")
             t.start()
             article_df = pd.read_sql(query, db_conn)
-            print(article_df.columns)
             t.stop()
             return article_df
 

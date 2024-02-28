@@ -22,4 +22,9 @@ ALTER COLUMN author TYPE integer[] USING author::integer[];
 ALTER TABLE articles
 RENAME COLUMN author TO author_ids;
 
+DELETE FROM 
+    authors 
+WHERE 
+    author_name ~ '[^a-zA-Z0-9\-àÀáÁâÂãÃäÄåÅāĀăĂąĄèÈéÉêÊëËēĒĕĔěĚęĘìÌíÍîÎïÏīĪįĮòÒóÓôÔõÕöÖøØōŌùÙúÚûÛüÜūŪůŮýÝÿ.'', ]';
+
 COMMIT;
