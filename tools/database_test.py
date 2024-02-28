@@ -21,4 +21,13 @@ if __name__ == "__main__":
     #         2:{'positions':[23,452]}
     #         }
     #     })
+    index_dict = {
+        'word':['yeet1', 'yeet1', 'yeet2', 'yeet2'],
+        'article_id': [3,7,9,2],
+        'positions': [[0,5,12], [3,57], [46,856,57], [23,452]]
+    }
+    index_dict = pd.DataFrame(index_dict)
+
+    db.reset_index()
+    db.build_index(index=index_dict)
     print("Database test completed successfully")
