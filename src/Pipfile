@@ -31,6 +31,8 @@ psycopg2-binary = "*"
 pg8000 = "*"
 mysql-connector-python = "*"
 gunicorn = "*"
+spellchecker = "*"
+google = "*"
 
 [dev-packages]
 

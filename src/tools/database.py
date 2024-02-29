@@ -1,5 +1,5 @@
 import os
-import timer
+from .timer import Timer
 import pandas as pd
 
 import sqlalchemy as db
@@ -39,7 +39,7 @@ class Database:
                 ip_type=ip_type,
             )
             return conn
-        db_timer = timer.Timer("Connected to database in {:.4f}s")
+        db_timer = Timer("Connected to database in {:.4f}s")
         db_timer.start()
         engine = db.create_engine(
             "postgresql+pg8000://",
@@ -49,7 +49,7 @@ class Database:
         return engine 
 
     def get_tables(self):
-        t = timer.Timer("Got tables in {:.4f}s")
+        t = Timer("Got tables in {:.4f}s")
         with self.engine.connect() as db_conn:
             t.start()
             tables = db.inspect(db_conn).get_table_names()
@@ -62,7 +62,7 @@ class Database:
                 query = db.text(f'SELECT COUNT(word_id) FROM index WHERE word_id = :word') 
             else:
                 query = db.text(f'SELECT COUNT(index.word_id) FROM index, words WHERE index.word_id = words.word_id and words.word = :word')
-            t = timer.Timer("Got df in {:.4f}s")
+            t = Timer("Got df in {:.4f}s")
             t.start()
             result = db_conn.execute(query, {'word':word}).fetchone()
             t.stop()
@@ -74,7 +74,7 @@ class Database:
     def term_frequency(self, word_id, article_id):
         with self.engine.connect() as db_conn:
             query = db.text(f'SELECT CARDINALITY(positions) FROM index WHERE word_id = :word_id and article_id = :article_id')
-            t = timer.Timer("Got tf in {:.4f}s")
+            t = Timer("Got tf in {:.4f}s")
             t.start()
             result = db_conn.execute(query, {'word_id':word_id, 'article_id':article_id}).fetchone()
             t.stop()
@@ -84,12 +84,12 @@ class Database:
                 return 0
             
     def num_articles(self):
-        conn_t = timer.Timer("Connected in {:.4f}s")
+        conn_t = Timer("Connected in {:.4f}s")
         conn_t.start()
         with self.engine.connect() as db_conn:
             conn_t.stop()
             query = db.text(f'SELECT COUNT(*) FROM articles')
-            t = timer.Timer("Got count in {:.4f}s")
+            t = Timer("Got count in {:.4f}s")
             t.start()
             result = db_conn.execute(query).fetchone()
             t.stop()
@@ -114,7 +114,7 @@ class Database:
                                     FROM articles, sections, publications \
                                     WHERE sections.section_id = articles.section_id AND publications.publication_id = articles.publication_id\
                                     LIMIT {limit} OFFSET {offset}')
-            t = timer.Timer("Got results in {:.4f}s")
+            t = Timer("Got results in {:.4f}s")
             t.start()
             article_df = pd.read_sql(query, db_conn)
             print(article_df.columns)
@@ -124,7 +124,7 @@ class Database:
     def get_author_names(self, author_ids):
         with self.engine.connect() as db_conn:
             query = db.text(f'SELECT * FROM authors WHERE author_id IN {tuple(author_ids)}')
-            t = timer.Timer("Got author_names in {:.4f}s")
+            t = Timer("Got author_names in {:.4f}s")
             t.start()
             author_df = pd.read_sql(query, db_conn)
             t.stop()
@@ -136,7 +136,7 @@ class Database:
             try:
                 words = [{'word':word} for word in index]
                 query = insert(self.words).values(words).on_conflict_do_nothing().returning(self.words.c.word_id)
-                t = timer.Timer('Inserted words in {:.4f}s')
+                t = Timer('Inserted words in {:.4f}s')
                 t.start()
                 db_conn.execute(query)
                 t.stop()
@@ -147,7 +147,7 @@ class Database:
                     WHERE words.word = :word
                     ON CONFLICT (word_id,article_id) DO UPDATE SET positions = EXCLUDED.positions, tfidf = EXCLUDED.tfidf
                 """)
-                t = timer.Timer('Built index in {:.4f}s')
+                t = Timer('Built index in {:.4f}s')
                 t.start()
                 for word in index:
                     for article_id in index[word]:
@@ -169,24 +169,24 @@ class Database:
                 raise e
 
     def get_index_by_words(self, words: list[str]):
-        conn_t = timer.Timer("Connected in {:.4f}s")
+        conn_t = Timer("Connected in {:.4f}s")
         conn_t.start()
         with self.engine.connect() as db_conn:
             conn_t.stop()
             query = f"SELECT * FROM index WHERE word_id = (SELECT word_id FROM words WHERE word in {tuple(words)})"
-            t = timer.Timer("Got index in {:.4f}s")
+            t = Timer("Got index in {:.4f}s")
             t.start()
             index_df = pd.read_sql(query, db_conn)
             t.stop()
             return index_df
 
     def index_length(self):
-        conn_t = timer.Timer("Connected in {:.4f}s")
+        conn_t = Timer("Connected in {:.4f}s")
         conn_t.start()
         with self.engine.connect() as db_conn:
             conn_t.stop()
             query = db.text(f'SELECT COUNT(*) FROM index')
-            t = timer.Timer("Got length in {:.4f}s")
+            t = Timer("Got length in {:.4f}s")
             t.start()
             result = db_conn.execute(query).fetchone()
             t.stop()
@@ -196,12 +196,12 @@ class Database:
                 return 0
 
     def num_words(self):
-        conn_t = timer.Timer("Connected in {:.4f}s")
+        conn_t = Timer("Connected in {:.4f}s")
         conn_t.start()
         with self.engine.connect() as db_conn:
             conn_t.stop()
             query = db.text(f'SELECT COUNT(*) FROM words')
-            t = timer.Timer("Got length in {:.4f}s")
+            t = Timer("Got length in {:.4f}s")
             t.start()
             result = db_conn.execute(query).fetchone()
             t.stop()
