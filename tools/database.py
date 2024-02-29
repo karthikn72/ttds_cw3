@@ -5,7 +5,7 @@ import pandas as pd
 from tqdm import tqdm
 
 import sqlalchemy as db
-from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy.dialects.postgresql import insert, ARRAY, INTEGER
 
 from google.cloud.sql.connector import Connector, IPTypes
 import pg8000
@@ -118,19 +118,48 @@ class Database:
                      ):
         with self.engine.connect() as db_conn:
             if article_ids:
-                query = db.text(f'SELECT article_id, upload_date, author_ids, title, article, url, sections.section_name, publications.publication_name \
-                                    FROM articles, sections, publications \
-                                    WHERE article_id IN {tuple(article_ids)} AND sections.section_id = articles.section_id AND publications.publication_id = articles.publication_id\
+                query = db.text(f'SELECT articles.article_id, upload_date, auth.author_names, title, article, url, s.section_name, p.publication_name \
+                                    FROM articles \
+                                    LEFT JOIN \
+                                        sections s \
+                                    ON \
+                                        articles.section_id = s.section_id \
+                                    LEFT JOIN \
+                                        (SELECT a.article_id, ARRAY_AGG(authors.author_name) as author_names \
+                                         FROM \
+                                            (SELECT article_id, unnest(author_ids) as author_id FROM articles WHERE articles.article_id IN {tuple(article_ids)}) a \
+                                         LEFT JOIN authors ON a.author_id = authors.author_id GROUP BY a.article_id) auth \
+                                    ON \
+                                        articles.article_id = auth.article_id \
+                                    LEFT JOIN \
+                                        publications p \
+                                    ON \
+                                        articles.publication_id = p.publication_id \
+                                    WHERE \
+                                        articles.article_id IN {tuple(article_ids)} \
                                     LIMIT {limit} OFFSET {offset}')
             else:
-                query = db.text(f'SELECT article_id, upload_date, author_ids, title, article, url, sections.section_name, publications.publication_name \
-                                    FROM articles, sections, publications \
-                                    WHERE sections.section_id = articles.section_id AND publications.publication_id = articles.publication_id\
+                query = db.text(f'SELECT articles.article_id, upload_date, auth.author_names, title, article, url, s.section_name, p.publication_name \
+                                    FROM articles \
+                                    LEFT JOIN \
+                                        sections s \
+                                    ON \
+                                        articles.section_id = s.section_id \
+                                    LEFT JOIN \
+                                        (SELECT a.article_id, ARRAY_AGG(authors.author_name) as author_names \
+                                         FROM \
+                                            (SELECT article_id, unnest(author_ids) as author_id FROM articles LIMIT {limit} OFFSET {offset}) a \
+                                         LEFT JOIN authors ON a.author_id = authors.author_id GROUP BY a.article_id) auth \
+                                    ON \
+                                        articles.article_id = auth.article_id \
+                                    LEFT JOIN \
+                                        publications p \
+                                    ON \
+                                        articles.publication_id = p.publication_id \
                                     LIMIT {limit} OFFSET {offset}')
             t = timer.Timer("Got results in {:.4f}s")
             t.start()
             article_df = pd.read_sql(query, db_conn)
-            print(article_df.columns)
             t.stop()
             return article_df
 
@@ -143,35 +172,25 @@ class Database:
             t.stop()
             return author_df
 
-    def add_words(self, words, conn):
+    def add_words(self, index, conn):
         self.words = db.Table('words', self.metadata, autoload_with=self.engine)
-        query = insert(self.words).values(words).on_conflict_do_nothing().returning(self.words.c.word_id)
+        word_list = [{'word':word} for word in index['word']]
+        query = insert(self.words).values(word_list).on_conflict_do_nothing()
         t = timer.Timer('Inserted words in {:.4f}s')
         t.start()
         conn.execute(query)
         t.stop()
+        query = db.text(f'SELECT * FROM words WHERE word in {tuple(index.word)};')
+        t = timer.Timer('Got words in {:.4f}s')
+        t.start()
+        word_df = pd.read_sql(query, conn)
+        t.stop()
+        return word_df
 
     def add_index(self, index, conn):
-        insert_statement = db.text("""
-            INSERT INTO index_table (word_id, article_id, positions)
-            SELECT words.word_id, :article_id, :positions
-            FROM words
-            WHERE words.word = :word
-            ON CONFLICT (word_id,article_id) DO UPDATE SET positions = EXCLUDED.positions
-        """)
         t = timer.Timer('Built index in {:.4f}s')
         t.start()
-        for word in tqdm(index):
-            for article_id in tqdm(index[word]):
-                args = {
-                    'word':word,
-                    'article_id':article_id,
-                    'positions':index[word][article_id],
-                    }
-                conn.execute(
-                    insert_statement,
-                    args
-                )
+        index.to_sql('index_table', conn, if_exists='append', index=False, dtype={'article_id':INTEGER, 'positions':ARRAY(INTEGER), 'word_id':INTEGER}, method='multi')
         t.stop()
 
     def calc_tfidf(self, conn):
@@ -180,17 +199,19 @@ class Database:
             query = db.text(file.read())
             conn.execute(query)
 
-    def build_index(self, index):
+    def build_index(self, index: pd.DataFrame):
         with self.engine.connect() as db_conn:
             try:
-                words = [{'word':word} for word in index]
-                self.add_words(words=words, conn=db_conn)
+                word_df = self.add_words(index=index, conn=db_conn)
+                index = pd.merge(index, word_df, on='word', how='left')
+                index = index.drop('word', axis=1)
                 self.add_index(index=index, conn=db_conn)
                 self.calc_tfidf(conn=db_conn)
                 db_conn.commit()
                 return "Index build successful"
             except Exception as e:
                 db_conn.rollback()
+                print("!!!!! CANCELLED INDEXING !!!!!")
                 raise e
 
     def get_index_by_words(self, words: list[str]):
@@ -242,25 +263,18 @@ class Database:
         while True:
             confirm = input("Are you sure you want to reset the entire index? (y/n): ").lower()
             if confirm in ['y', 'n']:
-                break
+                if confirm == 'y':
+                    with self.engine.connect() as db_conn:
+                        for sql_path in sql_paths:
+                            with open(sql_path) as file:
+                                query = db.text(file.read())
+                                db_conn.execute(query)
+                        db_conn.commit()
+                    print("Index reset")
+                else:
+                    print("Cancelled index reset")
+                return
             else:
                 print("Invalid input. Please enter 'y' or 'n'.")
-        if confirm == 'y':
-            with self.engine.connect() as db_conn:
-                for sql_path in sql_paths:
-                    with open(sql_path) as file:
-                        query = db.text(file.read())
-                        db_conn.execute(query)
-            return "Index reset"
-        return "Cancelled index reset"
-    def get_index(self):
-        conn_t = timer.Timer("Connected in {:.4f}s")
-        conn_t.start()
-        with self.engine.connect() as db_conn:
-            conn_t.stop()
-            query = db.text(f'SELECT * FROM index_table')
-            t = timer.Timer("Got index in {:.4f}s")
-            t.start()
-            index_df = pd.read_sql(query, db_conn)
-            t.stop()
-            return index_df
+                
+                
