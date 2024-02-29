@@ -2,7 +2,7 @@
 from database import Database
 from indexer import Indexer
 
-def build_index(test=False, fresh=False, limit=1000):
+def build_index(test=False, fresh=True, limit=1000):
     
     db = Database()
     N = db.num_articles()
@@ -12,12 +12,13 @@ def build_index(test=False, fresh=False, limit=1000):
         N = 1000
     counter = 0
     indexer = Indexer()
-    indexer.set_up_stopwords('resources/ttds_2023_english_stop_words.txt')
+    indexer.set_up_stopwords('tools/resources/ttds_2023_english_stop_words.txt')
 
 
     while counter < N:
         articles = db.get_articles(limit=limit,offset=counter)
-        indexer.indexing(articles, counter)
+        
+        indexer.indexing(counter, articles)
         print(f"Indexed {counter+1000} documents")
         db.build_index(indexer.get_index())
         print(f"Successfully built {counter+1000}")
