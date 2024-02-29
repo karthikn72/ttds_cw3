@@ -60,7 +60,26 @@ class Indexer:
         
         #turn the list of tuples into a dataframe
         self.index_df = pd.DataFrame(index_list, columns=['word', 'doc', 'postings'])
-        self.index_df = self.index_df.sort_values(by=['word', 'doc'])
+        self.index_df = self.index_df.sort_values(by=['word', 'doc']).reset_index(drop=True)
+        return "Indexing complete"
+    
+    def indexing2(self, offset, database):
+        self.index_data = {}
+        doc_no = offset
+        index_list = []
+        for row in database.itertuples():
+            doc_no += 1
+            #row is in a df object. concat the title and article as a string
+            title = str(row.title) if row.title is not None else ""
+            article = str(row.article) if row.article is not None else ""
+            text = title+' '+article
+            text = self.preprocessing(text)
+            for position,word in enumerate(text.split(), start=1):
+                index_list.append((word, doc_no, position))
+        
+        self.index_df = pd.DataFrame(index_list, columns=['word', 'doc', 'postings'])
+        self.index_df = self.index_df.groupby(['word','doc'])['postings'].apply(list).reset_index()
+
         return "Indexing complete"
         
 
@@ -97,6 +116,12 @@ class Indexer:
                 if doc_no not in self.index_data[word]:
                     self.index_data[word][doc_no] = []   
                 self.index_data[word][doc_no].append(position)
+        index_list = []
+        for word, doc_data in self.index_data.items():
+            for doc, positions in doc_data.items():
+                index_list.append((word, doc, positions))
+        self.index_df = pd.DataFrame(index_list, columns=['word', 'doc', 'postings'])
+        self.index_df = self.index_df.sort_values(by=['word', 'doc'])
         return "Indexing complete"
     
 
@@ -128,27 +153,27 @@ class Indexer:
             print("Indexing complete")
         outFile.close()
 
-# if __name__ == "__main__":
-#     idxer = Indexer()
-#     idxer.set_up_stopwords("resources/ttds_2023_english_stop_words.txt")
-#     db = pd.read_csv("first1000.csv")
+if __name__ == "__main__":
+    idxer = Indexer()
+    idxer.set_up_stopwords("resources/ttds_2023_english_stop_words.txt")
+    db = pd.read_csv("first1000.csv")
     
-#     #get me just the values in index for the most numerous word
-#     #time this operation
-#     atimer = timer.Timer("Indexed 1 in {:.4f}s")
-#     atimer.start()
-#     idxer.indexing(db,0)
-#     print(idxer.get_index().loc[idxer.get_index()['word'] == 'heaven'])
-#     atimer.stop()
-#     btimer = timer.Timer("Indexed 2 in {:.4f}s")
-#     btimer.start()
-#     idxer.indexing2(0, db)
+    #get me just the values in index for the most numerous word
+    #time this operation
+    atimer = timer.Timer("Indexed 1 in {:.4f}s")
+    atimer.start()
+    idxer.indexing(0, db)
+    df1 = idxer.get_index()
+    print(df1)
+    atimer.stop()
+    btimer = timer.Timer("Indexed 2 in {:.4f}s")
+    btimer.start()
+    idxer.indexing2(0, db)
+    df2 = idxer.get_index()
+    btimer.stop()
+    print(df2)
 
-
-
-
-#     print(idxer.get_index().loc[idxer.get_index()['word'] == 'heaven'])
-#     btimer.stop()
+    
 
 
 
