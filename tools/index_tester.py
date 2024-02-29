@@ -1,13 +1,14 @@
 import pickle
 import pandas as pd
 from indexer import Indexer
-from tools.retrieval_2 import Retrieval
+from retrieval_2 import Retrieval
 import time
 
 #Task 1: create a function that returns a dataframe of the first 1000 documents in a dataset
 def firstThousand(dataset_file):
     first1000 = pd.read_csv(dataset_file, nrows=1000)
-    return first1000
+    second1000 = pd.read_csv(dataset_file, skiprows=1000, nrows=1000)
+    return first1000, second1000
        
 #Task 2: create a function that takes the sorted index and adds them to an index.txt
 
@@ -36,7 +37,13 @@ def get_index(word, index_path): #path is now a .pkl file
     
 #code to test the functions
 if __name__ == "__main__":
-    dataset = "dataset/all-the-news-2-1.csv"
+    dataset = "../tools/dataset/all-the-news-2-1.csv"
+    dataset, dataset2 = firstThousand(dataset)
+    print(dataset.head())
+    print(dataset2.head())
+    #write in the same dataset folder
+    dataset.to_csv("first1000.csv", index=True)
+    
     start_time = time.time()
     idxer = Indexer()
     end_time = time.time()

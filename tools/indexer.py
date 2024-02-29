@@ -7,14 +7,16 @@ import numpy as np
 
 
 class Indexer:
+    
     def __init__(self) -> None:
         self.stemmer = PorterStemmer()
         self.stopwords = set()
+        index_data = {}
         pass
-
     def set_up_stopwords(self, filepath):
         with open(filepath) as stopFile:
             self.stopwords = set(stopFile.read().splitlines())
+    
 
 
     def preprocessing(self, line, stopping=True, stemming=True):
@@ -33,60 +35,50 @@ class Indexer:
         return ' '.join(filtered_lines).rstrip()
     
 
-    def indexing(self, filepath,format='pkl'):
-        news = pd.read_csv(filepath,quotechar='"')
+    def indexing(self, database, offset):
+        self.index_data = {}
+        doc_no = offset
         
-        news = news.dropna(subset=['article'])
-        N = len(news)
-        index_data = {}  
-    # {
-    #     word: {
-    #         'df': int, occurences in the corpus
-    #         'indexes': {
-    #             doc_no: {
-    #                 'positions': [int],
-    #                 'tf':int, occurences in the document
-    #                 'tfidf': float
-    #             }
-    #         }
-    #     }
-    # }
-        for doc_no, doc in news.iterrows():
-            text = doc["article"]
+        for row in database.itertuples():
+            doc_no += 1
+            #row is in a df object. concat the title and article as a string
+            title = str(row.title) if row.title is not None else ""
+            article = str(row.article) if row.article is not None else ""
+            text = title+' '+article
             text = self.preprocessing(text)
-            seen = set()
             for position,word in enumerate(text.split(), start=1):
-                if word not in index_data:
-                    index_data[word] = {'df': 0, 'indexes': {}}
-                if word not in seen:
-                    index_data[word]['df'] += 1
-                    seen.add(word)
-                if doc_no not in index_data[word]['indexes']:
-                    index_data[word]['indexes'][doc_no] = {}
-                    index_data[word]['indexes'][doc_no]['positions'] = []
-                    index_data[word]['indexes'][doc_no]['tf'] = 0   
-                index_data[word]['indexes'][doc_no]['positions'].append(position)
-                index_data[word]['indexes'][doc_no]['tf'] += 1
-        self.tfidf(index_data, N)
-        if format == 'txt':
-            self.output_txt('index_tfidf.txt', index_data)
-        if format == 'pkl':
-            self.output_pickle('index_tfidf.pkl', index_data)
-        if format == 'dbs':
-            self.output_database(index_data)
+                if word not in self.index_data:
+                    self.index_data[word] = {}
+                if doc_no not in self.index_data[word]:
+                    self.index_data[word][doc_no] = []   
+                self.index_data[word][doc_no].append(position)
+        return "Indexing complete"
+    
+    def indexing_aao(self, database, offset):
+        doc_no = offset
+        for row in database:
+            doc_no += 1
+            text = row["title"]+' '+row["article"]
+            text = self.preprocessing(text)
+            for position,word in enumerate(text.split(), start=1):
+                if word not in self.index_data:
+                    self.index_data[word] = {}
+                if doc_no not in self.index_data[word]:
+                    self.index_data[word][doc_no] = []   
+                self.index_data[word][doc_no].append(position)
+        return "Indexing complete"
+    
 
-        
+    def get_index(self):
+        return self.index_data
+                
 
-    def tfidf(self, index_data, N):
-        for word in index_data:
-            for doc in index_data[word]['indexes']:
-                tf = 1 + np.log10(index_data[word]['indexes'][doc]['tf'])
-                idf = np.log10(N/index_data[word]['df'])
-                index_data[word]['indexes'][doc]['tfidf'] = tf * idf
+
+
     
     
-    def output_pickle(self, filepath, index_data):
-        sorted_postings = dict(sorted(index_data.items()))
+    def output_pickle(self, filepath):
+        sorted_postings = dict(sorted(self.index_data.items()))
         with open(filepath, 'wb') as outFile:
             try:
                 pickle.dump(sorted_postings, outFile, protocol=pickle.HIGHEST_PROTOCOL)
@@ -94,6 +86,7 @@ class Indexer:
                 print(e)
             else:
                 print("Indexing complete")
+                
     def output_txt(self, filepath, index_data):
         sorted_postings = dict(sorted(index_data.items()))
         with open(filepath, 'w') as outFile:
@@ -102,62 +95,10 @@ class Indexer:
                 for doc in index_data[word]["indexes"]:
                     outFile.write(f' {doc}:{index_data[word]["indexes"][doc]["positions"]}\n')
             print("Indexing complete")
-
-    def output_database(self, index_data):
-        #create word table, document table and word in document table
-        #using SQLite3 for now
-        sorted_postings = dict(sorted(index_data.items()))
-        conn = sqlite3.connect('words.db')
-        cur = conn.cursor()
-        cur.execute('''CREATE TABLE IF NOT EXISTS Words
-               (word_id INTEGER PRIMARY KEY, word TEXT UNIQUE, df INTEGER)''')
-        cur.execute('''CREATE TABLE IF NOT EXISTS Documents
-                    (doc_id INTEGER PRIMARY KEY, doc_no INTEGER UNIQUE )''')
-        cur.execute('''CREATE TABLE IF NOT EXISTS WordInDoc
-                    (word_id INTEGER, doc_id INTEGER, tf INTEGER, tfidf REAL, positions TEXT)''')
-        conn.commit()
-        for word in         sorted_postings.keys() :
-            cur.execute("INSERT OR IGNORE INTO Words (word, df) VALUES (?,?)",(word, sorted_postings[word]['df']))
-            for doc in index_data[word]['indexes']:
-                cur.execute("INSERT OR IGNORE INTO Documents (doc_no) VALUES (?)",(doc,))
-                cur.execute("SELECT word_id FROM Words WHERE word = ?",(word,))
-                word_id = cur.fetchone()[0]
-                cur.execute("SELECT doc_id FROM Documents WHERE doc_no = ?",(doc,))
-                doc_id = cur.fetchone()[0]
-                cur.execute("INSERT INTO WordInDoc (word_id, doc_id, tf, tfidf, positions) VALUES (?,?,?,?,?)",(word_id, doc_id, index_data[word]['indexes'][doc]['tf'], index_data[word]['indexes'][doc]['tfidf'], str(index_data[word]['indexes'][doc]['positions'])))
-        
-        #save the database
-        conn.commit()
-        conn.close()
-
-        print("Indexing complete")
+        outFile.close()
 
 
 
 
-    def add_to_pickle(self, filepath, ):
-        #this function does not work yet
-        news=pd.read_csv(filepath,quotechar='"')
-        news = news.dropna(subset=['article'])
-        
-        with open('index_tfidf.pkl', 'rb') as f:
-            index_data = pickle.load(f)
-        
-        for doc_no, doc in news.iterrows():
-            text = doc["article"]
-            text = self.preprocessing(text)
-            seen = set()
-            for position,word in enumerate(text.split(), start=1):
-                if word not in index_data:
-                    index_data[word] = {'df': 0, 'indexes': {}}
-                if word not in seen:
-                    index_data[word]['df'] += 1
-                    seen.add(word)
-                if doc_no not in index_data[word]['indexes']:
-                    index_data[word]['indexes'][doc_no] = {}
-                    index_data[word]['indexes'][doc_no]['positions'] = []
-                    index_data[word]['indexes'][doc_no]['tf'] = 0   
-                index_data[word]['indexes'][doc_no]['positions'].append(position)
-                index_data[word]['indexes'][doc_no]['tf'] += 1
-        #HOW THE F*** WOULD WE DO THE TFIDF CSV's DONT STORE METADATA AAAA
-        self.output_pickle(filepath, index_data)
+
+

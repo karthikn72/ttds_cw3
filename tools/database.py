@@ -276,5 +276,5 @@ class Database:
                 return
             else:
                 print("Invalid input. Please enter 'y' or 'n'.")
-        
-        
+                
+                
