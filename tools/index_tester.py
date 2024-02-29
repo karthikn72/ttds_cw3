@@ -37,45 +37,45 @@ def get_index(word, index_path): #path is now a .pkl file
     
 #code to test the functions
 if __name__ == "__main__":
-    dataset = "../tools/dataset/all-the-news-2-1.csv"
+    dataset = "dataset/all-the-news-2-1.csv"
     dataset, dataset2 = firstThousand(dataset)
     print(dataset.head())
     print(dataset2.head())
     #write in the same dataset folder
     dataset.to_csv("first1000.csv", index=True)
     
-    start_time = time.time()
-    idxer = Indexer()
-    end_time = time.time()
-    print(f"Time taken to initialise idxer: {end_time - start_time:.10f} seconds")
-    start_time = time.time()
-    idxer.set_up_stopwords("../tools/resources/ttds_2023_english_stop_words.txt")
-    end_time = time.time()
-    print(f"Time taken to set up stopwords: {end_time - start_time:.10f} seconds")
-    start_time = time.time()
-    idxer.indexing("../tools/first1000.csv") #change
-    end_time = time.time()
-    print(f"Time taken to index the first 1000 documents using Indexer: {end_time - start_time:.10f} seconds")
-    # testing time for just opening pkl file
-    start_time = time.time()
-    with open('index_tfidf.pkl', 'rb') as f:
-        new = pickle.load(f)
-    end_time = time.time()
-    print(f"Time taken to unpickle the pickle: {end_time - start_time:.10f} seconds")
+    # start_time = time.time()
+    # idxer = Indexer()
+    # end_time = time.time()
+    # print(f"Time taken to initialise idxer: {end_time - start_time:.10f} seconds")
+    # start_time = time.time()
+    # idxer.set_up_stopwords("../tools/resources/ttds_2023_english_stop_words.txt")
+    # end_time = time.time()
+    # print(f"Time taken to set up stopwords: {end_time - start_time:.10f} seconds")
+    # start_time = time.time()
+    # idxer.indexing("../tools/first1000.csv") #change
+    # end_time = time.time()
+    # print(f"Time taken to index the first 1000 documents using Indexer: {end_time - start_time:.10f} seconds")
+    # # testing time for just opening pkl file
+    # start_time = time.time()
+    # with open('index_tfidf.pkl', 'rb') as f:
+    #     new = pickle.load(f)
+    # end_time = time.time()
+    # print(f"Time taken to unpickle the pickle: {end_time - start_time:.10f} seconds")
 
-    #retrieval tests
-    start_time = time.time()
-    ret = Retrieval()  
-    end_time = time.time()
-    print(f"Time taken to initialise retrieval: {end_time - start_time:.10f} seconds") 
-    start_time = time.time()
-    design=ret.get_index('design')
-    end_time = time.time()
-    print(f"Time taken to get index for 'design': {end_time - start_time:.10f} seconds")
-    start_time = time.time()
-    ret.get_query_score("against all logic")
-    end_time = time.time()
-    print(f"Time taken to get tfidf for 'against all logic': {end_time - start_time:.10f} seconds")    #this is not correct 
+    # #retrieval tests
+    # start_time = time.time()
+    # ret = Retrieval()  
+    # end_time = time.time()
+    # print(f"Time taken to initialise retrieval: {end_time - start_time:.10f} seconds") 
+    # start_time = time.time()
+    # design=ret.get_index('design')
+    # end_time = time.time()
+    # print(f"Time taken to get index for 'design': {end_time - start_time:.10f} seconds")
+    # start_time = time.time()
+    # ret.get_query_score("against all logic")
+    # end_time = time.time()
+    # print(f"Time taken to get tfidf for 'against all logic': {end_time - start_time:.10f} seconds")    #this is not correct 
 # Time taken to initialise idxer: 1.3113021850585938e-05 seconds
 # Time taken to set up stopwords: 0.00033783912658691406 seconds
 # Time taken to index the first 1000 documents using Indexer: 6.981287956237793 seconds
