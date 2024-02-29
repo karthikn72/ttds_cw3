@@ -58,29 +58,6 @@ def get_document_snippet(article):
         snippet = ' '.join(article_words)
     return snippet
 
-# def get_document_info(docid):
-#     doc = first_1k_docs.iloc[docid]
-#     title = doc['title']
-#     snippet = get_document_snippet(doc['article'])
-#     author = doc['author']
-#     url = doc['url']
-#     section = doc['section']
-#     date = doc['date']
-#     publication = doc['publication']
-#     return title, snippet, author, url, section, date, publication
-
-# def format_result(id, title, snippet, author, url, section, date, publication):
-#     return {
-#         'id': id,
-#         'title': title,
-#         'snippet': get_document_snippet(snippet),
-#         'author': author,
-#         'url': url,
-#         'section': section,
-#         'date': date,
-#         'publication': publication
-#     }
-
 #for applying functions to some data (eg get snippet of article)
 def format_results(results_df):
     results_df = results_df.fillna('')
@@ -133,29 +110,29 @@ def get_results():
     query_terms = query_terms1 + query_terms2
     print(f'query_terms: {query_terms}')
 
-    # try:
-    # scores = r.ranked_retrieval(query_terms)
-    scores = r.score(query_terms)
-    docids = [score[0] for score in scores]
+    try:
+        # scores = r.ranked_retrieval(query_terms)
+        scores = r.score(query_terms)
+        docids = [score[0] for score in scores]
 
-    print(f'docids: {docids}')
+        print(f'docids: {docids}')
 
-    #get results
-    # for docid in docids:
-    #     title, snippet, author, url, section, date, publication = get_document_info(docid)
-    #     results.append(format_result(docid, title, snippet, author, url, section, date, publication))
-    
-    #get results from database
-    results_df = db.get_articles(article_ids=docids)
-    print(f'results_df: {results_df}')
+        #get results
+        # for docid in docids:
+        #     title, snippet, author, url, section, date, publication = get_document_info(docid)
+        #     results.append(format_result(docid, title, snippet, author, url, section, date, publication))
+        
+        #get results from database
+        results_df = db.get_articles(article_ids=docids)
+        print(f'results_df: {results_df}')
 
-    #format results df to get snippet and replace nan values
-    results_df = format_results(results_df)
-    
-    filter_options = get_filter_options(results_df)
+        #format results df to get snippet and replace nan values
+        results_df = format_results(results_df)
+        
+        filter_options = get_filter_options(results_df)
 
-    # except KeyError:
-    #     return jsonify({'status': 404, 'message': "The term does not exist in the index."}), 404
+    except KeyError:
+        return jsonify({'status': 404, 'message': "The term does not exist in the index."}), 404
 
     end_time = time.time()  #end timing
     retrieval_time = end_time - start_time  #to calculate retrieval time
