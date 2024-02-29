@@ -2,6 +2,8 @@ import re
 from nltk.stem import PorterStemmer
 import os
 
+from spellchecker import SpellChecker
+
 MODULE_DIR = os.path.dirname(os.path.realpath(__file__))
 
 DEFAULT_STOPWORD_FILE = os.path.join(MODULE_DIR, 'resources', 'ttds_2023_english_stop_words.txt')
@@ -56,48 +58,59 @@ class QueryTokenizer(Tokenizer):
                  tokenize_re=DEFAULT_TOKENIZE_RULE):
         Tokenizer.__init__(self, case_fold, stop, stop_file, stem, tokenize_re)
 
-    # Tokenize queries
-    def tok_query(self, query):
-        window_size = 0
-        query_tokens = []
-        bool_op = None
+    def tokenize(self, query):
+        parts = re.split(" +(AND|OR) +", query)
 
-        window_re = r'\#(\d+)\(([a-zA-Z0-9, "]+)\)'
-        
-        if re.search(window_re, query):
-            print("Window search")
-            [(win_size, q)] = re.findall(window_re, query)
-            window_size = int(win_size)
-            [q1, q2] = q.split(',')
-            query_tokens = [(1, self.tokenize(q1)), (1, self.tokenize(q2))]
-        
-        elif " AND " in query:
-            print("AND Search")
-            bool_op = "and"
-            print(query.split("AND"))
-            for q in [x.strip() for x in query.split(" AND ")]:
-                print(q)
-                flag = 1
-                if "NOT " in q:
-                    flag = 0
-                    q = ' '.join(q.split()[1:])
-                query_tokens.append((flag, self.tokenize(q)))
-        
-        elif " OR " in query:
-            print("OR Search")
-            bool_op = "or"
-            for q in [x.strip() for x in query.split(" OR ")]:
-                flag = 1
-                if "NOT " in q:
-                    flag = 0
-                    q = ' '.join(q.split()[1:])
-                query_tokens.append((flag, self.tokenize(q)))
-        else:
-            query_tokens.append((1, self.tokenize(query)))
-            
-        q_dict = {"query_tokens":query_tokens, "window_size":window_size, "bool_op":bool_op} 
+        term1 = parts[0] if len(parts)>=1 else []
+        operator = parts[1] if len(parts)>=2 else None
+        term2 = parts[2] if len(parts)>=3 else []
 
-        return q_dict
+        term1_tokens = []
+        if term1:
+            if term1[0]=='"' and term1[-1]=='"':
+                term1_tokens = [" "] + self.__tokenize_term(term1[1:-1])
+            else:
+                term1_tokens = self.__tokenize_term(term1)
+ 
+        term2_tokens = []
+        if term2:
+            if term2[0]=='"' and term2[-1]=='"':
+                term2_tokens = [" "] + self.__tokenize_term(term2[1:-1])
+            else:
+                term2_tokens = self.__tokenize_term(term2)
 
+        return term1_tokens, term2_tokens, operator 
+    
+    def __tokenize_term(self, term):
+        tokens = re.findall(pattern=self.tokenize_re, string=term)
+        if self.case_fold:
+            tokens = list(map(lambda x: x.lower(), tokens))
+        if self.stop:
+            tokens = self.stopping(tokens)
+        tokens = self.__query_spell_correction(tokens)
+        if self.stem:
+            tokens = self.normalise(tokens)
+        return tokens
+    
+    def __query_spell_correction(self, tokens):
+        spell = SpellChecker()
+        # find those words that may be misspelled
+        misspelled_list = list(spell.unknown(tokens))
+        # To keep the query order
+        misspelled = [word for word in tokens if word in misspelled_list]
+        new_query = []
+        for word in tokens:
+            if word not in misspelled:
+                new_query.append(word)
+            else:
+                curr = spell.correction(word)
+                new_query.append(curr)
+        return new_query
+ 
     def __repr__(self):
         return f"QueryTokenizer(case_fold={self.case_fold}, stop={self.stop}, stop_file={self.stop_file}, stem={self.stem}, tokenize_re={self.tokenize_re})"
+
+
+if __name__ == '__main__':
+    q = QueryTokenizer()
+    print(q.tokenize('"middle east" AND pece')) # ([' ', 'middl', 'east'], ['piec'], 'AND')
