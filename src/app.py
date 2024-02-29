@@ -4,28 +4,25 @@ from flask_cors import CORS
 import pandas as pd
 import time
 
-#this is to access tools folder outside of src where this app.py is located:
-import os
-import sys
-# Get the absolute path of the directory containing this script
-script_dir = os.path.dirname(os.path.abspath(__file__))
-# Get the absolute path of the parent directory
-parent_dir = os.path.dirname(script_dir)
-# Add the parent directory to the system path
-sys.path.insert(0, parent_dir)
+# #this is to access tools folder outside of src where this app.py is located:
+# import os
+# import sys
+# # Get the absolute path of the directory containing this script
+# script_dir = os.path.dirname(os.path.abspath(__file__))
+# # Get the absolute path of the parent directory
+# parent_dir = os.path.dirname(script_dir)
+# # Add the parent directory to the system path
+# sys.path.insert(0, parent_dir)
 
-from tools.tokenizer import QueryTokenizer
-from tools.retrieval import TFIDFScoring
-import tools.index_manager as im
-# from tools.database import Database
+from tools.retrieval_2 import Retrieval
+from tools.database import Database
 
 app = Flask(__name__)
-CORS(app, origins=["http://localhost:3000"])
+CORS(app, origins=["https://sentinews-413116.nw.r.appspot.com/"])
 
-# Load data
-dataset_file = 'data/all-the-news-2-1.csv'
-first_1k_docs = im.firstThousand(dataset_file)
-
+# Load database
+dataset_file = 'data/first-1000-rows.csv'
+first_1k_docs = pd.read_csv('data/first-1000-rows.csv')
 # db = Database()
 
 #get first 50 words of article
@@ -61,20 +58,17 @@ def format_result(id, title, snippet, author, url, section, date, publication):
     }
     
 def get_filter_options(results):
-    #find earliest and oldest articles
-    results['date'] = pd.to_datetime(results['date'])
-    earliestArticleDate = results['date'].min()
-    latestArticleDate = results['date'].max()
-
     #get the unique values for each category
     filter_options = {
         'authors': [author for author in results['author'].unique().tolist() if author != ""],
         'publications': [publication for publication in results['publication'].unique().tolist() if publication != ""],
-        'sections': [section for section in results['section'].unique().tolist() if section != ""],
-        'earliestArticleDate': earliestArticleDate,
-        'latestArticleDate': latestArticleDate
+        'sections': [section for section in results['section'].unique().tolist() if section != ""]
     }
     return filter_options
+
+@app.route('/')
+def index():
+    return "This is the Sentinews API.."
 
 #get results based on search query
 @app.route('/search', methods=['GET'])
@@ -112,17 +106,15 @@ def get_results():
     print(multi_params)
     print(single_params)
 
-    #tokenize query
-    qtokenizer = QueryTokenizer()
-    query_tokens = qtokenizer.tokenize(search_query)
-
     #use score function to get docids
-    r = TFIDFScoring(index_filename='../tools/index.txt')
+    r = Retrieval(index_filename='tools/index_tfidf.pkl')
     results = []
 
     try:
-        scores = r.score(query_tokens)
+        scores = r.get_query_score(search_query)
         docids = [score[0] for score in scores]
+
+        print(f'docids: {docids}')
 
         #get results
         for docid in docids:

@@ -30,6 +30,7 @@ timer = "*"
 psycopg2-binary = "*"
 pg8000 = "*"
 mysql-connector-python = "*"
+gunicorn = "*"
 
 [dev-packages]
 
