@@ -3,7 +3,10 @@ from database import Database
 from indexer import Indexer
 from timer import Timer
 
-def build_index(test=False, fresh=True, limit=1000):
+def build_index(test=False, limit=1000):
+    #prompt in terminal to ask if the user wants to reset the index
+    fresh = input("Do you want to reset the index? (y/n) ")
+    fresh = True if fresh.lower() == 'y' else False
     db = Database()
     N = db.num_articles()
     if fresh:
