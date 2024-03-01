@@ -174,13 +174,16 @@ class Database:
 
     def add_words(self, index, conn):
         self.words = db.Table('words', self.metadata, autoload_with=self.engine)
-        word_list = [{'word':word} for word in index['word']]
-        query = insert(self.words).values(word_list).on_conflict_do_nothing()
+        word_list = [{'word':word} for word in index['word'].unique()]
+        chunk_size = 1000
+        for i in range(0, len(word_list), chunk_size):
+            chunk = word_list[i:i+chunk_size]
+            query = insert(self.words).values(word_list).on_conflict_do_nothing()
         t = timer.Timer('Inserted words in {:.4f}s')
         t.start()
         conn.execute(query)
         t.stop()
-        query = db.text(f'SELECT * FROM words WHERE word in {tuple(index.word)};')
+        query = db.text(f'SELECT * FROM words WHERE word in {tuple(index.word.unique())};')
         t = timer.Timer('Got words in {:.4f}s')
         t.start()
         word_df = pd.read_sql(query, conn)
@@ -190,14 +193,17 @@ class Database:
     def add_index(self, index, conn):
         t = timer.Timer('Built index in {:.4f}s')
         t.start()
-        index.to_sql('index_table', conn, if_exists='append', index=False, dtype={'article_id':INTEGER, 'positions':ARRAY(INTEGER), 'word_id':INTEGER}, method='multi')
+        index.to_sql('index_table', conn, if_exists='append', chunksize=10000, index=False, dtype={'article_id':INTEGER, 'positions':ARRAY(INTEGER), 'word_id':INTEGER}, method='multi')
         t.stop()
 
     def calc_tfidf(self, conn):
         sql_path = "tools/databases/calc_tfidf.sql"
         with open(sql_path) as file:
             query = db.text(file.read())
+            t = timer.Timer('Calculated tfidf in {:.4f}s')
+            t.start()
             conn.execute(query)
+            t.stop()
 
     def build_index(self, index: pd.DataFrame):
         with self.engine.connect() as db_conn:
@@ -206,7 +212,6 @@ class Database:
                 index = pd.merge(index, word_df, on='word', how='left')
                 index = index.drop('word', axis=1)
                 self.add_index(index=index, conn=db_conn)
-                self.calc_tfidf(conn=db_conn)
                 db_conn.commit()
                 return "Index build successful"
             except Exception as e:

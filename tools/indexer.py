@@ -59,8 +59,8 @@ class Indexer:
                 index_list.append((word, doc, positions))
         
         #turn the list of tuples into a dataframe
-        self.index_df = pd.DataFrame(index_list, columns=['word', 'doc', 'postings'])
-        self.index_df = self.index_df.sort_values(by=['word', 'doc']).reset_index(drop=True)
+        self.index_df = pd.DataFrame(index_list, columns=['word', 'article_id', 'positions'])
+        # self.index_df = self.index_df.sort_values(by=['word', 'article_id']).reset_index(drop=True)
         return "Indexing complete"
     
     def indexing2(self, offset, database):
