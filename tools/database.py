@@ -111,6 +111,16 @@ class Database:
                 query = db.text(f'SELECT COUNT(*) FROM articles where article_id = {val}')
                 result = db_conn.execute(query).fetchone()
         t.stop()
+
+    def get_publications(self):
+        query = db.text('SELECT publication_name FROM publications')
+        with self.engine.connect() as db_conn:
+            t = timer.Timer("Got results in {:.4f}s")
+            t.start()
+            # publications = pd.read_sql(query, db_conn, index_col=None)
+            res = db_conn.execute(query)
+            t.stop()
+            return res.fetchall()
     
     def get_articles(self,
                      article_ids: list[int] = None,
@@ -164,7 +174,8 @@ class Database:
         with self.engine.connect() as db_conn:
             t = timer.Timer("Got results in {:.4f}s")
             t.start()
-            article_df = pd.read_sql(query, db_conn)
+            article_df = db_conn.execute(query)
+            article_df = pd.DataFrame(article_df)
             t.stop()
             return article_df
 

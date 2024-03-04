@@ -13,6 +13,11 @@ if __name__ == "__main__":
                         sections=['Sports News'],
                         publications=['TechCrunch', 'Reuters'])
     print(res)
+    # res = db.get_articles(article_ids=random.sample(range(10 ** 6), 10000))
+    # print(res)
+    # res = db.get_publications()
+    # print(pd.DataFrame(res))
+
     # print(res.author_names)
     # print(res.iloc[0].author_names[0].type())
     # print(db.get_author_names([111185, 166245]))
