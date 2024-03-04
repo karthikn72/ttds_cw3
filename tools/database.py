@@ -117,10 +117,10 @@ class Database:
         with self.engine.connect() as db_conn:
             t = timer.Timer("Got results in {:.4f}s")
             t.start()
-            # publications = pd.read_sql(query, db_conn, index_col=None)
-            res = db_conn.execute(query)
+            results = db_conn.execute(query)
+            pubs = [row.publication_name for row in results]
             t.stop()
-            return res.fetchall()
+            return pubs
     
     def get_articles(self,
                      article_ids: list[int] = None,

@@ -5,22 +5,24 @@ import pandas as pd
 
 if __name__ == "__main__":
     db = database.Database()
-    # print(db.num_random_articles())
-    # print(db.num_articles())
+
+    # Using all arguments when getting articles
     res = db.get_articles(article_ids=[12, 19, 21, 36, 43, 46, 66, 75, 79, 87],  
                         start_date=datetime(2016, 1, 1), 
                         end_date=datetime(2019, 3, 28),
                         sections=['Sports News'],
                         publications=['TechCrunch', 'Reuters'])
     print(res)
+
+    # # Retrieving 10,000 random articles
     # res = db.get_articles(article_ids=random.sample(range(10 ** 6), 10000))
     # print(res)
-    # res = db.get_publications()
-    # print(pd.DataFrame(res))
 
-    # print(res.author_names)
-    # print(res.iloc[0].author_names[0].type())
-    # print(db.get_author_names([111185, 166245]))
+    # Retrieve publication_names
+    res = db.get_publications()
+    print(res)
+
+    # # Old DB indexing
     # db.reset_index()
     # db.build_index({
     #     'yeet1':{
@@ -32,6 +34,8 @@ if __name__ == "__main__":
     #         2:{'positions':[23,452]}
     #         }
     #     })
+
+    # # DB Indexing
     # index_dict = {
     #     'word':['yeet1', 'yeet1', 'yeet2', 'yeet2'],
     #     'article_id': [3,7,9,2],
