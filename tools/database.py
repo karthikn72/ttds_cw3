@@ -1,6 +1,7 @@
 import os
 import timer
 import random
+from datetime import datetime
 import pandas as pd
 from tqdm import tqdm
 
@@ -113,50 +114,54 @@ class Database:
     
     def get_articles(self,
                      article_ids: list[int] = None,
+                     start_date: datetime = None,
+                     end_date: datetime = None,
+                     sections: list[str] = None,
+                     publications: list[str] = None,
                      limit=10,
                      offset=0,
                      ):
+        base_query_1 = f'SELECT articles.article_id, upload_date, auth.author_names, title, article, url, s.section_name, p.publication_name \
+                                    FROM articles \
+                                    LEFT JOIN \
+                                        sections s \
+                                    ON \
+                                        articles.section_id = s.section_id \
+                                    LEFT JOIN \
+                                        (SELECT a.article_id, ARRAY_AGG(authors.author_name) as author_names \
+                                         FROM'
+        base_query_2 = f'(SELECT article_id, unnest(author_ids) as author_id FROM articles) a'
+        base_query_3 = f'LEFT JOIN authors ON a.author_id = authors.author_id GROUP BY a.article_id) auth \
+                                    ON \
+                                        articles.article_id = auth.article_id \
+                                    LEFT JOIN \
+                                        publications p \
+                                    ON \
+                                        articles.publication_id = p.publication_id'
+        add_queries = []
+        if article_ids:
+            article_ids = tuple(article_ids) if len(article_ids) > 1 else f'({article_ids[0]})'
+            base_query_2 = f'(SELECT article_id, unnest(author_ids) as author_id FROM articles WHERE articles.article_id IN {article_ids}) a'
+            add_queries.append(f'articles.article_id IN {article_ids}')
+        if sections:
+            sections = tuple(sections) if len(sections) > 1 else f'(\'{sections[0]}\')'
+            add_queries.append(f's.section_name IN {sections}')
+        if publications:
+            publications = tuple(publications) if len(publications) > 1 else f'(\'{publications[0]}\')'
+            add_queries.append(f'p.publication_name IN {publications}')
+        if start_date:
+            start_date = start_date.strftime('%Y-%m-%d %H:%M:%S')
+            add_queries.append(f"upload_date >= TIMESTAMP \'{start_date}\'")
+        if end_date:
+            end_date = end_date.strftime('%Y-%m-%d %H:%M:%S')
+            add_queries.append(f"upload_date <= TIMESTAMP \'{end_date}\'")
+        base_query = ' '.join([base_query_1, base_query_2, base_query_3]) + ' '
+        if add_queries:
+            base_query += 'WHERE ' + ' AND '.join(add_queries) + ' '
+        
+        base_query += f'LIMIT {limit} OFFSET {offset}'
+        query = db.text(base_query)
         with self.engine.connect() as db_conn:
-            if article_ids:
-                query = db.text(f'SELECT articles.article_id, upload_date, auth.author_names, title, article, url, s.section_name, p.publication_name \
-                                    FROM articles \
-                                    LEFT JOIN \
-                                        sections s \
-                                    ON \
-                                        articles.section_id = s.section_id \
-                                    LEFT JOIN \
-                                        (SELECT a.article_id, ARRAY_AGG(authors.author_name) as author_names \
-                                         FROM \
-                                            (SELECT article_id, unnest(author_ids) as author_id FROM articles WHERE articles.article_id IN {tuple(article_ids)}) a \
-                                         LEFT JOIN authors ON a.author_id = authors.author_id GROUP BY a.article_id) auth \
-                                    ON \
-                                        articles.article_id = auth.article_id \
-                                    LEFT JOIN \
-                                        publications p \
-                                    ON \
-                                        articles.publication_id = p.publication_id \
-                                    WHERE \
-                                        articles.article_id IN {tuple(article_ids)} \
-                                    LIMIT {limit} OFFSET {offset}')
-            else:
-                query = db.text(f'SELECT articles.article_id, upload_date, auth.author_names, title, article, url, s.section_name, p.publication_name \
-                                    FROM articles \
-                                    LEFT JOIN \
-                                        sections s \
-                                    ON \
-                                        articles.section_id = s.section_id \
-                                    LEFT JOIN \
-                                        (SELECT a.article_id, ARRAY_AGG(authors.author_name) as author_names \
-                                         FROM \
-                                            (SELECT article_id, unnest(author_ids) as author_id FROM articles LIMIT {limit} OFFSET {offset}) a \
-                                         LEFT JOIN authors ON a.author_id = authors.author_id GROUP BY a.article_id) auth \
-                                    ON \
-                                        articles.article_id = auth.article_id \
-                                    LEFT JOIN \
-                                        publications p \
-                                    ON \
-                                        articles.publication_id = p.publication_id \
-                                    LIMIT {limit} OFFSET {offset}')
             t = timer.Timer("Got results in {:.4f}s")
             t.start()
             article_df = pd.read_sql(query, db_conn)
