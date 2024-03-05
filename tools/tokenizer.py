@@ -58,7 +58,24 @@ class QueryTokenizer(Tokenizer):
                  tokenize_re=DEFAULT_TOKENIZE_RULE):
         Tokenizer.__init__(self, case_fold, stop, stop_file, stem, tokenize_re)
 
-    def tokenize(self, query):
+    def tokenize_free_form(self, query):
+        open_quote = -1
+        start = 0
+        processed = []
+        for i in range(len(query)):
+            if query[i]=='"':
+                if open_quote==-1:
+                    processed = processed + self.__tokenize_raw_query(query[start:i])
+                    open_quote=i+1
+                    start = i+1
+                else:
+                    processed.append(self.__tokenize_raw_query(query[open_quote:i]))
+                    open_quote = -1
+                    start = i+1
+        processed = processed + self.__tokenize_raw_query(query[start:])
+        return processed
+    
+    def tokenize_bool(self, query):
         parts = re.split(" +(AND|OR) +", query)
 
         term1 = parts[0] if len(parts)>=1 else []
@@ -67,21 +84,18 @@ class QueryTokenizer(Tokenizer):
 
         term1_tokens = []
         if term1:
-            if term1[0]=='"' and term1[-1]=='"':
-                term1_tokens = [" "] + self.__tokenize_term(term1[1:-1])
-            else:
-                term1_tokens = self.__tokenize_term(term1)
+            term1_tokens = self.tokenize_free_form(term1)
  
         term2_tokens = []
         if term2:
-            if term2[0]=='"' and term2[-1]=='"':
-                term2_tokens = [" "] + self.__tokenize_term(term2[1:-1])
-            else:
-                term2_tokens = self.__tokenize_term(term2)
+            term2_tokens = self.tokenize_free_form(term2)
 
-        return term1_tokens, term2_tokens, operator 
+        return term1_tokens, term2_tokens, operator
     
-    def __tokenize_term(self, term):
+    def process_word(self, word):
+        return self.__tokenize_raw_query(word)[0]
+    
+    def __tokenize_raw_query(self, term):
         tokens = re.findall(pattern=self.tokenize_re, string=term)
         if self.case_fold:
             tokens = list(map(lambda x: x.lower(), tokens))
@@ -113,4 +127,5 @@ class QueryTokenizer(Tokenizer):
 
 if __name__ == '__main__':
     q = QueryTokenizer()
-    print(q.tokenize('"middle east" AND pece')) # ([' ', 'middl', 'east'], ['piec'], 'AND')
+    print(q.tokenize_bool('"middle east" AND pece')) # ([['middl', 'east']], ['piec'], 'AND')
+    # print(q.tokenize_free_form('story book "middle east" piece "man America hunting"'))
