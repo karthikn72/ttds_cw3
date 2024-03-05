@@ -5,4 +5,4 @@ tools/index copy.txt
 index/
 tools/index_tfidf.txt
 tools/words.db
-
+venv/
