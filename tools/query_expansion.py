@@ -8,24 +8,33 @@ from nltk.corpus import wordnet
 class QueryExpander:
     
     
-    nltk.download('wordnet')
     
     
-    nltk.download('average_perceptron_tagger')  
+    
+    
     def __init__(self):
-        self.expansion_query_terms = set()
+        
+        nltk.download('wordnet')
+        nltk.download('average_perceptron_tagger')  
 
-    def expand_query(self, query):
-        for word in query.split():
-            self.expansion_query_terms.add(word)
-            for syn in wordnet.synsets(word):
-                for lemma in syn.lemmas():
-                    self.expansion_query_terms.add(lemma.name())
-        return ' '.join(self.expansion_query_terms)
-    def expand_query2(self, untokenized_query):
+    def expand_query(self, untokenized_query):  #assumed format of this is that it is a query before it is normalized and stopped, and stemmed and returns a list of tokens with the full token at the start
+        def _get_wordnet_pos(tag:str) -> str:
+
+            if tag[1].startswith('J'):
+                return wordnet.ADJ
+            elif tag[1].startswith('N'):
+                return wordnet.NOUN
+            elif tag[1].startswith('R'):
+                return wordnet.ADV
+            elif tag[1].startswith('V'):
+                return wordnet.VERB
+            else: return ''
+        
         #this one assumes a non_tokenized query
-        tokenizer = Tokenizer(stem=False, stop=True)
-        query = tokenizer.tokenize(untokenized_query)
+        #detect if the query is a list or a string
+        if type(untokenized_query) == SyntaxWarning:
+            tokenizer = Tokenizer(stem=False, stop=True)
+            query = tokenizer.tokenize(untokenized_query)
         
         index =0
         synonyms = []
@@ -80,19 +89,6 @@ class QueryExpander:
             #TODO: FIGURE OUT HOW TO DEAL WITH DOUBLE-TRIPLE BARREL TERMS ???
         
 
-
-def _get_wordnet_pos(tag:str) -> str:
-
-    if tag[1].startswith('J'):
-        return wordnet.ADJ
-    elif tag[1].startswith('N'):
-        return wordnet.NOUN
-    elif tag[1].startswith('R'):
-        return wordnet.ADV
-    elif tag[1].startswith('V'):
-        return wordnet.VERB
-    else: return ''
-        
         
 
 if __name__ == '__main__':
