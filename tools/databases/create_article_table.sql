@@ -11,5 +11,8 @@ CREATE TABLE articles (
     article TEXT,
     url TEXT,
     section TEXT,
-    publication TEXT
+    publication TEXT,
+    positive FLOAT,
+    negative FLOAT,
+    neutral FLOAT
 );
