@@ -188,6 +188,24 @@ class Database:
             t.stop()
             return author_df
 
+    def update_sentiments(self, sentiments: pd.DataFrame):
+        query = db.text(f'UPDATE articles \
+                        SET positive = :positive, negative = :negative, neutral= :neutral \
+                        WHERE article_id = :article_id')
+        with self.engine.connect() as db_conn:
+            try:
+                t = timer.Timer("Updated sentiments in {:.4f}s")
+                t.start()
+                db_conn.execute(query, sentiments.to_dict(orient="records"))
+                db_conn.commit()
+                t.stop()
+                print("Updated sentiments!")
+            except Exception as e:
+                db_conn.rollback()
+                print("!!!!! CANCELLED SENTIMENT UPDATE !!!!!")
+                raise e
+
+
     def add_words(self, index, conn):
         self.words = db.Table('words', self.metadata, autoload_with=self.engine)
         word_list = [{'word':word} for word in index['word'].unique()]
@@ -276,6 +294,43 @@ class Database:
                 return result[0]
             else:
                 return 0
+
+    def reset_sections(self, conn = None):
+        while True:
+            confirm = input("Are you sure you want to reset the sections table? (y/n): ").lower()
+            if confirm == 'y':
+                if conn:
+                    query = db.text('DROP TABLE sections CASCADE')
+                    conn.execute(query)
+                    conn.commit()
+                    return  "Sections reset"
+                else:
+                    with self.engine.connect() as conn:
+                        query = db.text('DROP TABLE sections CASCADE')
+                        conn.execute(query)
+                        conn.commit()
+                        return  "Reset sections"
+            elif confirm == 'n':
+                return "Sections not reset"
+    
+    def reset_sentiments(self, conn = None):
+        while True:
+            confirm = input("Are you sure you want to reset the sentiments? (y/n): ").lower()
+            if confirm == 'y':
+                if conn:
+                    query = db.text('UPDATE articles SET positive = 0, negative = 0, neutral = 0')
+                    conn.execute(query)
+                    conn.commit()
+                    return  "Reset sentiments"
+                else:
+                    with self.engine.connect() as conn:
+                        query = db.text('UPDATE articles SET positive = 0, negative = 0, neutral = 0')
+                        conn.execute(query)
+                        conn.commit()
+                        return  "Reset sentiments"
+            elif confirm == 'n':
+                return "Sentiments not reset"
+
 
     def reset_index(self, words=True):
         sql_paths = ["tools/databases/create_index_table.sql"]

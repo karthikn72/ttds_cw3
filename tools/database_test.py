@@ -6,21 +6,29 @@ import pandas as pd
 if __name__ == "__main__":
     db = database.Database()
 
-    # Using all arguments when getting articles
-    res = db.get_articles(article_ids=[12, 19, 21, 36, 43, 46, 66, 75, 79, 87],  
-                        start_date=datetime(2016, 1, 1), 
-                        end_date=datetime(2019, 3, 28),
-                        sections=['Sports News'],
-                        publications=['TechCrunch', 'Reuters'])
-    print(res)
+    # # Using all arguments when getting articles
+    # res = db.get_articles(article_ids=[12, 19, 21, 36, 43, 46, 66, 75, 79, 87],  
+    #                     start_date=datetime(2016, 1, 1), 
+    #                     end_date=datetime(2019, 3, 28),
+    #                     sections=['Sports News'],
+    #                     publications=['TechCrunch', 'Reuters'])
+    # print(res)
 
     # # Retrieving 10,000 random articles
     # res = db.get_articles(article_ids=random.sample(range(10 ** 6), 10000))
     # print(res)
 
-    # Retrieve publication_names
-    res = db.get_publications()
-    print(res)
+    # # Retrieve publication_names
+    # res = db.get_publications()
+    # print(res)
+
+    senti_df = pd.DataFrame({
+        'article_id': [1, 2, 3],
+        'positive': [0.5, 0.7, 0.4],
+        'negative': [0.5, 0.3, 0.6],
+        'neutral' : [0.0, 0.2, 0.7]
+    })
+    db.update_sentiments(senti_df)
 
     # # Old DB indexing
     # db.reset_index()
