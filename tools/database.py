@@ -175,7 +175,6 @@ class Database:
         t.stop()
         return publication_df
     
-    
     def add_articles(self, articles: pd.DataFrame, test=True):
         with self.engine.connect() as db_conn:
             try:
@@ -195,16 +194,17 @@ class Database:
                 t = timer.Timer('Added articles in {:.4f}s')
                 t.start()
                 chunk_size = 10000
-
-                articles.drop(['imageURL'], axis=1).to_sql('articles', 
-                                                            db_conn, 
-                                                            if_exists='append', 
-                                                            chunksize=10000, 
-                                                            index=False, 
-                                                            dtype={'upload_date':TIMESTAMP,
-                                                                   'author_ids':ARRAY(INTEGER)
-                                                                   }, 
-                                                            method='multi')
+                if 'imageURL' in articles.columns:
+                    articles = articles.drop(['imageURL'], axis=1)
+                articles.to_sql('articles', 
+                                db_conn, 
+                                if_exists='append', 
+                                chunksize=10000, 
+                                index=False, 
+                                dtype={'upload_date':TIMESTAMP,
+                                        'author_ids':ARRAY(INTEGER)
+                                        }, 
+                                method='multi')
                 t.stop()
                 db_conn.commit()
                 return "Added articles successfully"
@@ -224,7 +224,7 @@ class Database:
                      limit=10,
                      offset=0,
                      ):
-        base_query_1 = f'SELECT articles.article_id, upload_date, auth.author_names, title, article, url, s.section_name, p.publication_name \
+        base_query_1 = f'SELECT articles.article_id, upload_date, auth.author_names, title, article, url, s.section_name, p.publication_name, positive, negative, neutral \
                                     FROM articles \
                                     LEFT JOIN \
                                         sections s \
@@ -233,8 +233,8 @@ class Database:
                                     LEFT JOIN \
                                         (SELECT a.article_id, ARRAY_AGG(authors.author_name) as author_names \
                                          FROM'
-        base_query_2 = f'(SELECT article_id, unnest(author_ids) as author_id FROM articles) a'
-        base_query_3 = f'LEFT JOIN authors ON a.author_id = authors.author_id GROUP BY a.article_id) auth \
+        base_query_2 =                      f'(SELECT article_id, unnest(author_ids) as author_id FROM articles) a'
+        base_query_3 =                      f'LEFT JOIN authors ON a.author_id = authors.author_id GROUP BY a.article_id) auth \
                                     ON \
                                         articles.article_id = auth.article_id \
                                     LEFT JOIN \
