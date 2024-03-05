@@ -101,17 +101,6 @@ class Database:
             else:
                 return 0
 
-    def num_random_articles(self):
-        conn_t = timer.Timer("Connected in {:.4f}s")
-        t = timer.Timer("Got count in {:.4f}s")
-        ls = random.sample(range(10**6), 10000)
-        t.start()
-        for val in tqdm(ls):
-            with self.engine.connect() as db_conn:
-                query = db.text(f'SELECT COUNT(*) FROM articles where article_id = {val}')
-                result = db_conn.execute(query).fetchone()
-        t.stop()
-
     def get_publications(self):
         query = db.text('SELECT publication_name FROM publications')
         with self.engine.connect() as db_conn:
@@ -133,7 +122,9 @@ class Database:
         t.start()
         conn.execute(query)
         t.stop()
-        query = db.text(f'SELECT author_id, author_name as author FROM authors WHERE author_name in {tuple(articles.author.unique())};')
+        authors = articles.author.dropna().unique()
+        authors = tuple(authors) if len(authors) > 1 else f'(\'{authors[0]}\')'
+        query = db.text(f'SELECT author_id, author_name as author FROM authors WHERE author_name in {authors};')
         t = timer.Timer('Got authors in {:.4f}s')
         t.start()
         author_df = conn.execute(query)
@@ -153,7 +144,9 @@ class Database:
         conn.execute(query)
         t.stop()
         if get_ids:
-            query = db.text(f'SELECT section_id, section_name as section FROM sections WHERE section_name in {tuple(articles.section.unique())};')
+            sections = articles.section.dropna().unique()
+            sections = tuple(sections) if len(sections) > 1 else f'(\'{sections[0]}\')'
+            query = db.text(f'SELECT section_id, section_name as section FROM sections WHERE section_name in {sections};')
             t = timer.Timer('Got sections in {:.4f}s')
             t.start()
             section_df = conn.execute(query)
@@ -172,7 +165,9 @@ class Database:
         t.start()
         conn.execute(query)
         t.stop()
-        query = db.text(f'SELECT publication_id, publication_name as publication FROM publications WHERE publication_name in {tuple(articles.publication.unique())};')
+        publications = articles.publication.dropna().unique()
+        publications = tuple(publications) if len(publications) > 1 else f'(\'{publications[0]}\')'
+        query = db.text(f'SELECT publication_id, publication_name as publication FROM publications WHERE publication_name in {publications};')
         t = timer.Timer('Got publications in {:.4f}s')
         t.start()
         publication_df = conn.execute(query)
@@ -181,7 +176,7 @@ class Database:
         return publication_df
     
     
-    def add_articles(self, articles: pd.DataFrame):
+    def add_articles(self, articles: pd.DataFrame, test=True):
         with self.engine.connect() as db_conn:
             try:
                 author_df = self.add_authors(articles=articles, conn=db_conn)
@@ -199,6 +194,8 @@ class Database:
                 
                 t = timer.Timer('Added articles in {:.4f}s')
                 t.start()
+                chunk_size = 10000
+
                 articles.drop(['imageURL'], axis=1).to_sql('articles', 
                                                             db_conn, 
                                                             if_exists='append', 
@@ -209,7 +206,6 @@ class Database:
                                                                    }, 
                                                             method='multi')
                 t.stop()
-                
                 db_conn.commit()
                 return "Added articles successfully"
             except Exception as e:
