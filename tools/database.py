@@ -385,10 +385,12 @@ class Database:
         conn_t.start()
         with self.engine.connect() as db_conn:
             conn_t.stop()
-            query = f"SELECT * FROM index_table WHERE word_id = (SELECT word_id FROM words WHERE word in {tuple(words)})"
+            words = tuple(words) if len(words) > 1 else f'(\'{words[0]}\')'
+            query = f"SELECT w.word, article_id, positions, tfidf FROM index_table, words w WHERE index_table.word_id = w.word_id AND w.word IN {tuple(words)}"
             t = timer.Timer("Got index in {:.4f}s")
             t.start()
-            index_df = pd.read_sql(query, db_conn)
+            index_df = db_conn.execute(db.text(query))
+            index_df = pd.DataFrame(index_df)
             t.stop()
             return index_df
 
