@@ -141,7 +141,7 @@ class Database:
         t.stop()
         return author_df
     
-    def add_sections(self, articles, conn):
+    def add_sections(self, articles, conn, get_ids=True):
         self.sections = db.Table('sections', self.metadata, autoload_with=self.engine)
         section_list = [{'section_name':section} for section in articles.section.unique()]
         chunk_size = 1000
@@ -152,13 +152,14 @@ class Database:
         t.start()
         conn.execute(query)
         t.stop()
-        query = db.text(f'SELECT section_id, section_name as section FROM sections WHERE section_name in {tuple(articles.section.unique())};')
-        t = timer.Timer('Got sections in {:.4f}s')
-        t.start()
-        section_df = conn.execute(query)
-        section_df = pd.DataFrame(section_df)
-        t.stop()
-        return section_df
+        if get_ids:
+            query = db.text(f'SELECT section_id, section_name as section FROM sections WHERE section_name in {tuple(articles.section.unique())};')
+            t = timer.Timer('Got sections in {:.4f}s')
+            t.start()
+            section_df = conn.execute(query)
+            section_df = pd.DataFrame(section_df)
+            t.stop()
+            return section_df
     
     def add_publications(self, articles, conn):
         self.publications = db.Table('publications', self.metadata, autoload_with=self.engine)
@@ -196,7 +197,7 @@ class Database:
                 articles = pd.merge(articles, publication_df, on='publication', how='left')
                 articles = articles.drop(['publication'], axis=1)
                 
-                t = timer.Timer('Built index in {:.4f}s')
+                t = timer.Timer('Added articles in {:.4f}s')
                 t.start()
                 articles.drop(['imageURL'], axis=1).to_sql('articles', 
                                                             db_conn, 
@@ -216,7 +217,6 @@ class Database:
                 print("!!!!! CANCELLED ADDING ARTICLES !!!!!")
                 raise e
         
-    
     def get_articles(self,
                      article_ids: list[int] = None,
                      start_date: datetime = None,
@@ -291,12 +291,14 @@ class Database:
             t.stop()
             return author_df
 
-    def update_sentiments(self, sentiments: pd.DataFrame):
+    def update_sentiments(self, sentiments: pd.DataFrame, reset_sentiments=False):
         query = db.text(f'UPDATE articles \
                         SET positive = :positive, negative = :negative, neutral= :neutral \
                         WHERE article_id = :article_id')
         with self.engine.connect() as db_conn:
             try:
+                if reset_sentiments:
+                    self.reset_sentiments(db_conn)
                 t = timer.Timer("Updated sentiments in {:.4f}s")
                 t.start()
                 db_conn.execute(query, sentiments.to_dict(orient="records"))
@@ -308,7 +310,25 @@ class Database:
                 print("!!!!! CANCELLED SENTIMENT UPDATE !!!!!")
                 raise e
 
-
+    def update_sections(self, section_df, reset_sections=False):
+        query = db.text(f'UPDATE articles SET section_id = s.section_id \
+                        FROM sections s \
+                        WHERE s.section_name = :section AND articles.article_id = :article_id')
+        with self.engine.connect() as db_conn:
+            try:
+                if reset_sections:
+                    self.reset_sections(db_conn)
+                self.add_sections(section_df, db_conn, get_ids=False)
+                t = timer.Timer("Updated sections in {:.4f}s")
+                t.start()
+                db_conn.execute(query, section_df.to_dict(orient="records"))
+                db_conn.commit()
+                t.stop()
+            except Exception as e:
+                db_conn.rollback()
+                print("!!!!! CANCELLED SECTION UPDATE !!!!!")
+                raise e
+            
     def add_words(self, index, conn):
         self.words = db.Table('words', self.metadata, autoload_with=self.engine)
         word_list = [{'word':word} for word in index['word'].unique()]
@@ -414,13 +434,13 @@ class Database:
                     query = db.text('DROP TABLE sections CASCADE')
                     conn.execute(query)
                     conn.commit()
-                    return  "Sections reset"
+                    return "Sections reset"
                 else:
                     with self.engine.connect() as conn:
                         query = db.text('DROP TABLE sections CASCADE')
                         conn.execute(query)
                         conn.commit()
-                        return  "Reset sections"
+                        return "Reset sections"
             elif confirm == 'n':
                 return "Sections not reset"
     
@@ -432,13 +452,13 @@ class Database:
                     query = db.text('UPDATE articles SET positive = 0, negative = 0, neutral = 0')
                     conn.execute(query)
                     conn.commit()
-                    return  "Reset sentiments"
+                    return "Reset sentiments"
                 else:
                     with self.engine.connect() as conn:
                         query = db.text('UPDATE articles SET positive = 0, negative = 0, neutral = 0')
                         conn.execute(query)
                         conn.commit()
-                        return  "Reset sentiments"
+                        return "Reset sentiments"
             elif confirm == 'n':
                 return "Sentiments not reset"
 

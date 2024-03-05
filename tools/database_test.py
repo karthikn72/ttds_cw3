@@ -30,6 +30,12 @@ if __name__ == "__main__":
     })
     db.update_sentiments(senti_df)
 
+    section_df = pd.DataFrame({
+        'article_id': [7, 9],
+        'section': ['Fintech', 'Fintech']
+    })
+    db.update_sections(section_df)
+
     # # Old DB indexing
     # db.reset_index()
     # db.build_index({
