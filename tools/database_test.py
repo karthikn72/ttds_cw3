@@ -47,7 +47,7 @@ if __name__ == "__main__":
 
     # db.add_articles(test_article)
     # print(db.get_articles(start_date=time_now))
-    db.get_index_by_words(['middl', 'east'])
+    print(db.get_index_by_words(['middl', 'east']))
 
     # # Old DB indexing
     # db.reset_index()
