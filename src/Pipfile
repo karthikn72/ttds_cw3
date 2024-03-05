@@ -33,6 +33,8 @@ mysql-connector-python = "*"
 gunicorn = "*"
 spellchecker = "*"
 google = "*"
+pyspellchecker = "*"
+google-cloud = "*"
 
 [dev-packages]
 

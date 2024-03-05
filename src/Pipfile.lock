@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "400cb59c2848f249c48ad6fa7b9053cade45197720e1b53c4e1844780d72fb5a"
+            "sha256": "482379594c2cbc1671e12c6d825eb6ec7c9bd13e4f63b2acadf9f52907576e1a"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -91,6 +91,14 @@
             ],
             "index": "pypi",
             "version": "==3.0.0"
+        },
+        "google-cloud": {
+            "hashes": [
+                "sha256:01430187cf56df10a9ba775dd547393185d4b40741db0ea5889301f8e7a9d5d3",
+                "sha256:fb1ab7b0548fe44b3d538041f0a374505b7f990d448a935ea36649c5ccab5acf"
+            ],
+            "index": "pypi",
+            "version": "==0.34.0"
         },
         "greenlet": {
             "hashes": [
@@ -501,6 +509,15 @@
             "index": "pypi",
             "markers": "python_version >= '3.7'",
             "version": "==2.9.9"
+        },
+        "pyspellchecker": {
+            "hashes": [
+                "sha256:3478ca8484d1c2db0c93d12b3c986cd17958c69f47b3ed7ef4d3f4201e591776",
+                "sha256:d91e9e1064793ae1ee8e71b06ca40eeb8e5923437c54291a8e041b447792b640"
+            ],
+            "index": "pypi",
+            "markers": "python_version >= '3.7'",
+            "version": "==0.8.1"
         },
         "python-dateutil": {
             "hashes": [

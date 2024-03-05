@@ -2,7 +2,7 @@ import re
 from nltk.stem import PorterStemmer
 import os
 
-from spellchecker import SpellChecker
+# from spellchecker import SpellChecker
 
 MODULE_DIR = os.path.dirname(os.path.realpath(__file__))
 
@@ -87,25 +87,25 @@ class QueryTokenizer(Tokenizer):
             tokens = list(map(lambda x: x.lower(), tokens))
         if self.stop:
             tokens = self.stopping(tokens)
-        tokens = self.__query_spell_correction(tokens)
+        # tokens = self.__query_spell_correction(tokens)
         if self.stem:
             tokens = self.normalise(tokens)
         return tokens
     
-    def __query_spell_correction(self, tokens):
-        spell = SpellChecker()
-        # find those words that may be misspelled
-        misspelled_list = list(spell.unknown(tokens))
-        # To keep the query order
-        misspelled = [word for word in tokens if word in misspelled_list]
-        new_query = []
-        for word in tokens:
-            if word not in misspelled:
-                new_query.append(word)
-            else:
-                curr = spell.correction(word)
-                new_query.append(curr)
-        return new_query
+    # def __query_spell_correction(self, tokens):
+    #     spell = SpellChecker()
+    #     # find those words that may be misspelled
+    #     misspelled_list = list(spell.unknown(tokens))
+    #     # To keep the query order
+    #     misspelled = [word for word in tokens if word in misspelled_list]
+    #     new_query = []
+    #     for word in tokens:
+    #         if word not in misspelled:
+    #             new_query.append(word)
+    #         else:
+    #             curr = spell.correction(word)
+    #             new_query.append(curr)
+    #     return new_query
  
     def __repr__(self):
         return f"QueryTokenizer(case_fold={self.case_fold}, stop={self.stop}, stop_file={self.stop_file}, stem={self.stem}, tokenize_re={self.tokenize_re})"
