@@ -22,19 +22,31 @@ if __name__ == "__main__":
     # res = db.get_publications()
     # print(res)
 
-    senti_df = pd.DataFrame({
-        'article_id': [1, 2, 3],
-        'positive': [0.5, 0.7, 0.4],
-        'negative': [0.5, 0.3, 0.6],
-        'neutral' : [0.0, 0.2, 0.7]
-    })
-    db.update_sentiments(senti_df)
+    # senti_df = pd.DataFrame({
+    #     'article_id': [1, 2, 3],
+    #     'positive': [0.5, 0.7, 0.4],
+    #     'negative': [0.5, 0.3, 0.6],
+    #     'neutral' : [0.0, 0.2, 0.7]
+    # })
+    # db.update_sentiments(senti_df)
 
-    section_df = pd.DataFrame({
-        'article_id': [7, 9],
-        'section': ['Fintech', 'Fintech']
+    # section_df = pd.DataFrame({
+    #     'article_id': [7, 9],
+    #     'section': ['Fintech', 'Fintech']
+    # })
+    # db.update_sections(section_df)
+    time_now = datetime.now()
+    test_article = pd.DataFrame({
+        'author': ['Jane Wilkinson', 'Dan Burn'],
+        'title' : ['Test title 1', 'Title test 2'],
+        'article' : ['A fireman has fallen in Lego city!', 'Yeetus deletus'],
+        'url' : ['google.com', 'bing.com'],
+        'section' : [None, 'World News'],
+        'publication': ['CNN', 'BBC']
     })
-    db.update_sections(section_df)
+
+    db.add_articles(test_article)
+    print(db.get_articles(start_date=time_now))
 
     # # Old DB indexing
     # db.reset_index()
