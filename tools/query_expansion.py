@@ -194,184 +194,6 @@ class QueryExpander:
                 output.remove(token)
 
         return output
-    def expand_query_res(self, query):  #assumed format of this is that it is a query before it is normalized and stopped, and stemmed and returns a list of tokens with the full token at the start
-        #this version of the query expander uses word pos tagging to get the synonyms of the words in the query
-        def _get_wordnet_pos(tag:str) -> str:
-            if tag[1].startswith('J'):
-                return wordnet.ADJ
-            elif tag[1].startswith('N'):
-                return wordnet.NOUN
-            elif tag[1].startswith('R'):
-                return wordnet.ADV
-            elif tag[1].startswith('V'):
-                return wordnet.VERB
-            else: return ''
-        #this one assumes a non_tokenized query
-        #detect if the query is a list or a string
-        index =0
-        synonyms = []
-        pos1 = nltk.pos_tag(query)
-        for word in query:
-            pos = _get_wordnet_pos(pos1[index])
-            s = wordnet.synsets(word)
-            for syn in s:
-                if str(syn.pos()) == str(pos):
-                    
-                    for lemma in syn.lemmas():
-                        similarity_score = wordnet.res_similarity(s[0], syn,)
-                        #print(similarity_score, lemma.name(), s[0].name())
-                        if (lemma.name() not in synonyms) and (similarity_score > 0.5):
-                            synonyms.append(lemma.name())
-            index+=1
-       
-        clean_synonyms = []
-        for word in synonyms:
-            if '_' in word:
-               
-                
-                clean_synonyms.append(word.lower().replace('_',' '))
-            else:
-                clean_synonyms.append(word.lower())
-
-        synonyms = clean_synonyms
-        output = []
-        count = 2 #maximum number of synonyms to add per word
-        #this can be removed depending on what we want the query expander to give back
-        
-        output += query
-        for synonym in synonyms:
-            this_count = count# avoids triple barreled words (why?)
-            for word in synonym.split():
-                if this_count > 0 and word not in output:
-                    output.append(word)
-                    this_count -= 1
-        output = ' '.join(output)
-        output = output.split()
-        #remove original tokens from the list of synonyms
-        for token in query:
-            if token in output:
-                output.remove(token)
-
-        return output
-    def expand_query_jcn(self, query):  #assumed format of this is that it is a query before it is normalized and stopped, and stemmed and returns a list of tokens with the full token at the start
-        #this version of the query expander uses word pos tagging to get the synonyms of the words in the query
-        def _get_wordnet_pos(tag:str) -> str:
-            if tag[1].startswith('J'):
-                return wordnet.ADJ
-            elif tag[1].startswith('N'):
-                return wordnet.NOUN
-            elif tag[1].startswith('R'):
-                return wordnet.ADV
-            elif tag[1].startswith('V'):
-                return wordnet.VERB
-            else: return ''
-        #this one assumes a non_tokenized query
-        #detect if the query is a list or a string
-        index =0
-        synonyms = []
-        pos1 = nltk.pos_tag(query)
-        for word in query:
-            pos = _get_wordnet_pos(pos1[index])
-            s = wordnet.synsets(word)
-            for syn in s:
-                if str(syn.pos()) == str(pos):
-                    
-                    for lemma in syn.lemmas():
-                        similarity_score = wordnet.jcn_similarity(s[0], syn,)
-                        #print(similarity_score, lemma.name(), s[0].name())
-                        if (lemma.name() not in synonyms) and (similarity_score > 0.5):
-                            synonyms.append(lemma.name())
-            index+=1
-       
-        clean_synonyms = []
-        for word in synonyms:
-            if '_' in word:
-               
-                
-                clean_synonyms.append(word.lower().replace('_',' '))
-            else:
-                clean_synonyms.append(word.lower())
-
-        synonyms = clean_synonyms
-        output = []
-        count = 2 #maximum number of synonyms to add per word
-        #this can be removed depending on what we want the query expander to give back
-        
-        output += query
-        for synonym in synonyms:
-            this_count = count# avoids triple barreled words (why?)
-            for word in synonym.split():
-                if this_count > 0 and word not in output:
-                    output.append(word)
-                    this_count -= 1
-        output = ' '.join(output)
-        output = output.split()
-        #remove original tokens from the list of synonyms
-        for token in query:
-            if token in output:
-                output.remove(token)
-
-        return output
-    def expand_query_lin(self, query):  #assumed format of this is that it is a query before it is normalized and stopped, and stemmed and returns a list of tokens with the full token at the start
-        #this version of the query expander uses word pos tagging to get the synonyms of the words in the query
-        def _get_wordnet_pos(tag:str) -> str:
-            if tag[1].startswith('J'):
-                return wordnet.ADJ
-            elif tag[1].startswith('N'):
-                return wordnet.NOUN
-            elif tag[1].startswith('R'):
-                return wordnet.ADV
-            elif tag[1].startswith('V'):
-                return wordnet.VERB
-            else: return ''
-        #this one assumes a non_tokenized query
-        #detect if the query is a list or a string
-        index =0
-        synonyms = []
-        pos1 = nltk.pos_tag(query)
-        for word in query:
-            pos = _get_wordnet_pos(pos1[index])
-            s = wordnet.synsets(word)
-            for syn in s:
-                if str(syn.pos()) == str(pos):
-                    
-                    for lemma in syn.lemmas():
-                        similarity_score = wordnet.lin_similarity(s[0], syn,)
-                        #print(similarity_score, lemma.name(), s[0].name())
-                        if (lemma.name() not in synonyms) and (similarity_score > 0.5):
-                            synonyms.append(lemma.name())
-            index+=1
-       
-        clean_synonyms = []
-        for word in synonyms:
-            if '_' in word:
-               
-                
-                clean_synonyms.append(word.lower().replace('_',' '))
-            else:
-                clean_synonyms.append(word.lower())
-
-        synonyms = clean_synonyms
-        output = []
-        count = 2 #maximum number of synonyms to add per word
-        #this can be removed depending on what we want the query expander to give back
-        
-        output += query
-        for synonym in synonyms:
-            this_count = count# avoids triple barreled words (why?)
-            for word in synonym.split():
-                if this_count > 0 and word not in output:
-                    output.append(word)
-                    this_count -= 1
-        output = ' '.join(output)
-        output = output.split()
-        #remove original tokens from the list of synonyms
-        for token in query:
-            if token in output:
-                output.remove(token)
-
-        return output
-
 
 if __name__ == '__main__':
 
@@ -389,18 +211,47 @@ if __name__ == '__main__':
     timer3.start()
     print(qe.expand_query_wup(query))
     timer3.stop()
-    timer4 = timer.Timer()
-    timer4.start()
-    print(qe.expand_query_res(query))
-    timer4.stop()
-    timer5 = timer.Timer()
-    timer5.start()
-    print(qe.expand_query_jcn(query))
-    timer5.stop()
-    timer6 = timer.Timer()
-    timer6.start()
-    print(qe.expand_query_lin(query))
-    timer6.stop()
+    query2 = ['python', 'programming', 'language']
+    timer1.start()
+    print(qe.expand_query_path(query2))
+    timer1.stop()
+    timer2.start()
+    print(qe.expand_query_lch(query2))
+    timer2.stop()
+    timer3.start()
+    print(qe.expand_query_wup(query2))
+    timer3.stop()
+    query3 = ['data', 'analysis', 'tools']
+    timer1.start()
+    print(qe.expand_query_path(query3))
+    timer1.stop()
+    timer2.start()
+    print(qe.expand_query_lch(query3))
+    timer2.stop()
+    timer3.start()
+    print(qe.expand_query_wup(query3))
+    timer3.stop()
+    query4 = ['machine', 'learning', 'algorithms']
+    timer1.start()
+    print(qe.expand_query_path(query4))
+    timer1.stop()
+    timer2.start()
+    print(qe.expand_query_lch(query4))
+    timer2.stop()
+    timer3.start()
+    print(qe.expand_query_wup(query4))
+    timer3.stop()
+    query5 = ['web', 'development', 'frameworks']
+    timer1.start()
+    print(qe.expand_query_path(query5))
+    timer1.stop()
+    timer2.start()
+    print(qe.expand_query_lch(query5))
+    timer2.stop()
+    timer3.start()
+    print(qe.expand_query_wup(query5))
+    timer3.stop()
+    
 
     # print(qe.expand_query(query))
     # #['call', 'denver', 'direct', 'phone', 'telephone', 'cry', 'outcry', 'yell', 'shout', 'vociferation', 'claim', 'birdcall', 'birdsong', 'song', 'margin', 'option', 'mile', 'high', 'city', 'capital'] all syns
