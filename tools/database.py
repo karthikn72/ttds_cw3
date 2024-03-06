@@ -221,6 +221,7 @@ class Database:
                      add_end_date: datetime = None,
                      sections: list[str] = None,
                      publications: list[str] = None,
+                     sort_by_date = None,
                      limit=10,
                      offset=0,
                      ):
@@ -265,13 +266,21 @@ class Database:
             add_end_date = add_end_date.strftime('%Y-%m-%d %H:%M:%S')
             add_queries.append(f"added_date <= TIMESTAMP \'{add_end_date}\'")
         base_query = ' '.join([base_query_1, base_query_2, base_query_3]) + ' '
+
         if add_queries:
             base_query += 'WHERE ' + ' AND '.join(add_queries) + ' '
-        
+
+        if sort_by_date == 'asc':
+            base_query += 'ORDER BY upload_date ASC '
+        elif sort_by_date == 'desc':
+            base_query += 'ORDER BY upload_date DESC '
         base_query += f'LIMIT {limit} OFFSET {offset}'
         query = db.text(base_query)
         with self.engine.connect() as db_conn:
             t = timer.Timer("Got results in {:.4f}s")
+            # test = db_conn.execute(db.text('explain ' + base_query))
+            # for line in test.fetchall():
+            #     print(line)
             t.start()
             article_df = db_conn.execute(query)
             article_df = pd.DataFrame(article_df)
