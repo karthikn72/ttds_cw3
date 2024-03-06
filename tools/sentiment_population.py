@@ -22,7 +22,11 @@ def populate_sentiment(limit=1000):
     for i in range(0, N + 1, limit):
         articles = db.get_articles(limit=limit,offset=i)
         for idx, row in articles.iterrows():
-            sent = predictor.predict(row['title'] + '\n' + row['article'])
+            title = row['title'] if row['title'] != None else ''
+            article = row['article'] if row['article'] != None else ''
+            content = title + '\n' + article
+
+            sent = predictor.predict(content)
             new_row = {
                 'article_id': row['article_id'],
                 'positive': sent['Positive'],
