@@ -19,34 +19,73 @@ db = Database()
 
 #process parameters
 def process_params(request_args):
+    required_params = ["type", "q", "page", "request"]
     multi_params = ["sentiment", "author", "publication", "category"]
-    single_params = ["type", "sortBy", "q", "page", "request"] 
-    exception_params = ["from", "to"] #these are date params
+    date_params = ["from", "to"] #these are date params
 
     processed_params = {}
 
+    #make sure required params are present and valid
+    for param in required_params:
+        value = request_args.get(param)
+        if value == None:
+            return {'error': {'status': 400, 'message': f"{param} parameter is required"}}
+        elif value == "" or not re.match(r'^[a-zA-Z0-9_()," ]*$', value):
+            return {'error': {'status': 400, 'message': f'Invalid value: {value} for required parameter: {param}'}}
+        processed_params[param] = value.lower()
+
+    #check if type is valid
+    if processed_params['type'] not in ['phrase', 'boolean', 'proximity', 'freeform', 'publication']:
+        return {'error': {'status': 400, 'message': f"Invalid value for type parameter"}}
+    
+    #check if the query is for each type of search is valid
+    if processed_params['type'] == 'proximity':
+        if not re.match("^\(\s*[a-zA-Z0-9_]+\s*,\s*[a-zA-Z0-9_]+\s*,\s*[0-9]+\s*\)$", processed_params['q']):
+            return {'error': {'status': 400, 'message': f"Invalid value: {processed_params['q']} for search type: {processed_params['type']}"}}
+    elif processed_params['type'] == 'boolean':
+        if not re.match("^\(\s*[a-zA-Z0-9_]+\s*,\s*(AND|OR)\s*,\s*[a-zA-Z0-9_]+\s*\)$", processed_params['q']):
+            return {'error': {'status': 400, 'message': f"Invalid value: {processed_params['q']} for search type: {processed_params['type']}"}}
+    elif processed_params['type'] == 'phrase':
+        if not re.match(r'^"\s*[a-zA-Z0-9_]+\s*"$', processed_params['q']):
+            return {'error': {'status': 400, 'message': f"Invalid value: {processed_params['q']} for search type: {processed_params['type']}"}}
+    else: #general case
+        if value == "" or not re.match(r'^[a-zA-Z0-9_ "]*$', value):
+            return {'error': {'status': 400, 'message': f"Invalid value: {processed_params['q']} for search type: {processed_params['type']}"}}
+
+    #check if page is valid
+    if not processed_params['page'].isdigit():
+        return {'error': {'status': 400, 'message': f"Invalid value for page parameter"}}
+
+    #check if request is valid
+    if processed_params['request'] not in ['articles', 'meta']:
+        return {'error': {'status': 400, 'message': f"Invalid value for request parameter"}}
+
+    #check if there is a sortBy, if not set sortBy to None
+    if 'sortBy' in request_args:
+        processed_params['sortBy'] = request_args.get('sortBy').lower()
+        if processed_params['sortBy'] not in ['relevance', 'ascendingdate', 'descendingdate']:
+            return {'error': {'status': 400, 'message': f"Invalid value for sortBy parameter"}}
+    else:
+        processed_params['sortBy'] = None
+
     # Retrieve the arguments for each parameter and check if they are not empty and alphanumeric
     for param in multi_params:
-        values = sorted(request_args.getlist(param))
-        for value in values:
-            if value == "" or not re.match("^[a-zA-Z0-9_ ]*$", value):
-                return {'error': {'status': 400, 'message': f'Invalid value: {value} for parameter: {param}'}}
-        processed_params[param] = [value.lower() for value in values] #group up values by param (multi values for each param)
-
-    for param in single_params:
         values = request_args.getlist(param)
+        processed_values = []
         for value in values:
-            if param == 'q' and processed_params.get('type').lower() in ['proximity', 'boolean']:
-                if value == "" or not re.match("^[a-zA-Z0-9_(), ]*$", value):
-                    return {'error': {'status': 400, 'message': f'Invalid value: {value} for parameter: {param}'}}
-            elif param == 'q' and processed_params.get('type').lower() == 'phrase':
-                if value == "" or not re.match(r'^[a-zA-Z0-9_ "]*$', value):
-                    return {'error': {'status': 400, 'message': f'Invalid value: {value} for parameter: {param}'}}
+            if ',' in value:
+                split_values = value.split(',')
+                for split_value in split_values:
+                    if split_value == "" or not re.match("^[a-zA-Z0-9_ ]*$", split_value):
+                        return {'error': {'status': 400, 'message': f'Invalid value: {split_value} for parameter: {param}'}}
+                    processed_values.append(split_value.lower())
             else:
                 if value == "" or not re.match("^[a-zA-Z0-9_ ]*$", value):
                     return {'error': {'status': 400, 'message': f'Invalid value: {value} for parameter: {param}'}}
-        processed_params[param] = values[0].lower() if values else None #get first value if exists (single value for each param)
-    for param in exception_params:
+                processed_values.append(value.lower())
+        processed_params[param] = processed_values
+
+    for param in date_params:
         value = request_args.get(param)
         if value:
             try:
@@ -157,13 +196,6 @@ def get_results():
     
     print(f"Processed params: {processed_params}")
     
-    if processed_params == None: #if any of the parameters are invalid
-        return jsonify({'status': 400, 'message': "Invalid value for parameters"}), 400
-    if processed_params['type'] == None:
-        return jsonify({'status': 400, 'message': "Type parameter is required"}), 400
-    if processed_params['q'] == None:
-        return jsonify({'status': 400, 'message': "Query parameter is required"}), 400
-
     #get search query
     search_query = processed_params['q']
     
