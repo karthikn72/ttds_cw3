@@ -91,22 +91,3 @@ class T5FineTuner(pl.LightningModule):
         ):
         optimizer = optimizer.optimizer
         optimizer.step(closure=optimizer_closure)
-
-    # def train_dataloader(self):
-    #     train_dataset = get_dataset(tokenizer=self.tokenizer, type_path="train", args=self.hparams)
-    #     dataloader = DataLoader(train_dataset, batch_size=self.hparams.train_batch_size, drop_last=True, num_workers=0, sampler=self.sampler)
-    #     t_total = (
-    #         (len(dataloader.dataset) // (self.hparams.train_batch_size * max(1, self.hparams.n_gpu)))
-    #         // self.hparams.gradient_accumulation_steps
-    #         * float(self.hparams.num_train_epochs)
-    #     )
-    #     scheduler = get_linear_schedule_with_warmup(
-    #         self.opt, num_warmup_steps=self.hparams.warmup_steps, num_training_steps=t_total
-    #     )
-
-    #     self.lr_scheduler = scheduler
-    #     return dataloader
-
-    # def val_dataloader(self):
-    #     val_dataset = get_dataset(tokenizer=self.tokenizer, type_path="val", args=self.hparams)
-    #     return DataLoader(val_dataset, batch_size=self.hparams.eval_batch_size, num_workers=0)

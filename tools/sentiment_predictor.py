@@ -70,33 +70,4 @@ class SentimentPredictor():
         for id in [17141, 3617, 24972]:
             sentiments[self.tokenizer.decode(id)] = probabilities[0, id].item()
 
-        print(sentiments)
-
         return sentiments
-    
-
-if __name__ == "__main__":
-    sentP = SentimentPredictor("predicted_class")
-    sentP.load_model()
-    sentP.predict("""Puerto Rico relaxes COVID curfew, reopens beaches but bans alcohol in certain public spaces
-SAN JUAN, Puerto Rico – Puerto Rico’s new governor announced Tuesday that he will reopen beaches, marinas and pools, eliminate a Sunday lockdown and shorten a curfew that has been in place since the pandemic began to control the number of COVID-19 cases.
-
-Gov. Pedro Pierluisi stressed alcohol will be banned at beaches and other places, and that social distancing is required between people who are not family members, with no large groups allowed to gather. Meanwhile, the new curfew will run from 11 p.m. to 5 a.m. and face masks remain mandatory.
-
-The new measures took effect Thursday and will be in place for 30 days but can be amended any time if there’s a spike in cases.
-
-The announcement was cheered by many across Puerto Rico who have long sought to visit the U.S. territory’s beaches that had remained off limits to all except those doing exercise.
-
-He also ordered Puerto Rico’s Treasury Department to use federal funds and create economic incentives to help tens of thousands of small and medium businesses hard hit by strict closures that have been in place since March.
-
-The U.S. territory of 3.2 million people has reported more than 127,000 confirmed and probable cases and more than 1,200 confirmed deaths.
-
-Pierluisi kept in place other measures implemented by former Gov. Wanda Vázquez, including the closure of bars and a limited capacity at gyms, restaurants and other places.
-
-“Our goal has to be to be able to return to a new normal,” Pierluisi said. “We have to keep taking preventive measures in the meantime.”
-
-The announcement comes the same day that health experts began receiving the second COVID-19 vaccine dose, with some 60,000 people vaccinated so far and an expected 90,000 by the end of the week. Those scheduled to be vaccinated soon include teachers, with Pierluisi saying in-person classes could resume by March on a gradual scale.
-
-Carlos Mellado, Puerto Rico’s designated health secretary, said he expects 40,000 vaccine doses to arrive on the island every week.
-
-Meanwhile, officials reported an outbreak at a prison in the northern city of Bayamon, with more than 140 inmates testing positive. Nearly all are asymptomatic, but two have been hospitalized. Officials said the outbreak began when a corrections officer who had COVID-19 came into contact with five inmates.""")
