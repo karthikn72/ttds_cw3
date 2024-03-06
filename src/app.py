@@ -5,14 +5,14 @@ import pandas as pd
 import time
 import threading
 from datetime import datetime
+import os
 
-from tools.tokenizer import Tokenizer, QueryTokenizer
-from tools.retrieval import TFIDFScoring
+from tools.tokenizer import QueryTokenizer
 from tools.retrieval_2 import Retrieval
 from tools.database import Database
 
 app = Flask(__name__)
-CORS(app, origins=["https://sentinews-413116.nw.r.appspot.com/"])
+CORS(app, origins=["https://sentinews-413116.nw.r.appspot.com/", "http://localhost:3000"])
 
 # Load database
 db = Database()
@@ -20,7 +20,7 @@ db = Database()
 #process parameters
 def process_params(request_args):
     multi_params = ["sentiment", "author", "publication", "category"]
-    single_params = ["query", "sortBy", "type", "page", "request"] 
+    single_params = ["type", "sortBy", "q", "page", "request"] 
     exception_params = ["from", "to"] #these are date params
 
     processed_params = {}
@@ -31,15 +31,21 @@ def process_params(request_args):
         for value in values:
             if value == "" or not re.match("^[a-zA-Z0-9_ ]*$", value):
                 return {'error': {'status': 400, 'message': f'Invalid value: {value} for parameter: {param}'}}
-        processed_params[param] = values #group up values by param (multi values for each param)
+        processed_params[param] = [value.lower() for value in values] #group up values by param (multi values for each param)
 
     for param in single_params:
         values = request_args.getlist(param)
         for value in values:
-            if value == "" or not re.match("^[a-zA-Z0-9_ ]*$", value):
-                return {'error': {'status': 400, 'message': f'Invalid value: {value} for parameter: {param}'}}
-        processed_params[param] = values[0] if values else None #get first value if exists (single value for each param)
-
+            if param == 'q' and processed_params.get('type').lower() in ['proximity', 'boolean']:
+                if value == "" or not re.match("^[a-zA-Z0-9_(), ]*$", value):
+                    return {'error': {'status': 400, 'message': f'Invalid value: {value} for parameter: {param}'}}
+            elif param == 'q' and processed_params.get('type').lower() == 'phrase':
+                if value == "" or not re.match(r'^[a-zA-Z0-9_ "]*$', value):
+                    return {'error': {'status': 400, 'message': f'Invalid value: {value} for parameter: {param}'}}
+            else:
+                if value == "" or not re.match("^[a-zA-Z0-9_ ]*$", value):
+                    return {'error': {'status': 400, 'message': f'Invalid value: {value} for parameter: {param}'}}
+        processed_params[param] = values[0].lower() if values else None #get first value if exists (single value for each param)
     for param in exception_params:
         value = request_args.get(param)
         if value:
@@ -50,12 +56,6 @@ def process_params(request_args):
         processed_params[param] = value
 
     return processed_params
-
-def preprocess_query(search_query):
-    query_tokenizer = QueryTokenizer()
-    qt1, qt2, operator = query_tokenizer.tokenize(search_query) #ignore operator for now
-    print(f'query_terms: {qt1}, {qt2}, {operator}')
-    return qt1, qt2, operator
 
 #get first 50 words of article
 def get_document_snippet(article):
@@ -90,13 +90,9 @@ def index():
 
 @app.route('/unique_publications')
 def get_unique_publications():
-    start_time = time.time()
     publications = db.get_publications()
-    end_time = time.time()
-    retrieval_time = end_time - start_time
     return jsonify({
         'status': 200,
-        'retrieval_time': retrieval_time,
         'unique_publications': publications
         })
 
@@ -159,54 +155,85 @@ def get_results():
     if 'error' in processed_params:
         return jsonify(processed_params['error']), processed_params['error']['status']
     
+    print(f"Processed params: {processed_params}")
+    
     if processed_params == None: #if any of the parameters are invalid
         return jsonify({'status': 400, 'message': "Invalid value for parameters"}), 400
     if processed_params['type'] == None:
         return jsonify({'status': 400, 'message': "Type parameter is required"}), 400
-    if processed_params['query'] == None:
+    if processed_params['q'] == None:
         return jsonify({'status': 400, 'message': "Query parameter is required"}), 400
 
-    #get search query and convert to lowercase
-    search_query = processed_params['query'].lower()
-    qt1, qt2, op = preprocess_query(search_query)
-
+    #get search query
+    search_query = processed_params['q']
+    
+    #initialize tokenizer and retrieval
+    q = QueryTokenizer()
     r = Retrieval(index_filename='tools/index_tfidf.pkl')
-    r_old = TFIDFScoring(index_filename='tools/index.txt')
 
     #identify the type of search 
     #notes: paging not implemented yet as index is too small
-    results = []
     search_type = processed_params['type']
     if search_type == "phrase":
-        terms = qt1 + qt2
-        results = list(r.__phrase_search(terms))
-        print(f'phrase search results: {results}')
+        terms = q.tokenize_free_form(search_query)
+        try:
+            results = r.free_form_retrieval(terms)
+        except KeyError as e:
+            return jsonify({'status': 404, 'message': "Could not find term in index"}), 404
+        results = sorted(results.items(), key=lambda x: x[1], reverse=True)
+        results = [x[0] for x in results]
+        results_df = db.get_articles(article_ids=results, limit=100)
+
     elif search_type == "boolean":
-        results = r.bool_search(qt1, qt2, op)
-        print(f'boolean search results: {results}')
+        parts = search_query.strip("()").split(",")
+        t1, op, t2 = [part.strip() for part in parts]
+        formatted = f"{t1} {op} {t2}"
+        t1, t2, op = q.tokenize_bool(formatted)
+        try:
+            results = r.bool_retrieval(t1, t2, op)
+        except KeyError as e:
+            return jsonify({'status': 404, 'message': "Could not find term in index"}), 404
+        results = sorted(results.items(), key=lambda x: x[1], reverse=True)
+        results = [x[0] for x in results]
+        results_df = db.get_articles(article_ids=results, limit=100)
+
     elif search_type == "proximity":
-        return jsonify({'status': 400, 'message': "Proximity search not implemented yet"}), 400
+        parts = search_query.strip("()").split(",")
+        t1, t2, k = [part.strip() for part in parts]
+        try:
+            results = r.proximity_retrieval(t1, t2, k)
+        except KeyError as e:
+            return jsonify({'status': 404, 'message': "Could not find term in index"}), 404
+        results = sorted(results.items(), key=lambda x: x[1], reverse=True)
+        results = [x[0] for x in results]
+        results_df = db.get_articles(article_ids=results, limit=100)
+
     elif search_type == "freeform":
-        terms = qt1 + qt2
-        results = r_old.score(terms, k=100) #using old retrieval as new retrieval not fully updated
-        results = [result[0] for result in results]
-        print(f'freeform search results: {results}')
+        terms = q.tokenize_free_form(search_query)
+        try:
+            results = r.free_form_retrieval(terms)
+        except KeyError as e:
+            return jsonify({'status': 404, 'message': "Could not find term in index"}), 404
+        results = sorted(results.items(), key=lambda x: x[1], reverse=True)
+        results = [x[0] for x in results]
+        results_df = db.get_articles(article_ids=results, limit=100)
+
     elif search_type == "publication":
-        return jsonify({'status': 400, 'message': "Publication search not implemented yet"}), 400
+        print("identified publication search")
+        publications = [search_query]
+        print(publications)
+        results_df = db.get_articles(publications=publications, limit=100)
+        print("retrieved articles")
+
     else:
         return jsonify({'status': 400, 'message': "Invalid search type"}), 400
-
-    if not results:
-        return jsonify({'status': 404, 'message': "No docids found for that query in index"}), 404
-    
-    results_df = db.get_articles(article_ids=results)
 
     if results_df.empty:
         return jsonify({'status': 404, 'message': "No articles found for docid"}), 404
     else:
         results_df = format_results(results_df)
 
-    if processed_params['request'] == None or processed_params['request'] == "all":
+    if processed_params['request'] == None or processed_params['request'] == "meta":
         filter_options = get_filter_options(results_df)
 
     #check if we need to convert to datetime
@@ -215,8 +242,8 @@ def get_results():
 
     #if no sortBy in params assume relevance by default
     if processed_params['sortBy'] == None or processed_params['sortBy'] == "relevance":
-        results_df = results_df #i think this is already done in TFIDFScoring..?
-    elif processed_params['sortBy'] == "ascendingdate":
+        results_df = results_df #already sorted by relevance above 
+    elif processed_params['sortBy'] == "ascendingdate": #not true sort, only sorting the 100 retrieved from database
         results_df = results_df.sort_values(by='upload_date', ascending=True)
     elif processed_params['sortBy'] == "descendingdate":
         results_df = results_df.sort_values(by='upload_date', ascending=False)

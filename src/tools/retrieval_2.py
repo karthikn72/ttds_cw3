@@ -27,42 +27,71 @@ class Retrieval:
     def __init__(self, index_filename=DEFAULT_INDEX_FILE):
         with open(index_filename, 'rb') as f:
             self.index = pickle.load(f)
-        # Construct a set of all documents in the index
         docset = set()
         for word_info in self.index.values():
             docset.update(word_info['indexes'].keys())
         self.N = len(docset)  # Total number of documents
-        # Placeholder for document weights, for normalization
-        
-        
-    def ranked_retrieval(self, query_terms, k=20): #needs to be redone, this is based on the tfidf calculator that used to be there, not actually the right way to do it
-        score = self.__bow_docs_retrieval(query_terms)
 
-        return list(map(lambda doc: (doc, format(score[doc], '.4f')), heapq.nlargest(k, score, key=score.get)))
-    
-    def __bow_docs_retrieval(self, query_terms):
-        scores = defaultdict(lambda: float)
+    def free_form_retrieval(self, query_terms):
+        doc_scores = defaultdict(lambda: float)
         for term in query_terms:
-            if term in self.index:
-                for doc in self.index[term]:
-                    if doc not in scores:
-                        scores[doc] = 0
-                    scores[doc] += self.index[term]['indexes'][doc]['tfidf']
-        # (TODO) add cosine normalisation (lnc.ltc)
-        return scores
-    
-    def bool_search(self, query_terms1, query_terms2=[], operator=None):
+            if type(term) == str and term in self.index:
+                for doc in self.index[term]['indexes']:
+                    if doc not in doc_scores:
+                        doc_scores[doc] = 0
+                    doc_scores[doc] += self.index[term]['indexes'][doc]['tfidf']
+            elif type(term)==list:
+                phrase_docs = self.__phrase_search(term)
+                for w in term:
+                    for doc in phrase_docs:
+                        if doc not in doc_scores:
+                            doc_scores[doc] = 0
+                        doc_scores[doc] += self.index[w]['indexes'][doc]['tfidf']
 
-        docs1 = list(self.__bow_docs_retrieval(query_terms1).keys()) if query_terms1 and query_terms1[0]!=" " else self.__phrase_search(query_terms1[1:])
-        docs2 = list(self.__bow_docs_retrieval(query_terms2).keys()) if query_terms2 and query_terms2[0]!=" " else self.__phrase_search(query_terms2[1:])
+        return doc_scores
+    
+    def bool_retrieval(self, query_terms1, query_terms2=[], operator=None):
+        docs1 = self.free_form_retrieval(query_terms1)
+        docs2 = self.free_form_retrieval(query_terms2)
 
         if not operator:
             return docs1
 
         if operator == 'AND':
-            return docs1 & docs2
+            docs = docs1.keys() & docs2.keys()
+        else:
+            docs = docs1.keys() | docs2.keys()
         
-        return docs1 | docs2
+        docs_scores = defaultdict(lambda: float)
+        for doc in docs:
+            if doc not in docs_scores:
+                docs_scores[doc] = 0
+            docs_scores[doc] = docs1[doc]+docs2[doc]
+        
+        return docs_scores
+    
+    def proximity_retrieval(self, word1, word2, proximity):
+        doc_scores = defaultdict(lambda: float)
+        
+        if (word1 not in self.index) or (word2 not in self.index):
+            return doc_scores
+        
+        word1_doc_pos = {key: np.asarray(inner_dict['positions']) for key, inner_dict in self.index[word1]['indexes'].items()} 
+        word2_doc_pos = {key: np.asarray(inner_dict['positions']) for key, inner_dict in self.index[word2]['indexes'].items()}
+
+        common_docs = word1_doc_pos.keys() & word2_doc_pos.keys()
+
+        docs = set([])
+        for p in range(1, proximity+1):
+            docs = docs | self.__check_adjacent_words(common_docs, word1_doc_pos, word2_doc_pos, p).keys()
+
+        for w in [word1, word2]:
+            for doc in docs:
+                if doc not in doc_scores:
+                    doc_scores[doc] = 0
+                doc_scores[doc] += self.index[w]['indexes'][doc]['tfidf']
+
+        return doc_scores
     
     def __phrase_search(self, terms):
         if len(terms)==0:
@@ -95,14 +124,11 @@ class Retrieval:
         
         return set(output_dict.keys())
     
-    def __check_adjacent_words(self, shared_docs, former_pos_dict, later_pos_dict):
-        proximity = 1
+    def __check_adjacent_words(self, shared_docs, former_pos_dict, later_pos_dict, proximity=1):
         output_dict = defaultdict(list)
         for doc in shared_docs:
             term1_positions = former_pos_dict[doc] + proximity
             term2_positions = later_pos_dict[doc]
-
-            # print(doc, term1_positions, term2_positions)
 
             phrase_pos = np.intersect1d(term1_positions, term2_positions)
 
@@ -114,9 +140,9 @@ class Retrieval:
 if __name__ == '__main__':
     # query = 'call denver direct'
 
-    query = '"people told matter"'
+    query = '"people told matter" AND call denver direct'
     qtokenizer = QueryTokenizer()
-    query_terms1, query_terms2, operator = qtokenizer.tokenize(query)
+    query1, query2, o = qtokenizer.tokenize_bool(query)
 
     r = Retrieval()
-    print(r.bool_search(query_terms1, query_terms2, operator))
+    print(r.proximity_retrieval('middl', 'east', 3))

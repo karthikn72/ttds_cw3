@@ -3,6 +3,7 @@ src/data
 tools/first1000.csv
 tools/index copy.txt
 index/
+src/tools/index_tfidf.txt
 tools/index_tfidf.txt
 tools/words.db
 venv/

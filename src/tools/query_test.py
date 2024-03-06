@@ -1,5 +1,5 @@
 
-from tools.retrieval_2 import Retrieval
+from retrieval_2 import Retrieval
 
 
 if __name__ == '__main__':
