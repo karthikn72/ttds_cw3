@@ -40,10 +40,10 @@ def process_params(request_args):
     
     #check if the query is for each type of search is valid
     if processed_params['type'] == 'proximity':
-        if not re.match("^\(\s*[a-zA-Z0-9_]+\s*,\s*[a-zA-Z0-9_]+\s*,\s*[0-9]+\s*\)$", processed_params['q']):
+        if not re.match(r"^\(\s*[a-zA-Z0-9_]+\s*,\s*[a-zA-Z0-9_]+\s*,\s*[0-9]+\s*\)$", processed_params['q']):
             return {'error': {'status': 400, 'message': f"Invalid value: {processed_params['q']} for search type: {processed_params['type']}"}}
     elif processed_params['type'] == 'boolean':
-        if not re.match("^\(\s*[a-zA-Z0-9_]+\s*,\s*(AND|OR)\s*,\s*[a-zA-Z0-9_]+\s*\)$", processed_params['q']):
+        if not re.match(r"^\(\s*[a-zA-Z0-9_]+\s*,\s*(AND|OR)\s*,\s*[a-zA-Z0-9_]+\s*\)$", processed_params['q']):
             return {'error': {'status': 400, 'message': f"Invalid value: {processed_params['q']} for search type: {processed_params['type']}"}}
     elif processed_params['type'] == 'phrase':
         if not re.match(r'^"\s*[a-zA-Z0-9_]+\s*"$', processed_params['q']):
