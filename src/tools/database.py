@@ -1,5 +1,5 @@
 import os
-import timer
+from .timer import Timer
 import random
 from datetime import datetime
 import pandas as pd
@@ -42,7 +42,7 @@ class Database:
                 ip_type=ip_type,
             )
             return conn
-        db_timer = timer.Timer("Connected to database in {:.4f}s")
+        db_timer = Timer("Connected to database in {:.4f}s")
         db_timer.start()
         engine = db.create_engine(
             "postgresql+pg8000://",
@@ -52,7 +52,7 @@ class Database:
         return engine 
 
     def get_tables(self):
-        t = timer.Timer("Got tables in {:.4f}s")
+        t = Timer("Got tables in {:.4f}s")
         with self.engine.connect() as db_conn:
             t.start()
             tables = db.inspect(db_conn).get_table_names()
@@ -65,7 +65,7 @@ class Database:
                 query = db.text(f'SELECT COUNT(word_id) FROM index_table WHERE word_id = :word') 
             else:
                 query = db.text(f'SELECT COUNT(index_table.word_id) FROM index_table, words WHERE index_table.word_id = words.word_id and words.word = :word')
-            t = timer.Timer("Got df in {:.4f}s")
+            t = Timer("Got df in {:.4f}s")
             t.start()
             result = db_conn.execute(query, {'word':word}).fetchone()
             t.stop()
@@ -77,7 +77,7 @@ class Database:
     def term_frequency(self, word_id, article_id):
         with self.engine.connect() as db_conn:
             query = db.text(f'SELECT CARDINALITY(positions) FROM index_table WHERE word_id = :word_id and article_id = :article_id')
-            t = timer.Timer("Got tf in {:.4f}s")
+            t = Timer("Got tf in {:.4f}s")
             t.start()
             result = db_conn.execute(query, {'word_id':word_id, 'article_id':article_id}).fetchone()
             t.stop()
@@ -87,12 +87,12 @@ class Database:
                 return 0
             
     def num_articles(self):
-        conn_t = timer.Timer("Connected in {:.4f}s")
+        conn_t = Timer("Connected in {:.4f}s")
         conn_t.start()
         with self.engine.connect() as db_conn:
             conn_t.stop()
             query = db.text(f'SELECT COUNT(*) FROM articles')
-            t = timer.Timer("Got count in {:.4f}s")
+            t = Timer("Got count in {:.4f}s")
             t.start()
             result = db_conn.execute(query).fetchone()
             t.stop()
@@ -104,7 +104,7 @@ class Database:
     def get_publications(self):
         query = db.text('SELECT publication_name FROM publications')
         with self.engine.connect() as db_conn:
-            t = timer.Timer("Got results in {:.4f}s")
+            t = Timer("Got results in {:.4f}s")
             t.start()
             results = db_conn.execute(query)
             pubs = [row.publication_name for row in results]
@@ -118,14 +118,14 @@ class Database:
         for i in range(0, len(author_list), chunk_size):
             chunk = author_list[i:i+chunk_size]
             query = insert(self.authors).values(chunk).on_conflict_do_nothing()
-        t = timer.Timer('Inserted authors in {:.4f}s')
+        t = Timer('Inserted authors in {:.4f}s')
         t.start()
         conn.execute(query)
         t.stop()
         authors = articles.author.dropna().unique()
         authors = tuple(authors) if len(authors) > 1 else f'(\'{authors[0]}\')'
         query = db.text(f'SELECT author_id, author_name as author FROM authors WHERE author_name in {authors};')
-        t = timer.Timer('Got authors in {:.4f}s')
+        t = Timer('Got authors in {:.4f}s')
         t.start()
         author_df = conn.execute(query)
         author_df = pd.DataFrame(author_df)
@@ -139,7 +139,7 @@ class Database:
         for i in range(0, len(section_list), chunk_size):
             chunk = section_list[i:i+chunk_size]
             query = insert(self.sections).values(chunk).on_conflict_do_nothing()
-        t = timer.Timer('Inserted sections in {:.4f}s')
+        t = Timer('Inserted sections in {:.4f}s')
         t.start()
         conn.execute(query)
         t.stop()
@@ -147,7 +147,7 @@ class Database:
             sections = articles.section.dropna().unique()
             sections = tuple(sections) if len(sections) > 1 else f'(\'{sections[0]}\')'
             query = db.text(f'SELECT section_id, section_name as section FROM sections WHERE section_name in {sections};')
-            t = timer.Timer('Got sections in {:.4f}s')
+            t = Timer('Got sections in {:.4f}s')
             t.start()
             section_df = conn.execute(query)
             section_df = pd.DataFrame(section_df)
@@ -161,14 +161,14 @@ class Database:
         for i in range(0, len(publication_list), chunk_size):
             chunk = publication_list[i:i+chunk_size]
             query = insert(self.publications).values(chunk).on_conflict_do_nothing()
-        t = timer.Timer('Inserted publications in {:.4f}s')
+        t = Timer('Inserted publications in {:.4f}s')
         t.start()
         conn.execute(query)
         t.stop()
         publications = articles.publication.dropna().unique()
         publications = tuple(publications) if len(publications) > 1 else f'(\'{publications[0]}\')'
         query = db.text(f'SELECT publication_id, publication_name as publication FROM publications WHERE publication_name in {publications};')
-        t = timer.Timer('Got publications in {:.4f}s')
+        t = Timer('Got publications in {:.4f}s')
         t.start()
         publication_df = conn.execute(query)
         publication_df = pd.DataFrame(publication_df)
@@ -191,7 +191,7 @@ class Database:
                 articles = pd.merge(articles, publication_df, on='publication', how='left')
                 articles = articles.drop(['publication'], axis=1)
                 
-                t = timer.Timer('Added articles in {:.4f}s')
+                t = Timer('Added articles in {:.4f}s')
                 t.start()
                 chunk_size = 10000
                 if 'imageURL' in articles.columns:
@@ -277,7 +277,7 @@ class Database:
         base_query += f'LIMIT {limit} OFFSET {offset}'
         query = db.text(base_query)
         with self.engine.connect() as db_conn:
-            t = timer.Timer("Got results in {:.4f}s")
+            t = Timer("Got results in {:.4f}s")
             # test = db_conn.execute(db.text('explain ' + base_query))
             # for line in test.fetchall():
             #     print(line)
@@ -290,7 +290,7 @@ class Database:
     def get_author_names(self, author_ids):
         with self.engine.connect() as db_conn:
             query = db.text(f'SELECT * FROM authors WHERE author_id IN {tuple(author_ids)}')
-            t = timer.Timer("Got author_names in {:.4f}s")
+            t = Timer("Got author_names in {:.4f}s")
             t.start()
             author_df = pd.read_sql(query, db_conn)
             t.stop()
@@ -304,7 +304,7 @@ class Database:
             try:
                 if reset_sentiments:
                     self.reset_sentiments(db_conn)
-                t = timer.Timer("Updated sentiments in {:.4f}s")
+                t = Timer("Updated sentiments in {:.4f}s")
                 t.start()
                 db_conn.execute(query, sentiments.to_dict(orient="records"))
                 db_conn.commit()
@@ -324,7 +324,7 @@ class Database:
                 if reset_sections:
                     self.reset_sections(db_conn)
                 self.add_sections(section_df, db_conn, get_ids=False)
-                t = timer.Timer("Updated sections in {:.4f}s")
+                t = Timer("Updated sections in {:.4f}s")
                 t.start()
                 db_conn.execute(query, section_df.to_dict(orient="records"))
                 db_conn.commit()
@@ -341,19 +341,19 @@ class Database:
         for i in range(0, len(word_list), chunk_size):
             chunk = word_list[i:i+chunk_size]
             query = insert(self.words).values(chunk).on_conflict_do_nothing()
-        t = timer.Timer('Inserted words in {:.4f}s')
+        t = Timer('Inserted words in {:.4f}s')
         t.start()
         conn.execute(query)
         t.stop()
         query = db.text(f'SELECT * FROM words WHERE word in {tuple(index.word.unique())};')
-        t = timer.Timer('Got words in {:.4f}s')
+        t = Timer('Got words in {:.4f}s')
         t.start()
         word_df = pd.read_sql(query, conn)
         t.stop()
         return word_df
 
     def add_index(self, index, conn):
-        t = timer.Timer('Built index in {:.4f}s')
+        t = Timer('Built index in {:.4f}s')
         t.start()
         index.to_sql('index_table', 
                      conn, 
@@ -370,7 +370,7 @@ class Database:
         sql_path = "tools/databases/calc_tfidf.sql"
         with open(sql_path) as file:
             query = db.text(file.read())
-            t = timer.Timer('Calculated tfidf in {:.4f}s')
+            t = Timer('Calculated tfidf in {:.4f}s')
             t.start()
             conn.execute(query)
             t.stop()
@@ -390,13 +390,13 @@ class Database:
                 raise e
 
     def get_index_by_words(self, words: list[str]):
-        conn_t = timer.Timer("Connected in {:.4f}s")
+        conn_t = Timer("Connected in {:.4f}s")
         conn_t.start()
         with self.engine.connect() as db_conn:
             conn_t.stop()
             words = tuple(words) if len(words) > 1 else f'(\'{words[0]}\')'
             query = f"SELECT w.word, article_id, positions, tfidf FROM index_table, words w WHERE index_table.word_id = w.word_id AND w.word IN {tuple(words)}"
-            t = timer.Timer("Got index in {:.4f}s")
+            t = Timer("Got index in {:.4f}s")
             t.start()
             index_df = db_conn.execute(db.text(query))
             index_df = pd.DataFrame(index_df)
@@ -404,12 +404,12 @@ class Database:
             return index_df
 
     def index_length(self):
-        conn_t = timer.Timer("Connected in {:.4f}s")
+        conn_t = Timer("Connected in {:.4f}s")
         conn_t.start()
         with self.engine.connect() as db_conn:
             conn_t.stop()
             query = db.text(f'SELECT COUNT(*) FROM index_table')
-            t = timer.Timer("Got length in {:.4f}s")
+            t = Timer("Got length in {:.4f}s")
             t.start()
             result = db_conn.execute(query).fetchone()
             t.stop()
@@ -419,12 +419,12 @@ class Database:
                 return 0
 
     def num_words(self):
-        conn_t = timer.Timer("Connected in {:.4f}s")
+        conn_t = Timer("Connected in {:.4f}s")
         conn_t.start()
         with self.engine.connect() as db_conn:
             conn_t.stop()
             query = db.text(f'SELECT COUNT(*) FROM words')
-            t = timer.Timer("Got length in {:.4f}s")
+            t = Timer("Got length in {:.4f}s")
             t.start()
             result = db_conn.execute(query).fetchone()
             t.stop()

@@ -5,8 +5,8 @@ import sys
 import os
 
 import numpy as np
-sys.path.append(os.path.abspath(os.path.join(os.getcwd(), os.pardir)))
-from tokenizer import Tokenizer, QueryTokenizer
+# sys.path.append(os.path.abspath(os.path.join(os.getcwd(), os.pardir)))
+from .tokenizer import Tokenizer, QueryTokenizer
 
     # {
     #     word: {

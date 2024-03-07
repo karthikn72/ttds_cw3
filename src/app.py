@@ -265,19 +265,15 @@ def get_results():
     elif search_type == "proximity":
         parts = search_query.strip("()").split(",")
         t1, t2, k = [part.strip() for part in parts]
-        print(t1, t2, k)
         try:
             t1 = q.process_word(t1)
             t2 = q.process_word(t2)
         except Exception as e:
-            print(e)
             return jsonify({'status': 500, 'message': "Error during tokenization"}), 500
-        print(t1, t2, k)
         try:
             results = r.proximity_retrieval(t1, t2, int(k))
         except KeyError as e:
             return jsonify({'status': 404, 'message': "Could not find term in index"}), 404
-        print(results)
         results = sorted(results.items(), key=lambda x: x[1], reverse=True)
         results = [x[0] for x in results]
 
@@ -295,7 +291,6 @@ def get_results():
 
     elif search_type == "publication":
         publications = [search_query]
-        print(publications)
 
     else:
         return jsonify({'status': 400, 'message': "Invalid search type"}), 400
@@ -334,10 +329,7 @@ def get_results():
         offset = int(processed_params['page'])*100
         results_df = db.get_articles(publications=publications, start_date=start_date, end_date=end_date, sort_by_date=sort_by_date, limit=100, offset=offset)
     else:
-        print("running normal search")
         results_current_page = results[int(processed_params['page'])*100:int(processed_params['page'])*100+100]
-        print(results_current_page)
-        print(publications, start_date, end_date, sort_by_date)
         results_df = db.get_articles(article_ids=results_current_page, publications=publications, start_date=start_date, end_date=end_date, sort_by_date=sort_by_date, limit=100)
 
     if results_df.empty:
