@@ -313,7 +313,7 @@ def get_results():
     elif processed_params['sortBy'] == "ascendingdate": #not true sort, only sorting the 100 retrieved from database
         sort_by_date = "asc"
     elif processed_params['sortBy'] == "descendingdate":
-        sort_by_date = "desc"
+        sort_by_date = "desc"  
 
     #apply filters if they exist
     authors = None
@@ -326,16 +326,17 @@ def get_results():
 
     #get results from database
     if search_type == "publication":
-        offset = int(processed_params['page'])*100
-        results_df = db.get_articles(publications=publications, start_date=start_date, end_date=end_date, sort_by_date=sort_by_date, limit=100, offset=offset)
+        results_df = db.get_articles(publications=publications, start_date=start_date, end_date=end_date, sort_by_date=sort_by_date, limit=10000)
     else:
-        results_current_page = results[int(processed_params['page'])*100:int(processed_params['page'])*100+100]
-        results_df = db.get_articles(article_ids=results_current_page, publications=publications, start_date=start_date, end_date=end_date, sort_by_date=sort_by_date, limit=100)
+        results_df = db.get_articles(article_ids=results, publications=publications, start_date=start_date, end_date=end_date, sort_by_date=sort_by_date, limit=10000)
 
     if results_df.empty:
         return jsonify({'status': 404, 'message': "No articles found for docid"}), 404
     else:
-        results_df = format_results(results_df)
+        #to return only 100 articles depending on page number
+        start = (int(processed_params['page']))*100
+        end = start + 100
+        results_df = format_results(results_df[start:end]) 
 
     if processed_params['request'] == None or processed_params['request'] == "meta":
         filter_options = get_filter_options(results_df)
