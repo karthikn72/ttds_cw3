@@ -19,6 +19,8 @@ def populate_sentiment(limit=1000):
         'negative': [],
         'neutral': []
     }
+
+    df = pd.DataFrame(df)
     for i in range(0, N + 1, limit):
         articles = db.get_articles(limit=limit,offset=i)
         for idx, row in articles.iterrows():

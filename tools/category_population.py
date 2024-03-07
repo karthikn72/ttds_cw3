@@ -33,7 +33,6 @@ def populate_category(limit=1000):
 
             df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
 
-        # db.update_sections(df)
-        print(i)
+        db.update_sections(df)
         df = df.drop(df.index)
     t.stop()
