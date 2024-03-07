@@ -10,13 +10,13 @@ from transformers import (
 )
 
 class T5FineTuner(pl.LightningModule):
-    def __init__(self, sampler, hparams, class_name):
+    def __init__(self, hparams, class_name, sampler = None):
         super(T5FineTuner, self).__init__()
         self.sampler = sampler
         self.save_hyperparameters(hparams)
         self.training_step_outputs = []
         self.validation_step_outputs = []
-        self.dataset = T5Dataset(class_name)
+        # self.dataset = T5Dataset(class_name)
 
         self.model = T5ForConditionalGeneration.from_pretrained(self.hparams.model_name_or_path)
         self.tokenizer = T5Tokenizer.from_pretrained(self.hparams.tokenizer_name_or_path)

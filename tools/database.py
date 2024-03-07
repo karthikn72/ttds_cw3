@@ -394,8 +394,8 @@ class Database:
         conn_t.start()
         with self.engine.connect() as db_conn:
             conn_t.stop()
-            words = tuple(words) if len(words) > 1 else f'(\'{words[0]}\')'
-            query = f"SELECT w.word, article_id, positions, tfidf FROM index_table, words w WHERE index_table.word_id = w.word_id AND w.word IN {tuple(words)}"
+            words = tuple(words) if len(words) > 1 else f'(\'{(words[0])}\')'
+            query = f"SELECT w.word, article_id, positions, tfidf FROM index_table, words w WHERE index_table.word_id = w.word_id AND w.word IN {words}"
             t = timer.Timer("Got index in {:.4f}s")
             t.start()
             index_df = db_conn.execute(db.text(query))
