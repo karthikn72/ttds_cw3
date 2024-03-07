@@ -2,6 +2,7 @@
 from database import Database
 from indexer import Indexer
 from timer import Timer
+from cats_sent_population import populate_category_and_sentiment
 
 def build_index(test=False, limit=1000):
     #prompt in terminal to ask if the user wants to reset the index
@@ -21,6 +22,9 @@ def build_index(test=False, limit=1000):
     for i in range(0, N + 1, limit):
         articles = db.get_articles(limit=limit,offset=i)
         indexer.indexing(i, articles)
+
+        populate_category_and_sentiment(articles)
+
         print(f"--> Indexed {i + limit}/{N} documents")
         db.build_index(indexer.get_index())
         print(f"--> Added index for {i + limit}/{N} documents")
