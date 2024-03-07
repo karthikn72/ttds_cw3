@@ -12,7 +12,7 @@ from tools.retrieval_2 import Retrieval
 from tools.database import Database
 
 app = Flask(__name__)
-CORS(app, origins=["https://sentinews-413116.nw.r.appspot.com/", "http://localhost:3000"])
+CORS(app, origins=["https://sentinews-413116.nw.r.appspot.com/", "sentinews-413116.web.app","sentinews-413116.firebaseapp.com"  "http://localhost:3000"])
 
 # Load database
 db = Database()
