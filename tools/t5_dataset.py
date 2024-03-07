@@ -1,7 +1,7 @@
 from torch.utils.data import Dataset
 
 class T5Dataset(Dataset):
-  def __init__(self, tokenizer, data, column_name, max_len=512):
+  def __init__(self, column_name, tokenizer = None, data=None, max_len=512):
     self.data_column = "text"
     self.class_column = column_name
     self.data = data
