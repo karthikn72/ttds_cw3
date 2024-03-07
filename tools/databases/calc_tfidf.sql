@@ -10,42 +10,32 @@ FROM index_table;
 
 CREATE TEMPORARY TABLE temp_tfidf AS (
     -- Your previous TF-IDF calculation query
-    WITH tf_table AS (
+    WITH  log_tf_table AS (
         SELECT
             word_id,
             article_id,
-            COUNT(*) AS tf
+            LOG(COUNT(*))+1 AS log_tf
         FROM
-            (SELECT word_id, article_id,  unnest(positions) FROM index_table) AS it
+            (SELECT word_id, article_id, unnest(positions) FROM index_table) AS it
         GROUP BY
             word_id, article_id
     )
-    , df_table AS (
+    , idf_table AS (
         SELECT
             word_id,
-            COUNT(article_id) AS df
+            LOG(n::decimal / COUNT(article_id)) AS idf
         FROM
             index_table
         GROUP BY
             word_id
     )
-    , idf_table AS (
-        SELECT
-            d.word_id,
-            LOG(n::decimal / (d.df + 1)) AS idf
-        FROM
-            df_table d, index_table i
-        WHERE
-            d.word_id = i.word_id
-        GROUP BY
-            d.word_id, d.df
-    )
+
     SELECT
         tf.word_id,
         tf.article_id,
         tf.tf::decimal * idf.idf AS tfidf
     FROM
-        tf_table tf
+        log_tf_table tf
     JOIN
         idf_table idf ON tf.word_id = idf.word_id
 );
