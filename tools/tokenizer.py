@@ -93,7 +93,8 @@ class QueryTokenizer(Tokenizer):
         return term1_tokens, term2_tokens, operator
     
     def process_word(self, word):
-        return self.__tokenize_raw_query(word)[0]
+        processed = self.__tokenize_raw_query(word)
+        return processed[0] if processed else []
     
     def __tokenize_raw_query(self, term):
         tokens = re.findall(pattern=self.tokenize_re, string=term)
@@ -118,7 +119,8 @@ class QueryTokenizer(Tokenizer):
                 new_query.append(word)
             else:
                 curr = spell.correction(word)
-                new_query.append(curr)
+                if curr:
+                    new_query.append(curr)
         return new_query
  
     def __repr__(self):
@@ -127,5 +129,6 @@ class QueryTokenizer(Tokenizer):
 
 if __name__ == '__main__':
     q = QueryTokenizer()
-    print(q.tokenize_bool('"middle east" AND pece')) # ([['middl', 'east']], ['piec'], 'AND')
+    # print(q.tokenize_bool('"middle east" AND pece')) # ([['middl', 'east']], ['piec'], 'AND')
+    print(q.process_word('wfvbmoh'))
     # print(q.tokenize_free_form('story book "middle east" piece "man America hunting"'))
