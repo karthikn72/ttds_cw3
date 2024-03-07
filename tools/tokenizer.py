@@ -47,8 +47,36 @@ class Tokenizer:
     
     def __repr__(self):
         return f"Tokenizer(case_fold={self.case_fold}, stop={self.stop}, stop_file={self.stop_file}, stem={self.stem}, tokenize_re={self.tokenize_re})"
-    
 
+
+
+''' 
+Usage Examples:
+q = QueryTokenizer()
+
+1. Free form queries - query
+    * These queries include a combination of words and phrases of any length.
+    * Eg: 'story book "middle east" piece "man America hunting"'
+    * q.tokenize_free_form(query) - returns a list of tokens, grouping phrases within the query into a list
+    * Output Eg: ['stori', 'book', ['middl', 'east'], 'piec', ['man', 'america', 'hunt']]
+    * Raises - ValueError, when query after processing is empty
+
+2. Boolean queries - operand1, operand2, operator
+    * These queries have 2 free form queries combined by a boolean operator (AND/OR)
+    * Eg: 'story book "middle east"' AND 'call denver direct'
+    * To tokenize:
+        query_tokens1 = q.tokenize_free_form(operand1)
+        query_tokens1 = q.tokenize_free_form(operand2)
+
+3. Proximity search queries - word1, word2, proximity
+    * These queries have 2 words and proximity param of the words
+    * To tokenize:
+        processed_word1 = q.process_word(word1)
+        processed_word2 = q.process_word(word2)
+    * Raises - ValueError, when word is polluted with non-alphanum chars, and when word is a stop word
+    * Make sure to check if proximity is > 0 in the API before calling the retrieval function.
+
+'''
 class QueryTokenizer(Tokenizer):
     def __init__(self, 
                  case_fold=True, 
@@ -69,32 +97,23 @@ class QueryTokenizer(Tokenizer):
                     open_quote=i+1
                     start = i+1
                 else:
-                    processed.append(self.__tokenize_raw_query(query[open_quote:i]))
+                    processed_phrase = self.__tokenize_raw_query(query[open_quote:i])
+                    if processed_phrase:
+                        processed.append(processed_phrase)
                     open_quote = -1
                     start = i+1
         processed = processed + self.__tokenize_raw_query(query[start:])
+        if processed==[]:
+            raise ValueError("Query after processing is empty")
         return processed
-    
-    def tokenize_bool(self, query):
-        parts = re.split(" +(AND|OR) +", query)
-
-        term1 = parts[0] if len(parts)>=1 else []
-        operator = parts[1] if len(parts)>=2 else None
-        term2 = parts[2] if len(parts)>=3 else []
-
-        term1_tokens = []
-        if term1:
-            term1_tokens = self.tokenize_free_form(term1)
- 
-        term2_tokens = []
-        if term2:
-            term2_tokens = self.tokenize_free_form(term2)
-
-        return term1_tokens, term2_tokens, operator
     
     def process_word(self, word):
         processed = self.__tokenize_raw_query(word)
-        return processed[0] if processed else []
+        if processed==[]:
+            raise ValueError("Word after processing is empty")
+        if len(processed)>1:
+            raise ValueError("Invalid query word")
+        return processed[0]
     
     def __tokenize_raw_query(self, term):
         tokens = re.findall(pattern=self.tokenize_re, string=term)
