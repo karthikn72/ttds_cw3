@@ -35,19 +35,19 @@ if __name__ == "__main__":
     #     'section': ['Fintech', 'Fintech']
     # })
     # db.update_sections(section_df)
-    time_now = datetime.now()
-    # test_article = pd.DataFrame({
-    #     'author': ['Jane Wilkinson', 'Dan Burn'],
-    #     'title' : ['Test title 1', 'Title test 2'],
-    #     'article' : ['A fireman has fallen in Lego city!', 'Yeetus deletus'],
-    #     'url' : ['google.com', 'bing.com'],
-    #     'section' : [None, 'World News'],
-    #     'publication': ['CNN', 'BBC']
-    # })
+    time_now = datetime(2024, 3, 5)
+    test_article = pd.DataFrame({
+        'author': ['Jane Wilkinson', 'Dan Burn'],
+        'title' : ['Test title 1', 'Title test 2'],
+        'article' : ['A fireman has fallen in Lego city!', 'Yeetus deletus'],
+        'url' : ['google.com', 'bing.com'],
+        'section' : [None, 'World News'],
+        'publication': ['CNN', 'BBC']
+    })
 
-    # db.add_articles(test_article)
-    # print(db.get_articles(start_date=time_now))
-    print(db.get_index_by_words(['middl', 'east']))
+    db.add_articles(test_article)
+    print(db.get_articles(start_date=time_now, sort_by_date='desc'))
+    # print(db.get_index_by_words(['middl', 'east']))
 
     # # Old DB indexing
     # db.reset_index()
