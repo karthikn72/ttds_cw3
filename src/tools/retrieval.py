@@ -1,10 +1,10 @@
 import heapq
 import numpy as np
 
-from .tokenizer import QueryTokenizer
+from tokenizer import QueryTokenizer
 
 
-DEFAULT_INDEX_FILE = 'index.txt'
+DEFAULT_INDEX_FILE = 'tools\index.txt'
 
 class TFIDFScoring:
     def __init__(self, index_filename=DEFAULT_INDEX_FILE):
@@ -22,7 +22,7 @@ class TFIDFScoring:
                     last_term = word
                 else:
                     docno = int(p[0][:-1])
-                    word_freq =  len(p[1].split(','))
+                    word_freq = len(p[1].split(','))
                     self.index[last_term][docno] = word_freq
                     docset.add(docno)
         self.N = len(docset)
