@@ -8,11 +8,11 @@ from datetime import datetime, timedelta
 import os
 
 from tools.tokenizer import QueryTokenizer
-from tools.retrieval_2 import Retrieval
+from tools.retrieval import Retrieval
 from tools.database import Database
 
 app = Flask(__name__)
-CORS(app, origins=["https://sentinews-413116.nw.r.appspot.com/", "sentinews-413116.web.app","sentinews-413116.firebaseapp.com"  "http://localhost:3000"])
+CORS(app, origins=["https://sentinews-413116.nw.r.appspot.com/", "sentinews-413116.web.app/","sentinews-413116.firebaseapp.com/"  "http://localhost:3000"])
 
 # Load database
 db = Database()
@@ -45,13 +45,13 @@ def process_params(request_args):
     words = r'[a-zA-Z0-9_ ]+'
     word_or_phrase = r'("[a-zA-Z0-9_ ]+"|[a-zA-Z0-9_]+)'
     comma = r'\s*,\s*'
-    digits = r'[0-9]+'
-    boolean_operator = r'(AND|OR)'
+    valid_digit = r'[1-9]+'
+    boolean_operator = r'(AND|OR|and|or)'
     e = r'\s*\)$'
 
     #check if the query is for each type of search is valid
     if processed_params['type'] == 'proximity':
-        regex = s+word_or_phrase+comma+word_or_phrase+comma+digits+e
+        regex = s+word+comma+word+comma+valid_digit+e
         if not re.fullmatch(regex, processed_params['q']):
             return {'error': {'status': 400, 'message': f"Invalid value: {processed_params['q']} for search type: {processed_params['type']}"}}
     elif processed_params['type'] == 'boolean':
@@ -231,15 +231,15 @@ def get_results():
     
     #initialize tokenizer and retrieval
     q = QueryTokenizer()
-    r = Retrieval(index_filename='tools/index_tfidf.pkl')
+    r = Retrieval()
 
     #identify the type of search 
     search_type = processed_params['type']
     if search_type == "phrase":
         try:
             terms = q.tokenize_free_form(search_query)
-        except Exception as e:
-            return jsonify({'status': 500, 'message': "Error during tokenization"}), 500
+        except ValueError as e:
+            return jsonify({'status': 500, 'message': "Unable to tokenize query"}), 500
         try:
             results = r.free_form_retrieval(terms)
         except KeyError as e:
@@ -250,9 +250,17 @@ def get_results():
     elif search_type == "boolean":
         parts = search_query.strip("()").split(",")
         t1, op, t2 = [part.strip() for part in parts]
-        formatted = f"{t1} {op} {t2}"
+        #convert op to something that can be used in the retrieval function
+        if op.strip().lower() == "and":
+            op = "AND"
+        elif op.strip().lower() == "or":
+            op = "OR"
+        else:
+            return jsonify({'status': 400, 'message': "Invalid boolean operator"}), 400
+        
         try:
-            t1, t2, op = q.tokenize_bool(formatted)
+            t1 = q.tokenize_free_form(t1)
+            t2 = q.tokenize_free_form(t2)
         except Exception as e:
             return jsonify({'status': 500, 'message': "Error during tokenization"}), 500
         try:
@@ -268,8 +276,8 @@ def get_results():
         try:
             t1 = q.process_word(t1)
             t2 = q.process_word(t2)
-        except Exception as e:
-            return jsonify({'status': 500, 'message': "Error during tokenization"}), 500
+        except ValueError as e:
+            return jsonify({'status': 500, 'message': "Unable to tokenize query"}), 500
         try:
             results = r.proximity_retrieval(t1, t2, int(k))
         except KeyError as e:
