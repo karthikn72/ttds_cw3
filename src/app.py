@@ -12,7 +12,7 @@ from tools.retrieval import Retrieval
 from tools.database import Database
 
 app = Flask(__name__)
-CORS(app, origins=["https://sentinews-413116.nw.r.appspot.com/", "sentinews-413116.web.app/","sentinews-413116.firebaseapp.com/"  "http://localhost:3000"])
+CORS(app)
 
 # Load database
 db = Database()
@@ -30,7 +30,7 @@ def process_params(request_args):
         value = request_args.get(param)
         if value == None:
             return {'error': {'status': 400, 'message': f"{param} parameter is required"}}
-        elif value == "" or not re.match(r'^[a-zA-Z0-9_()," ]*$', value):
+        elif value == "" or not re.match(r'^[a-zA-Z0-9_(),"\' ]*$', value):
             return {'error': {'status': 400, 'message': f'Invalid value: {value} for required parameter: {param}'}}
         processed_params[param] = value.lower()
 
@@ -41,9 +41,9 @@ def process_params(request_args):
     #define some reusable regex
     s = r'^\(\s*'
     q_req = r'"'
-    word = r'[a-zA-Z0-9_]+'
-    words = r'[a-zA-Z0-9_ ]+'
-    word_or_phrase = r'("[a-zA-Z0-9_ ]+"|[a-zA-Z0-9_]+)'
+    word = r'[a-zA-Z0-9_\']+'
+    words = r'[a-zA-Z0-9_\' ]+'
+    word_or_phrase = r'("[a-zA-Z0-9_\' ]+"|[a-zA-Z0-9_\']+)'
     comma = r'\s*,\s*'
     valid_digit = r'[1-9]+'
     boolean_operator = r'(AND|OR|and|or)'
@@ -90,11 +90,11 @@ def process_params(request_args):
             if ',' in value:
                 split_values = value.split(',')
                 for split_value in split_values:
-                    if split_value == "" or not re.match("^[a-zA-Z0-9_ ]*$", split_value):
+                    if split_value == "" or not re.match("^[a-zA-Z0-9_\' ]*$", split_value):
                         return {'error': {'status': 400, 'message': f'Invalid value: {split_value} for parameter: {param}'}}
                     processed_values.append(split_value.lower())
             else:
-                if value == "" or not re.match("^[a-zA-Z0-9_ ]*$", value):
+                if value == "" or not re.match("^[a-zA-Z0-9_\' ]*$", value):
                     return {'error': {'status': 400, 'message': f'Invalid value: {value} for parameter: {param}'}}
                 processed_values.append(value.lower())
         processed_params[param] = processed_values
