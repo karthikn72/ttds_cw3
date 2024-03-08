@@ -1,6 +1,7 @@
 import database
 import random
 from datetime import datetime
+from indexer import Indexer
 import pandas as pd
 
 if __name__ == "__main__":
@@ -35,18 +36,18 @@ if __name__ == "__main__":
     #     'section': ['Fintech', 'Fintech']
     # })
     # db.update_sections(section_df)
-    time_now = datetime(2024, 3, 5)
-    test_article = pd.DataFrame({
-        'author': ['Jane Wilkinson', 'Dan Burn'],
-        'title' : ['Test title 1', 'Title test 2'],
-        'article' : ['A fireman has fallen in Lego city!', 'Yeetus deletus'],
-        'url' : ['google.com', 'bing.com'],
-        'section' : [None, 'World News'],
-        'publication': ['CNN', 'BBC']
-    })
+    # time_now = datetime(2024, 3, 5)
+    # test_article = pd.DataFrame({
+    #     'author': ['Jane Wilkinson', 'Dan Burn'],
+    #     'title' : ['Test title 1', 'Title test 2'],
+    #     'article' : ['A fireman has fallen in Lego city!', 'Yeetus deletus'],
+    #     'url' : ['google.com', 'bing.com'],
+    #     'section' : [None, 'World News'],
+    #     'publication': ['CNN', 'BBC']
+    # })
 
-    db.add_articles(test_article)
-    print(db.get_articles(start_date=time_now, sort_by_date='desc'))
+    # db.add_articles(test_article)
+    # print(db.get_articles(start_date=time_now, sort_by_date='desc'))
     # print(db.get_index_by_words(['middl', 'east']))
 
     # # Old DB indexing
@@ -72,4 +73,11 @@ if __name__ == "__main__":
 
     # db.reset_index()
     # db.build_index(index=index_dict)
+    test_articles = db.get_articles(article_ids=[6083, 4047]) 
+    print(test_articles[['title', 'article']])
+    id = Indexer()
+    id.set_up_stopwords("tools/resources/ttds_2023_english_stop_words.txt")
+    id.indexing(0, test_articles)
+    article_index = id.get_index()
+    print(article_index)
     print("Database test completed successfully")

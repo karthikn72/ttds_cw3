@@ -336,7 +336,7 @@ class Database:
             
     def add_words(self, index, conn):
         self.words = db.Table('words', self.metadata, autoload_with=self.engine)
-        word_list = [{'word':word} for word in index['word'].unique()]
+        word_list = [{'word':word} for word in index.word.unique()]
         chunk_size = 1000
         for i in range(0, len(word_list), chunk_size):
             chunk = word_list[i:i+chunk_size]
@@ -352,18 +352,20 @@ class Database:
         t.stop()
         return word_df
 
-    def add_index(self, index, conn):
+    def add_index(self, index_table, conn):
         t = timer.Timer('Built index in {:.4f}s')
         t.start()
-        index.to_sql('index_table', 
-                     conn, 
-                     if_exists='append', 
-                     chunksize=10000, 
-                     index=False, 
-                     dtype={'article_id':INTEGER, 
-                            'positions':ARRAY(INTEGER), 
-                            'word_id':INTEGER}, 
-                     method='multi')
+        chunk_size = 10000
+        for i in range(0, len(index_table), chunk_size):
+            chunk = index_table.iloc[i:i+chunk_size,]
+            chunk.to_sql('index_table', 
+                        conn, 
+                        if_exists='append', 
+                        index=False, 
+                        dtype={'article_id':INTEGER, 
+                                'positions':ARRAY(INTEGER), 
+                                'word_id':INTEGER}, 
+                        method='multi')
         t.stop()
 
     def calc_tfidf(self, conn):
@@ -379,9 +381,9 @@ class Database:
         with self.engine.connect() as db_conn:
             try:
                 word_df = self.add_words(index=index, conn=db_conn)
-                index = pd.merge(index, word_df, on='word', how='left')
+                index = pd.merge(index, word_df, on='word', how='inner')
                 index = index.drop('word', axis=1)
-                self.add_index(index=index, conn=db_conn)
+                self.add_index(index_table=index, conn=db_conn)
                 db_conn.commit()
                 return "Index build successful"
             except Exception as e:
