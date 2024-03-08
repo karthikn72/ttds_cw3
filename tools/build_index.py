@@ -2,7 +2,7 @@
 from database import Database
 from indexer import Indexer
 from timer import Timer
-from cats_sent_population import populate_category_and_sentiment
+from cat_sent_population import populate_category_and_sentiment
 
 def build_index(test=False, limit=1000):
     #prompt in terminal to ask if the user wants to reset the index
@@ -13,36 +13,20 @@ def build_index(test=False, limit=1000):
     if fresh:
         db.reset_index()
     if test:
-        N = 10000
+        N = 20000
     indexer = Indexer()
     indexer.set_up_stopwords('tools/resources/ttds_2023_english_stop_words.txt')
 
-    t = Timer('Built index in {:.4f}s')
+    t = Timer('Built index and updated sentiments and categories in {:.4f}s')
     t.start()
     for i in range(0, N + 1, limit):
         articles = db.get_articles(limit=limit,offset=i)
-        indexer.indexing(i, articles)
-
-        populate_category_and_sentiment(articles)
-
+        indexer.indexing(articles)
         print(f"--> Indexed {i + limit}/{N} documents")
         db.build_index(indexer.get_index())
         print(f"--> Added index for {i + limit}/{N} documents")
+        # populate_category_and_sentiment(articles)
     t.stop()
-    return "Indexing complete"
-
-def build_index_aao():
-    db = Database()
-    N = db.num_articles()
-    counter = 0
-    indexer = Indexer()
-    indexer.set_up_stopwords('resources/ttds_2023_english_stop_words.txt')
-    while counter < N:
-        articles = db.get_articles(limit=1000)
-        indexer.indexing_aao(articles, counter)
-        counter += 1000
-    db.build_index(indexer.get_index())
-    del indexer
     return "Indexing complete"
 
 if __name__ == '__main__':
