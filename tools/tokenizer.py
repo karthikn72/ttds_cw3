@@ -2,7 +2,7 @@ import re
 from nltk.stem import PorterStemmer
 import os
 
-from spellchecker import SpellChecker
+from autocorrect import Speller
 
 MODULE_DIR = os.path.dirname(os.path.realpath(__file__))
 
@@ -127,20 +127,8 @@ class QueryTokenizer(Tokenizer):
         return tokens
     
     def __query_spell_correction(self, tokens):
-        spell = SpellChecker()
-        # find those words that may be misspelled
-        misspelled_list = list(spell.unknown(tokens))
-        # To keep the query order
-        misspelled = [word for word in tokens if word in misspelled_list]
-        new_query = []
-        for word in tokens:
-            if word not in misspelled:
-                new_query.append(word)
-            else:
-                curr = spell.correction(word)
-                if curr:
-                    new_query.append(curr)
-        return new_query
+        spell = Speller(lang='en')
+        return list(map(spell, tokens))
  
     def __repr__(self):
         return f"QueryTokenizer(case_fold={self.case_fold}, stop={self.stop}, stop_file={self.stop_file}, stem={self.stem}, tokenize_re={self.tokenize_re})"
@@ -149,5 +137,5 @@ class QueryTokenizer(Tokenizer):
 if __name__ == '__main__':
     q = QueryTokenizer()
     # print(q.tokenize_bool('"middle east" AND pece')) # ([['middl', 'east']], ['piec'], 'AND')
-    print(q.process_word('wfvbmoh'))
+    print(q.process_word('USA'), 4)
     # print(q.tokenize_free_form('story book "middle east" piece "man America hunting"'))
