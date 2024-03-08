@@ -3,9 +3,10 @@ import heapq
 import pickle
 import sys
 import os
-from .database import Database 
+from .database import Database
 
 import numpy as np
+
 from .tokenizer import Tokenizer, QueryTokenizer
 
     # {
@@ -40,7 +41,7 @@ class Retrieval:
         doc_scores = defaultdict(lambda: float)
         for term in query_terms:
             if type(term) == str:
-                term_index = self.index[self.index.word==term]
+                term_index = self.index[self.index['word']==term]
                 for doc in term_index['article_id']:
                     if doc not in doc_scores:
                         doc_scores[doc] = 0
@@ -148,7 +149,7 @@ class Retrieval:
     
 if __name__ == '__main__':
 
-    query = '"bomb blast"'
+    query = 'usa'
     qtokenizer = QueryTokenizer()
     query_terms = qtokenizer.tokenize_free_form(query)
 
