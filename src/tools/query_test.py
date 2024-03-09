@@ -5,7 +5,7 @@ import heapq
 
 db = database.Database()
 
-query = 'sochi'
+query = 'indonesian priest'
 qtokenizer = QueryTokenizer()
 query_terms = qtokenizer.tokenize_free_form(query)
 
@@ -25,11 +25,11 @@ print(sorted_index)
 
 top5 = list(sorted_index.article_id.values[:5])
 
-# r = Retrieval()
-# ans = r.free_form_retrieval(query_terms)
+r = Retrieval()
+ans = r.free_form_retrieval(query_terms)
 
 
-# top5 = list(heapq.nlargest(5, ans, key=ans.get))
+top5 = list(heapq.nlargest(5, ans, key=ans.get))
 
-print(list(sorted_index.article_id.values[:5]))
+# print(list(sorted_index.article_id.values[:5]))
 print(db.get_articles(article_ids=top5)[['article_id','title']])

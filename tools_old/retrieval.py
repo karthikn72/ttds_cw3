@@ -149,7 +149,7 @@ class Retrieval:
     
 if __name__ == '__main__':
 
-    query = 'usa'
+    query = 'sochi'
     qtokenizer = QueryTokenizer()
     query_terms = qtokenizer.tokenize_free_form(query)
 
