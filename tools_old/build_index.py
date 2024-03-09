@@ -4,10 +4,8 @@ from indexer import Indexer
 from timer import Timer
 from cat_sent_population import populate_category_and_sentiment
 
-def build_index(test=False, limit=1000):
+def build_index(test=False, limit=1000, fresh=False):
     #prompt in terminal to ask if the user wants to reset the index
-    fresh = input("Do you want to reset the index? (y/n) ")
-    fresh = True if fresh.lower() == 'y' else False
     db = Database()
     N = db.num_articles()
     if fresh:
@@ -30,4 +28,4 @@ def build_index(test=False, limit=1000):
     return "Indexing complete"
 
 if __name__ == '__main__':
-    build_index(test=True)
+    build_index(test=True, fresh=True)
