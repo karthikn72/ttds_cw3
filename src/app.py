@@ -20,7 +20,7 @@ db = Database()
 #process parameters
 def process_params(request_args):
     required_params = ["type", "q", "page", "request"]
-    multi_params = ["sentiment", "author", "publication", "category", "section"]
+    multi_params = ["sentiment", "author", "publication", "category"]
     date_params = ["from", "to"] #these are date params
 
     processed_params = {}
@@ -341,9 +341,8 @@ def get_results():
     #apply filters if they exist
     authors = processed_params['author'] if processed_params['author'] else None
     sentiments = processed_params['sentiment'] if processed_params['sentiment'] else None
-    categories = processed_params['category'] if processed_params['category'] else None
     publications = processed_params['publication'] if processed_params['publication'] else None
-    sections = processed_params['section'] if processed_params['section'] else None
+    sections = processed_params['category'] if processed_params['category'] else None
 
     #get results from database
     if search_type == "publication":
@@ -365,10 +364,6 @@ def get_results():
             sentiments = [sentiment.lower() for sentiment in processed_params['sentiment']]
             results_df = results_df[results_df['sentiment'].apply(lambda x: isinstance(x, str) and pd.notnull(x) and x.lower() in sentiments)]
 
-        if processed_params['category']:
-            categories = [category.lower() for category in processed_params['category']]
-            results_df = results_df[results_df['section_name'].apply(lambda x: isinstance(x, str) and pd.notnull(x) and x.lower() in categories)]
-
         if results_df.empty:
             return jsonify({'status': 200, 'message': "No articles found with filter conditions"}), 200
 
@@ -381,7 +376,7 @@ def get_results():
             return_results_df = sort_by_relevance(results_df, relevance_order, start, end)
             return_results_df = format_results(return_results_df)
         else:
-            return_results_df = format_results(return_results_df[start:end])
+            return_results_df = format_results(results_df[start:end])
 
     if processed_params['request'] == None or processed_params['request'] == "meta":
         filter_options = get_filter_options(return_results_df)
