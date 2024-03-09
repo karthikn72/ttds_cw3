@@ -8,12 +8,12 @@ if __name__ == "__main__":
     db = database.Database()
 
     # # Using all arguments when getting articles
-    # res = db.get_articles(article_ids=[12, 19, 21, 36, 43, 46, 66, 75, 79, 87],  
-    #                     start_date=datetime(2016, 1, 1), 
-    #                     end_date=datetime(2019, 3, 28),
-    #                     sections=['Sports News'],
-    #                     publications=['TechCrunch', 'Reuters'])
-    # print(res)
+    res = db.get_articles(article_ids=[12, 19, 21, 36, 43, 46, 66, 75, 79, 87],  
+                        start_date=datetime(2016, 1, 1), 
+                        end_date=datetime(2019, 3, 28),
+                        sections=['sports news'],
+                        publications=['techcrunch', 'Reuters'])
+    print(res)
 
     # # Retrieving 10,000 random articles
     # res = db.get_articles(article_ids=random.sample(range(10 ** 6), 10000))
@@ -73,11 +73,12 @@ if __name__ == "__main__":
 
     # db.reset_index()
     # db.build_index(index=index_dict)
-    test_articles = db.get_articles(article_ids=[6083, 4047]) 
-    print(test_articles[['title', 'article']])
-    id = Indexer()
-    id.set_up_stopwords("tools/resources/ttds_2023_english_stop_words.txt")
-    id.indexing(0, test_articles)
-    article_index = id.get_index()
-    print(article_index)
+
+    # test_articles = db.get_articles(article_ids=[11210]) 
+    # print(test_articles[['title', 'article']])
+    # id = Indexer()
+    # id.set_up_stopwords("tools/resources/ttds_2023_english_stop_words.txt")
+    # id.indexing(test_articles)
+    # article_index = id.get_index()
+    # print(list(article_index.word.unique()))
     print("Database test completed successfully")

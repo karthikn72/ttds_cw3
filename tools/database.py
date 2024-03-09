@@ -248,11 +248,13 @@ class Database:
             base_query_2 = f'(SELECT article_id, unnest(author_ids) as author_id FROM articles WHERE articles.article_id IN {article_ids}) a'
             add_queries.append(f'articles.article_id IN {article_ids}')
         if sections:
+            sections = list(map(str.lower, sections))
             sections = tuple(sections) if len(sections) > 1 else f'(\'{sections[0]}\')'
-            add_queries.append(f's.section_name IN {sections}')
+            add_queries.append(f'LOWER(s.section_name) IN {sections}')
         if publications:
+            publications = list(map(str.lower, publications))
             publications = tuple(publications) if len(publications) > 1 else f'(\'{publications[0]}\')'
-            add_queries.append(f'p.publication_name IN {publications}')
+            add_queries.append(f'LOWER(p.publication_name) IN {publications}')
         if start_date:
             start_date = start_date.strftime('%Y-%m-%d %H:%M:%S')
             add_queries.append(f"upload_date >= TIMESTAMP \'{start_date}\'")
@@ -337,14 +339,14 @@ class Database:
     def add_words(self, index, conn):
         self.words = db.Table('words', self.metadata, autoload_with=self.engine)
         word_list = [{'word':word} for word in index.word.unique()]
-        chunk_size = 1000
+        chunk_size = 10000
         for i in range(0, len(word_list), chunk_size):
             chunk = word_list[i:i+chunk_size]
             query = insert(self.words).values(chunk).on_conflict_do_nothing()
-        t = timer.Timer('Inserted words in {:.4f}s')
-        t.start()
-        conn.execute(query)
-        t.stop()
+            t = timer.Timer('Inserted words in {:.4f}s')
+            t.start()
+            conn.execute(query)
+            t.stop()
         query = db.text(f'SELECT * FROM words WHERE word in {tuple(index.word.unique())};')
         t = timer.Timer('Got words in {:.4f}s')
         t.start()
@@ -381,7 +383,7 @@ class Database:
         with self.engine.connect() as db_conn:
             try:
                 word_df = self.add_words(index=index, conn=db_conn)
-                index = pd.merge(index, word_df, on='word', how='inner')
+                index = pd.merge(index, word_df, on='word', how='left')
                 index = index.drop('word', axis=1)
                 self.add_index(index_table=index, conn=db_conn)
                 db_conn.commit()
