@@ -20,7 +20,7 @@ db = Database()
 #process parameters
 def process_params(request_args):
     required_params = ["type", "q", "page", "request"]
-    multi_params = ["sentiment", "author", "publication", "category"]
+    multi_params = ["sentiment", "author", "publication", "category", "section"]
     date_params = ["from", "to"] #these are date params
 
     processed_params = {}
@@ -30,7 +30,7 @@ def process_params(request_args):
         value = request_args.get(param)
         if value == None:
             return {'error': {'status': 400, 'message': f"{param} parameter is required"}}
-        elif value == "" or not re.match(r'^[a-zA-Z0-9_(),"\' ]*$', value):
+        elif value == "" or not re.match(r'^[a-zA-Z0-9_(),"\' -]*$', value):
             return {'error': {'status': 400, 'message': f'Invalid value: {value} for required parameter: {param}'}}
         processed_params[param] = value.lower()
 
@@ -41,9 +41,9 @@ def process_params(request_args):
     #define some reusable regex
     s = r'^\(\s*'
     q_req = r'"'
-    word = r'[a-zA-Z0-9_\']+'
-    words = r'[a-zA-Z0-9_\' ]+'
-    word_or_phrase = r'("[a-zA-Z0-9_\' ]+"|[a-zA-Z0-9_\']+)'
+    word = r'[a-zA-Z0-9_\'-]+'
+    words = r'[a-zA-Z0-9_\' -]+'
+    word_or_phrase = r'("[a-zA-Z0-9_\' ]+"|[a-zA-Z0-9_\' ]-)'
     comma = r'\s*,\s*'
     valid_digit = r'[1-9]+'
     boolean_operator = r'(AND|OR|and|or)'
@@ -74,8 +74,8 @@ def process_params(request_args):
     if processed_params['request'] not in ['articles', 'meta']:
         return {'error': {'status': 400, 'message': f"Invalid value for request parameter"}}
 
-    #check if there is a sortBy, if not set sortBy to None
-    if 'sortBy' in request_args:
+    #check if there is a sortBy in the request args, if not set sortBy to None
+    if request_args.get('sortBy') != None:
         processed_params['sortBy'] = request_args.get('sortBy').lower()
         if processed_params['sortBy'] not in ['relevance', 'ascendingdate', 'descendingdate']:
             return {'error': {'status': 400, 'message': f"Invalid value for sortBy parameter"}}
@@ -144,6 +144,17 @@ def get_filter_options(results):
         'sections': [section for section in results['section_name'].unique().tolist() if section != ""]
     }
     return filter_options
+
+def sort_by_relevance(results_df, relevance_order, start, end):
+    # get 100 in order of relevance
+    relevance_order = relevance_order[start:end]
+    results_df = results_df[results_df['article_id'].isin(relevance_order)]
+    results_df['article_id'] = results_df['article_id'].astype('category')
+    results_df['article_id'] = results_df['article_id'].cat.set_categories(relevance_order)
+    results_df = results_df.sort_values(['article_id'])
+    categorical_columns = results_df.select_dtypes(['category']).columns
+    results_df[categorical_columns] = results_df[categorical_columns].astype('object')
+    return results_df
 
 @app.route('/')
 def index():
@@ -238,13 +249,13 @@ def get_results():
     if search_type == "phrase":
         try:
             terms = q.tokenize_free_form(search_query)
-        except ValueError as e:
+        except (ValueError, Exception) as e:
             return jsonify({'status': 500, 'message': "Unable to tokenize query"}), 500
         try:
             results = r.free_form_retrieval(terms)
-        except KeyError as e:
+        except (KeyError, Exception) as e:
             return jsonify({'status': 404, 'message': "Could not find term in index"}), 404
-        results = sorted(results.items(), key=lambda x: x[1], reverse=True)
+        results_scores = results
         results = [x[0] for x in results]
 
     elif search_type == "boolean":
@@ -261,13 +272,13 @@ def get_results():
         try:
             t1 = q.tokenize_free_form(t1)
             t2 = q.tokenize_free_form(t2)
-        except Exception as e:
+        except (ValueError, Exception) as e:
             return jsonify({'status': 500, 'message': "Error during tokenization"}), 500
         try:
             results = r.bool_retrieval(t1, t2, op)
-        except KeyError as e:
+        except (KeyError, Exception) as e:
             return jsonify({'status': 404, 'message': "Could not find term in index"}), 404
-        results = sorted(results.items(), key=lambda x: x[1], reverse=True)
+        results_scores = results
         results = [x[0] for x in results]
 
     elif search_type == "proximity":
@@ -276,26 +287,26 @@ def get_results():
         try:
             t1 = q.process_word(t1)
             t2 = q.process_word(t2)
-        except ValueError as e:
+        except (ValueError, Exception) as e:
             return jsonify({'status': 500, 'message': "Unable to tokenize query"}), 500
         try:
             results = r.proximity_retrieval(t1, t2, int(k))
-        except KeyError as e:
+        except (KeyError, Exception) as e:
             return jsonify({'status': 404, 'message': "Could not find term in index"}), 404
-        results = sorted(results.items(), key=lambda x: x[1], reverse=True)
+        results_scores = results
         results = [x[0] for x in results]
 
     elif search_type == "freeform":
         try:
             terms = q.tokenize_free_form(search_query)
-        except Exception as e:
+        except (ValueError, Exception) as e:
             return jsonify({'status': 500, 'message': "Error during tokenization"}), 500
         try:
             results = r.free_form_retrieval(terms)
-        except KeyError as e:
+        except (KeyError, Exception) as e:
             return jsonify({'status': 404, 'message': "Could not find term in index"}), 404
-        results = sorted(results.items(), key=lambda x: x[1], reverse=True)
-        results = [x[0] for x in results]
+        results_scores = results
+        results = results.keys()
 
     elif search_type == "publication":
         publications = [search_query]
@@ -316,38 +327,64 @@ def get_results():
         
     #check for sortBy 
     sort_by_date = None
+    relevance_order = []
     if processed_params['sortBy'] == None or processed_params['sortBy'] == "relevance":
         sort_by_date = None
-    elif processed_params['sortBy'] == "ascendingdate": #not true sort, only sorting the 100 retrieved from database
+        relevance = True
+        results_scores = sorted(results_scores.items(), key=lambda x: x[1], reverse=True)
+        relevance_order = [x[0] for x in results_scores]
+    elif processed_params['sortBy'].lower() == "ascendingdate": 
         sort_by_date = "asc"
-    elif processed_params['sortBy'] == "descendingdate":
+    elif processed_params['sortBy'].lower() == "descendingdate":
         sort_by_date = "desc"  
 
     #apply filters if they exist
-    authors = None
-    sentiments = None
-    categories = None
-    if 'publication' in processed_params:
-        publications = processed_params['publication']
-    else:
-        publications = None
+    authors = processed_params['author'] if processed_params['author'] else None
+    sentiments = processed_params['sentiment'] if processed_params['sentiment'] else None
+    categories = processed_params['category'] if processed_params['category'] else None
+    publications = processed_params['publication'] if processed_params['publication'] else None
+    sections = processed_params['section'] if processed_params['section'] else None
 
     #get results from database
     if search_type == "publication":
-        results_df = db.get_articles(publications=publications, start_date=start_date, end_date=end_date, sort_by_date=sort_by_date, limit=10000)
+        results_df = db.get_articles(publications=publications, start_date=start_date, end_date=end_date, sort_by_date=sort_by_date, sections=sections, limit=10000)
     else:
-        results_df = db.get_articles(article_ids=results, publications=publications, start_date=start_date, end_date=end_date, sort_by_date=sort_by_date, limit=10000)
+        if results == []:
+            return jsonify({'status': 404, 'message': "Words could not be found in the index"}), 404
+        results_df = db.get_articles(article_ids=results, publications=publications, start_date=start_date, end_date=end_date, sort_by_date=sort_by_date, sections=sections, limit=10000)
 
     if results_df.empty:
         return jsonify({'status': 404, 'message': "No articles found for docid"}), 404
     else:
+        #for now, filter with pandas in the API
+        if processed_params['author']:
+            authors = [author.lower() for author in processed_params['author']]
+            results_df = results_df[results_df['author_names'].apply(lambda x: isinstance(x, list) and any(author in name.lower() for author in authors for name in x if name is not None))]
+
+        if processed_params['sentiment']:
+            sentiments = [sentiment.lower() for sentiment in processed_params['sentiment']]
+            results_df = results_df[results_df['sentiment'].apply(lambda x: isinstance(x, str) and pd.notnull(x) and x.lower() in sentiments)]
+
+        if processed_params['category']:
+            categories = [category.lower() for category in processed_params['category']]
+            results_df = results_df[results_df['section_name'].apply(lambda x: isinstance(x, str) and pd.notnull(x) and x.lower() in categories)]
+
+        if results_df.empty:
+            return jsonify({'status': 200, 'message': "No articles found with filter conditions"}), 200
+
         #to return only 100 articles depending on page number
         start = (int(processed_params['page']))*100
         end = start + 100
-        results_df = format_results(results_df[start:end]) 
+        if start >= len(results_df):
+            return jsonify({'status': 404, 'message': "No articles found for page"}), 404
+        if relevance_order:
+            return_results_df = sort_by_relevance(results_df, relevance_order, start, end)
+            return_results_df = format_results(return_results_df)
+        else:
+            return_results_df = format_results(return_results_df[start:end])
 
     if processed_params['request'] == None or processed_params['request'] == "meta":
-        filter_options = get_filter_options(results_df)
+        filter_options = get_filter_options(return_results_df)
 
     end_time = time.time()  #end timing
     retrieval_time = end_time - start_time  #to calculate retrieval time
@@ -356,8 +393,8 @@ def get_results():
     response = {
         'status': 200,
         'retrieval_time': retrieval_time,
-        'total_results': len(results),
-        'results': results_df.to_dict('records')
+        'total_results': len(return_results_df),
+        'results': return_results_df.to_dict('records')
     }
     if 'filter_options' in locals(): #only include filter options if they exist (ie if request is all or not specified)
         response['filter_options'] = filter_options

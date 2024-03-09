@@ -6,7 +6,6 @@ import os
 from .database import Database
 
 import numpy as np
-
 from .tokenizer import Tokenizer, QueryTokenizer
 
     # {

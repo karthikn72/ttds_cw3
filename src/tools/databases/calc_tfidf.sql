@@ -33,7 +33,7 @@ CREATE TEMPORARY TABLE temp_tfidf AS (
     SELECT
         tf.word_id,
         tf.article_id,
-        tf.tf::decimal * idf.idf AS tfidf
+        tf.log_tf::float * idf.idf AS tfidf
     FROM
         log_tf_table tf
     JOIN
