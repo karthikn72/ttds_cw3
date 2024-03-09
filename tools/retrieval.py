@@ -93,6 +93,9 @@ class Retrieval:
         self.index = self.db.get_index_by_words([word1, word2])
 
         doc_scores = defaultdict(lambda: float)
+
+        if len(self.index)==0 or len(self.index['word'].unique())!=2:
+            return doc_scores
         
         if (word1 not in self.index['word'].values) or (word2 not in self.index['word'].values):
             return doc_scores
@@ -130,9 +133,7 @@ class Retrieval:
             term2 = terms[i+1]
 
             if (term1 not in self.index['word'].values)|(term2 not in self.index['word'].values):
-                print('qwertyui2')
                 return set([])
-            print('qwertyui3')
             
             if i==0:
                 docs1 = set(self.index[self.index['word']==term1]['article_id'].values)
@@ -153,7 +154,6 @@ class Retrieval:
         return set(output_dict.keys())
     
     def __check_adjacent_words(self, shared_docs, former_pos_dict, later_pos_dict, proximity=1):
-        print('qwertyui')
         output_dict = defaultdict(list)
         for doc in shared_docs:
             term1_positions = former_pos_dict[doc] + proximity
