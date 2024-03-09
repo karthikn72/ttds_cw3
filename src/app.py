@@ -393,7 +393,7 @@ def get_results():
     response = {
         'status': 200,
         'retrieval_time': retrieval_time,
-        'total_results': len(return_results_df),
+        'total_results': len(results_df),
         'results': return_results_df.to_dict('records')
     }
     if 'filter_options' in locals(): #only include filter options if they exist (ie if request is all or not specified)
