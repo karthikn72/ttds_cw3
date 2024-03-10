@@ -358,7 +358,8 @@ def get_results():
     #apply filters if they exist
     authors = processed_params['author'] if processed_params['author'] else None
     sentiments = processed_params['sentiment'] if processed_params['sentiment'] else None
-    publications = processed_params['publication'] if processed_params['publication'] else None
+    if search_type != "publication":
+        publications = processed_params['publication'] if processed_params['publication'] else None
     sections = processed_params['category'] if processed_params['category'] else None
 
     #get results from database
