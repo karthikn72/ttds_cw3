@@ -43,11 +43,21 @@ def process_params(request_args):
     q_req = r'"'
     word = r'[a-zA-Z0-9_\'-]+'
     words = r'[a-zA-Z0-9_\' -]+'
-    word_or_phrase = r'("[a-zA-Z0-9_\' ]+"|[a-zA-Z0-9_\' ]-)'
+    word_or_phrase = r'("[a-zA-Z0-9_\' -]+"|[a-zA-Z0-9_\'-]+)'
     comma = r'\s*,\s*'
-    valid_digit = r'[1-9]+'
+    valid_digit = r'[0-9]+'
     boolean_operator = r'(AND|OR|and|or)'
     e = r'\s*\)$'
+
+    print("test some queries")
+    q1 = "(president , OR, trump  )"
+    print(f'q1: {re.fullmatch(s+word_or_phrase+comma+boolean_operator+comma+word_or_phrase+e, q1)}')
+    q2 = "(president  ,   or  ,  trump)"
+    print(f'q2: {re.fullmatch(s+word_or_phrase+comma+boolean_operator+comma+word_or_phrase+e, q2)}')
+    q3 = '("let it go"   , AND,  frozen )'
+    print(f'q3: {re.fullmatch(s+word_or_phrase+comma+boolean_operator+comma+word_or_phrase+e, q3)}')
+    q4 = '("frozen", OR, "let it go")'
+    print(f'q4: {re.fullmatch(s+word_or_phrase+comma+boolean_operator+comma+word_or_phrase+e, q4)}')
 
     #check if the query is for each type of search is valid
     if processed_params['type'] == 'proximity':
@@ -248,10 +258,12 @@ def get_results():
     search_type = processed_params['type']
     if search_type == "phrase":
         try:
+            print(f'search_query: {search_query}')
             terms, expanded_terms = q.tokenize_free_form(search_query)
         except (ValueError, Exception) as e:
-            return jsonify({'status': 500, 'message': "Unable to tokenize query"}), 500
+            return jsonify({'status': 404, 'message': "Unable to tokenize query"}), 404
         try:
+            print(f'terms: {terms}, expanded_terms: {expanded_terms}')
             results = r.free_form_retrieval(terms, expanded_terms=expanded_terms)
         except (KeyError, Exception) as e:
             return jsonify({'status': 404, 'message': "Could not find term in index"}), 404
@@ -270,11 +282,13 @@ def get_results():
             return jsonify({'status': 400, 'message': "Invalid boolean operator"}), 400
         
         try:
+            print(f't1: {t1}, t2: {t2}, op: {op}')
             t1, exp_t1 = q.tokenize_free_form(t1)
             t2, exp_t2 = q.tokenize_free_form(t2)
         except (ValueError, Exception) as e:
-            return jsonify({'status': 500, 'message': "Error during tokenization"}), 500
+            return jsonify({'status': 404, 'message': "Error during tokenization"}), 404
         try:
+            print(f't1: {t1}, exp_t1: {exp_t1}, t2: {t2}, exp_t2: {exp_t2}, op: {op}')
             results = r.bool_retrieval(t1, exp_t1, t2, exp_t2, op)
         except (KeyError, Exception) as e:
             return jsonify({'status': 404, 'message': "Could not find term in index"}), 404
@@ -284,12 +298,16 @@ def get_results():
     elif search_type == "proximity":
         parts = search_query.strip("()").split(",")
         t1, t2, k = [part.strip() for part in parts]
+        if int(k) < 1:
+            return jsonify({'status': 400, 'message': "Invalid value for k"}), 400
         try:
+            print(f't1: {t1}, t2: {t2}, k: {k}')
             t1 = q.process_word(t1)
             t2 = q.process_word(t2)
         except (ValueError, Exception) as e:
-            return jsonify({'status': 500, 'message': "Unable to tokenize query"}), 500
+            return jsonify({'status': 404, 'message': "Unable to tokenize query"}), 404
         try:
+            print(f't1: {t1}, t2: {t2}, k: {k}')
             results = r.proximity_retrieval(t1, t2, int(k))
         except (KeyError, Exception) as e:
             return jsonify({'status': 404, 'message': "Could not find term in index"}), 404
@@ -298,10 +316,12 @@ def get_results():
 
     elif search_type == "freeform":
         try:
+            print(f'search_query: {search_query}')
             terms, exp_terms = q.tokenize_free_form(search_query)
         except (ValueError, Exception) as e:
-            return jsonify({'status': 500, 'message': "Error during tokenization"}), 500
+            return jsonify({'status': 404, 'message': "Error during tokenization"}), 404
         try:
+            print(f'terms: {terms}, exp_terms: {exp_terms}')
             results = r.free_form_retrieval(terms, exp_terms)
         except (KeyError, Exception) as e:
             return jsonify({'status': 404, 'message': "Could not find term in index"}), 404
@@ -310,6 +330,7 @@ def get_results():
 
     elif search_type == "publication":
         publications = [search_query]
+        print(f'publications: {publications}')
 
     else:
         return jsonify({'status': 400, 'message': "Invalid search type"}), 400
@@ -346,7 +367,12 @@ def get_results():
 
     #get results from database
     if search_type == "publication":
-        results_df = db.get_articles(publications=publications, start_date=start_date, end_date=end_date, sort_by_date=sort_by_date, sections=sections, limit=10000)
+        try:
+            print(f'publications: {publications}, start_date: {start_date}, end_date: {end_date}, sort_by_date: {sort_by_date}, sections: {sections}')
+            results_df = db.get_articles(publications=publications, start_date=start_date, end_date=end_date, sort_by_date=sort_by_date, sections=sections, limit=10000)
+        except (Exception) as e:
+            print(e)
+            return jsonify({'status': 404, 'message': 'error fetching articles'}), 404
     else:
         if results == []:
             return jsonify({'status': 404, 'message': "Words could not be found in the index"}), 404
