@@ -4,36 +4,18 @@ from nltk import PorterStemmer
 import pandas as pd
 import numpy as np
 import timer
+from tokenizer import Tokenizer
 
 class Indexer:
     
-    def __init__(self) -> None:
-        self.stemmer = PorterStemmer()
-        self.stopwords = set()
+    def __init__(self, case_fold=True, stop=True,  stem=True ):
+        self.tokenizer = Tokenizer( case_fold=case_fold, stop=stop,  stem=stem)
         
-        pass
+    def preprocessing(self, line):
+        return self.tokenizer.tokenize(line)
     def set_up_stopwords(self, filepath):
-        with open(filepath) as stopFile:
-            self.stopwords = set(stopFile.read().splitlines())
+        pass
     
-
-
-    def preprocessing(self, line, stopping=True, stemming=True):
-        line = line.replace('\'', ' ')
-        line = line.replace('-', ' ')
-        pattern = re.compile('[a-zA-Z0-9 \n]+')
-        result = ''.join(pattern.findall(re.sub('\n', ' ', line.lower())))
-        if stopping and stemming:
-            filtered_lines = [self.stemmer.stem(word) for word in result.split() if word not in self.stopwords]
-        elif stopping:
-            filtered_lines = [word for word in result.split() if word not in self.stopwords]
-        elif stemming:
-            filtered_lines = [self.stemmer.stem(word) for word in result.split()]
-        else:
-            filtered_lines = [word for word in result.split()]
-        return ' '.join(filtered_lines).rstrip()
-    
-
     def indexing(self, article_df):
         self.index_data = {}
         
