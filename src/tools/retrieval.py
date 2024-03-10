@@ -7,6 +7,7 @@ from .database import Database
 import pandas as pd
 
 import numpy as np
+
 from .tokenizer import Tokenizer, QueryTokenizer
 
     # {
@@ -61,13 +62,21 @@ class Retrieval:
                         if doc not in doc_scores:
                             doc_scores[doc] = 0
                         doc_scores[doc] += self.index[(self.index['word'] == w) & (self.index['article_id'] == doc)]['tfidf'].values[0]
+
+                for w in term:
+                    term_index = self.index[self.index.word==w]
+                    no_phrase_docs = set(self.index[self.index.word==w]['article_id'].values) - phrase_docs
+                    for doc in no_phrase_docs:
+                        if doc not in doc_scores:
+                            doc_scores[doc] = 0
+                        doc_scores[doc] += term_index[term_index['article_id'] == doc]['tfidf'].values[0]*0.6
         
         for term in expanded_query:
             term_index = self.index[self.index['word']==term]
             for doc in term_index['article_id']:
                 if doc not in doc_scores:
                     doc_scores[doc] = 0
-                doc_scores[doc] += term_index[term_index.article_id==doc]['tfidf'].values[0]*0.5
+                doc_scores[doc] += term_index[term_index.article_id==doc]['tfidf'].values[0]*0.4
 
         return doc_scores
     
@@ -125,7 +134,7 @@ class Retrieval:
             return set([])
         
         if len(terms)==1:
-            return set(self.index[self.index['word'==terms[0]]]['article_id'])
+            return set(self.index[self.index['word']==terms[0]]['article_id'])
 
         for i in range(0, len(terms)-1):
             term1 = terms[i]
@@ -145,7 +154,6 @@ class Retrieval:
             shared_docs = docs1 & docs2
 
             output_dict = self.__check_adjacent_words(shared_docs, term1_dict, term2_dict)
-            print(output_dict,'qwertyui')
 
             if len(output_dict)==0:
                 return set([])
@@ -167,7 +175,7 @@ class Retrieval:
     
 if __name__ == '__main__':
 
-    query = '"Indonesian priest"'
+    query = '"pioneers like Ada Lovelace"'
     qtokenizer = QueryTokenizer()
     query_terms, expanded_query = qtokenizer.tokenize_free_form(query)
 

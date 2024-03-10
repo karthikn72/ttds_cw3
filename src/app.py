@@ -319,6 +319,7 @@ def get_results():
             print(f'search_query: {search_query}')
             terms, exp_terms = q.tokenize_free_form(search_query)
         except (ValueError, Exception) as e:
+            print(e)
             return jsonify({'status': 404, 'message': "Error during tokenization"}), 404
         try:
             print(f'terms: {terms}, exp_terms: {exp_terms}')

@@ -6,8 +6,11 @@ import timer
 
 class QueryExpander:
     def __init__(self):
+        print("Downloading NLTK packages...")
         nltk.download('wordnet')
-        nltk.download('averaged_perceptron_tagger')  
+        nltk.download('averaged_perceptron_tagger')
+        print("NLTK packages downloaded successfully.")
+
 
     def expand_query(self, query):  #assumed format of this is that it is a query before it is normalized and stopped, and stemmed and returns a list of tokens with the full token at the start
         #this version of the query expander uses word pos tagging to get the synonyms of the words in the query
