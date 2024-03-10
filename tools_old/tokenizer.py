@@ -107,15 +107,15 @@ class QueryTokenizer(Tokenizer):
                     start = i+1
         processed = processed + self.__tokenize_raw_query(query[start:])
         if processed==[]:
-            raise ValueError("Please try including more specific keywords or phrases related to what you're looking for.")
+            raise ValueError("Query seems to contain no specific keywords.")
         return processed, self.__query_expansion(query)
     
     def process_word(self, word):
         processed = self.__tokenize_raw_query(word)
         if processed==[]:
-            raise ValueError("Please make sure that the word is a specific keyword and not a stop word.")
+            raise ValueError("Word seems to not be a specific keyword.")
         if len(processed)>1:
-            raise ValueError("Please avoid including special characters in the word.")
+            raise ValueError("Word seems to contain special characters.")
         return processed[0]
     
     def __tokenize_raw_query(self, term, should_stem=True):
