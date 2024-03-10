@@ -10,7 +10,7 @@ def build_doc_table(test=True, limit=1000, fresh=True):
     db = Database()
     N = db.num_articles()
     if fresh:
-        db.reset_index()  #change this
+        db.reset_doc_length_table()
     if test:
         N = 20000
     counter = Counter()
@@ -21,7 +21,7 @@ def build_doc_table(test=True, limit=1000, fresh=True):
         articles = db.get_articles(limit=limit,offset=i)
         counter.article_lengths(articles)
         print(f"--> {i + limit}/{N} documents")
-        db.build_doc_table(counter.get_lengths())
+        db.build_doc_length_table(counter.get_lengths())
         print(f"--> Added for {i + limit}/{N} documents")
         # populate_category_and_sentiment(articles)
     t.stop()

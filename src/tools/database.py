@@ -494,10 +494,10 @@ class Database:
                 return
             else:
                 print("Invalid input. Please enter 'y' or 'n'.")
-    def reset_doc_table(self):
-        sql_paths = ["tools/databases/create_index_table.sql"]
+    def reset_doc_length_table(self):
+        sql_paths = ["tools/databases/create_doc_length_table.sql"]
         while True:
-            confirm = input("Are you sure you want to reset the entire index? (y/n): ").lower()
+            confirm = input("Are you sure you want to reset the doc_length_table? (y/n): ").lower()
             if confirm in ['y', 'n']:
                 if confirm == 'y':
                     with self.engine.connect() as db_conn:
@@ -522,7 +522,7 @@ class Database:
                 db_conn.rollback()
                 print("!!!!! CANCELLED INDEXING !!!!!")
                 raise e
-    def add_doc_table(self, doc_table, conn):
+    def add_doc_length_table(self, doc_table, conn):
         t = Timer('Built doc table in {:.4f}s')
         t.start()
         doc_table.to_sql('doc_length_table', 
