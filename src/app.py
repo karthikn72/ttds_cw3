@@ -248,11 +248,11 @@ def get_results():
     search_type = processed_params['type']
     if search_type == "phrase":
         try:
-            terms = q.tokenize_free_form(search_query)
+            terms, expanded_terms = q.tokenize_free_form(search_query)
         except (ValueError, Exception) as e:
             return jsonify({'status': 500, 'message': "Unable to tokenize query"}), 500
         try:
-            results = r.free_form_retrieval(terms)
+            results = r.free_form_retrieval(terms, expanded_terms=expanded_terms)
         except (KeyError, Exception) as e:
             return jsonify({'status': 404, 'message': "Could not find term in index"}), 404
         results_scores = results
@@ -270,12 +270,12 @@ def get_results():
             return jsonify({'status': 400, 'message': "Invalid boolean operator"}), 400
         
         try:
-            t1 = q.tokenize_free_form(t1)
-            t2 = q.tokenize_free_form(t2)
+            t1, exp_t1 = q.tokenize_free_form(t1)
+            t2, exp_t2 = q.tokenize_free_form(t2)
         except (ValueError, Exception) as e:
             return jsonify({'status': 500, 'message': "Error during tokenization"}), 500
         try:
-            results = r.bool_retrieval(t1, t2, op)
+            results = r.bool_retrieval(t1, exp_t1, t2, exp_t2, op)
         except (KeyError, Exception) as e:
             return jsonify({'status': 404, 'message': "Could not find term in index"}), 404
         results_scores = results
@@ -298,11 +298,11 @@ def get_results():
 
     elif search_type == "freeform":
         try:
-            terms = q.tokenize_free_form(search_query)
+            terms, exp_terms = q.tokenize_free_form(search_query)
         except (ValueError, Exception) as e:
             return jsonify({'status': 500, 'message': "Error during tokenization"}), 500
         try:
-            results = r.free_form_retrieval(terms)
+            results = r.free_form_retrieval(terms, exp_terms)
         except (KeyError, Exception) as e:
             return jsonify({'status': 404, 'message': "Could not find term in index"}), 404
         results_scores = results

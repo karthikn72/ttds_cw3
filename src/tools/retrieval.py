@@ -4,6 +4,7 @@ import pickle
 import sys
 import os
 from .database import Database
+import pandas as pd
 
 import numpy as np
 from .tokenizer import Tokenizer, QueryTokenizer
@@ -34,10 +35,18 @@ class Retrieval:
                 flat_list.append(row)
         return flat_list
 
-    def free_form_retrieval(self, query_terms):
+    def free_form_retrieval(self, query_terms, expanded_query):
         self.index = self.db.get_index_by_words(self.__flatten_query_terms(query_terms))
+
+        if len(self.index)==0 or len(self.index.article_id.unique())<=20:
+            index_expanded = self.db.get_index_by_words(expanded_query)
+            self.index = pd.concat([self.index, index_expanded], axis=0)
         
         doc_scores = defaultdict(lambda: float)
+
+        if len(self.index)==0:
+            return doc_scores
+
         for term in query_terms:
             if type(term) == str:
                 term_index = self.index[self.index['word']==term]
@@ -51,14 +60,20 @@ class Retrieval:
                     for doc in phrase_docs:
                         if doc not in doc_scores:
                             doc_scores[doc] = 0
-                        
                         doc_scores[doc] += self.index[(self.index['word'] == w) & (self.index['article_id'] == doc)]['tfidf'].values[0]
+        
+        for term in expanded_query:
+            term_index = self.index[self.index['word']==term]
+            for doc in term_index['article_id']:
+                if doc not in doc_scores:
+                    doc_scores[doc] = 0
+                doc_scores[doc] += term_index[term_index.article_id==doc]['tfidf'].values[0]*0.5
 
         return doc_scores
     
-    def bool_retrieval(self, query_terms1, query_terms2=[], operator=None):
-        docs1 = self.free_form_retrieval(query_terms1)
-        docs2 = self.free_form_retrieval(query_terms2)
+    def bool_retrieval(self, query_terms1, expanded_query1, query_terms2=[], expanded_query2=[], operator=None):
+        docs1 = self.free_form_retrieval(query_terms1, expanded_query1)
+        docs2 = self.free_form_retrieval(query_terms2, expanded_query2)
 
         if operator == 'AND':
             docs = docs1.keys() & docs2.keys()
@@ -77,6 +92,9 @@ class Retrieval:
         self.index = self.db.get_index_by_words([word1, word2])
 
         doc_scores = defaultdict(lambda: float)
+
+        if len(self.index)==0 or len(self.index['word'].unique())!=2:
+            return doc_scores
         
         if (word1 not in self.index['word'].values) or (word2 not in self.index['word'].values):
             return doc_scores
@@ -127,6 +145,7 @@ class Retrieval:
             shared_docs = docs1 & docs2
 
             output_dict = self.__check_adjacent_words(shared_docs, term1_dict, term2_dict)
+            print(output_dict,'qwertyui')
 
             if len(output_dict)==0:
                 return set([])
@@ -148,10 +167,10 @@ class Retrieval:
     
 if __name__ == '__main__':
 
-    query = 'sochi'
+    query = '"Indonesian priest"'
     qtokenizer = QueryTokenizer()
-    query_terms = qtokenizer.tokenize_free_form(query)
+    query_terms, expanded_query = qtokenizer.tokenize_free_form(query)
 
     r = Retrieval()
-    ans = r.free_form_retrieval(query_terms)
+    ans = r.free_form_retrieval(query_terms, expanded_query)
     print(ans)

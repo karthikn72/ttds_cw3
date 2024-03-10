@@ -1,6 +1,7 @@
 import re
 from nltk.stem import PorterStemmer
 import os
+from .query_expansion import QueryExpander
 
 from autocorrect import Speller
 
@@ -59,14 +60,15 @@ q = QueryTokenizer()
     * Eg: 'story book "middle east" piece "man America hunting"'
     * q.tokenize_free_form(query) - returns a list of tokens, grouping phrases within the query into a list
     * Output Eg: ['stori', 'book', ['middl', 'east'], 'piec', ['man', 'america', 'hunt']]
+                also returns expanded query => ['narr', 'narrat', 'tale', 'adult', 'male']
     * Raises - ValueError, when query after processing is empty
 
 2. Boolean queries - operand1, operand2, operator
     * These queries have 2 free form queries combined by a boolean operator (AND/OR)
     * Eg: 'story book "middle east"' AND 'call denver direct'
     * To tokenize:
-        query_tokens1 = q.tokenize_free_form(operand1)
-        query_tokens1 = q.tokenize_free_form(operand2)
+        query_tokens1, expanded_query_tokens1 = q.tokenize_free_form(operand1)
+        query_tokens2, expanded_query_tokens2 = q.tokenize_free_form(operand2)
 
 3. Proximity search queries - word1, word2, proximity
     * These queries have 2 words and proximity param of the words
@@ -85,6 +87,7 @@ class QueryTokenizer(Tokenizer):
                  stem=True, 
                  tokenize_re=DEFAULT_TOKENIZE_RULE):
         Tokenizer.__init__(self, case_fold, stop, stop_file, stem, tokenize_re)
+        self.qe = QueryExpander()
 
     def tokenize_free_form(self, query):
         open_quote = -1
@@ -105,7 +108,7 @@ class QueryTokenizer(Tokenizer):
         processed = processed + self.__tokenize_raw_query(query[start:])
         if processed==[]:
             raise ValueError("Query after processing is empty")
-        return processed
+        return processed, self.__query_expansion(query)
     
     def process_word(self, word):
         processed = self.__tokenize_raw_query(word)
@@ -115,14 +118,14 @@ class QueryTokenizer(Tokenizer):
             raise ValueError("Invalid query word")
         return processed[0]
     
-    def __tokenize_raw_query(self, term):
+    def __tokenize_raw_query(self, term, should_stem=True):
         tokens = re.findall(pattern=self.tokenize_re, string=term)
         if self.case_fold:
             tokens = list(map(lambda x: x.lower(), tokens))
         if self.stop:
             tokens = self.stopping(tokens)
         tokens = self.__query_spell_correction(tokens)
-        if self.stem:
+        if self.stem and should_stem:
             tokens = self.normalise(tokens)
         return tokens
     
@@ -130,6 +133,16 @@ class QueryTokenizer(Tokenizer):
         spell = Speller(lang='en')
         return list(map(spell, tokens))
  
+    def __query_expansion(self, query):
+        tokenized = self.__tokenize_raw_query(query, False)
+        expanded_query = self.qe.expand_query(tokenized)
+        expanded_query = list(filter(lambda word : not re.compile(r'[^a-zA-Z0-9]').search(word), expanded_query))
+        if self.stop:
+            expanded_query = self.stopping(expanded_query)
+        if self.stem:
+            expanded_query = self.normalise(expanded_query)
+        return expanded_query
+
     def __repr__(self):
         return f"QueryTokenizer(case_fold={self.case_fold}, stop={self.stop}, stop_file={self.stop_file}, stem={self.stem}, tokenize_re={self.tokenize_re})"
 
@@ -137,5 +150,5 @@ class QueryTokenizer(Tokenizer):
 if __name__ == '__main__':
     q = QueryTokenizer()
     # print(q.tokenize_bool('"middle east" AND pece')) # ([['middl', 'east']], ['piec'], 'AND')
-    print(q.process_word('USA'), 4)
+    print(q.tokenize_free_form('story book "middle east" piece "man America hunting"'))
     # print(q.tokenize_free_form('story book "middle east" piece "man America hunting"'))
