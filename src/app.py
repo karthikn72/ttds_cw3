@@ -49,16 +49,6 @@ def process_params(request_args):
     boolean_operator = r'(AND|OR|and|or)'
     e = r'\s*\)$'
 
-    print("test some queries")
-    q1 = "(president , OR, trump  )"
-    print(f'q1: {re.fullmatch(s+word_or_phrase+comma+boolean_operator+comma+word_or_phrase+e, q1)}')
-    q2 = "(president  ,   or  ,  trump)"
-    print(f'q2: {re.fullmatch(s+word_or_phrase+comma+boolean_operator+comma+word_or_phrase+e, q2)}')
-    q3 = '("let it go"   , AND,  frozen )'
-    print(f'q3: {re.fullmatch(s+word_or_phrase+comma+boolean_operator+comma+word_or_phrase+e, q3)}')
-    q4 = '("frozen", OR, "let it go")'
-    print(f'q4: {re.fullmatch(s+word_or_phrase+comma+boolean_operator+comma+word_or_phrase+e, q4)}')
-
     #check if the query is for each type of search is valid
     if processed_params['type'] == 'proximity':
         regex = s+word+comma+word+comma+valid_digit+e
@@ -259,16 +249,16 @@ def get_results():
     if search_type == "phrase":
         try:
             print(f'search_query: {search_query}')
-            terms, expanded_terms = q.tokenize_free_form(search_query)
+            terms, exp_terms = q.tokenize_free_form(search_query)
         except (ValueError, Exception) as e:
             return jsonify({'status': 404, 'message': "Unable to tokenize query"}), 404
         try:
-            print(f'terms: {terms}, expanded_terms: {expanded_terms}')
-            results = r.free_form_retrieval(terms, expanded_terms=expanded_terms)
+            print(f'terms: {terms}, expanded_terms: {exp_terms}')
+            results = r.free_form_retrieval(terms, exp_terms)
         except (KeyError, Exception) as e:
             return jsonify({'status': 404, 'message': "Could not find term in index"}), 404
         results_scores = results
-        results = [x[0] for x in results]
+        results = results.keys()
 
     elif search_type == "boolean":
         parts = search_query.strip("()").split(",")
@@ -293,7 +283,7 @@ def get_results():
         except (KeyError, Exception) as e:
             return jsonify({'status': 404, 'message': "Could not find term in index"}), 404
         results_scores = results
-        results = [x[0] for x in results]
+        results = results.keys()
 
     elif search_type == "proximity":
         parts = search_query.strip("()").split(",")
@@ -312,7 +302,7 @@ def get_results():
         except (KeyError, Exception) as e:
             return jsonify({'status': 404, 'message': "Could not find term in index"}), 404
         results_scores = results
-        results = [x[0] for x in results]
+        results = results.keys()
 
     elif search_type == "freeform":
         try:
@@ -350,15 +340,20 @@ def get_results():
     #check for sortBy 
     sort_by_date = None
     relevance_order = []
-    if processed_params['sortBy'] == None or processed_params['sortBy'] == "relevance":
-        sort_by_date = None
-        relevance = True
-        results_scores = sorted(results_scores.items(), key=lambda x: x[1], reverse=True)
-        relevance_order = [x[0] for x in results_scores]
-    elif processed_params['sortBy'].lower() == "ascendingdate": 
-        sort_by_date = "asc"
-    elif processed_params['sortBy'].lower() == "descendingdate":
-        sort_by_date = "desc"  
+    if search_type == "publication":
+        if processed_params['sortBy'] == None or processed_params['sortBy'] == "descendingdate":
+            sort_by_date = "desc" #default for publication search
+        elif processed_params['sortBy'] == "ascendingdate":
+            sort_by_date = "asc"
+    else:
+        if processed_params['sortBy'] == None or processed_params['sortBy'] == "relevance":
+            sort_by_date = None
+            results_scores = sorted(results_scores.items(), key=lambda x: x[1], reverse=True)
+            relevance_order = [x[0] for x in results_scores]
+        elif processed_params['sortBy'] == "ascendingdate": 
+            sort_by_date = "asc"
+        elif processed_params['sortBy'] == "descendingdate":
+            sort_by_date = "desc"  
 
     #apply filters if they exist
     authors = processed_params['author'] if processed_params['author'] else None
@@ -380,7 +375,10 @@ def get_results():
         results_df = db.get_articles(article_ids=results, publications=publications, start_date=start_date, end_date=end_date, sort_by_date=sort_by_date, sections=sections, limit=10000)
 
     if results_df.empty:
-        return jsonify({'status': 404, 'message': "No articles found for docid"}), 404
+        if processed_params['publications'] or processed_params['from'] or processed_params['to'] or processed_params['category']:
+            return jsonify({'status': 200, 'message': "No articles found with filter conditions"}), 200
+        else:
+            return jsonify({'status': 404, 'message': "No articles found for docid"}), 404
     else:
         #for now, filter with pandas in the API
         if processed_params['author']:
