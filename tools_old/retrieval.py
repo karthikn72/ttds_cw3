@@ -3,12 +3,12 @@ import heapq
 import pickle
 import sys
 import os
-import database
+from .database import Database
 import pandas as pd
 
 import numpy as np
-sys.path.append(os.path.abspath(os.path.join(os.getcwd(), os.pardir)))
-from tokenizer import Tokenizer, QueryTokenizer
+
+from .tokenizer import Tokenizer, QueryTokenizer
 
     # {
     #     word: {
@@ -25,7 +25,7 @@ from tokenizer import Tokenizer, QueryTokenizer
 
 class Retrieval:
     def __init__(self):
-        self.db = database.Database()
+        self.db = Database()
     
     def __flatten_query_terms(self, query_terms):
         flat_list = []

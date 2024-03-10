@@ -1,11 +1,19 @@
 
 import nltk
 from nltk.corpus import wordnet
+from tokenizer import Tokenizer, QueryTokenizer
 from nltk.corpus import wordnet
 import timer
 
 class QueryExpander:
+    
+    
+    
+    
+    
+    
     def __init__(self):
+        
         nltk.download('wordnet')
         nltk.download('averaged_perceptron_tagger')  
 

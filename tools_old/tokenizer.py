@@ -1,7 +1,7 @@
 import re
 from nltk.stem import PorterStemmer
 import os
-import query_expansion
+from .query_expansion import QueryExpander
 
 from autocorrect import Speller
 
@@ -91,7 +91,7 @@ class QueryTokenizer(Tokenizer):
                  stem=True, 
                  tokenize_re=DEFAULT_TOKENIZE_RULE):
         Tokenizer.__init__(self, case_fold, stop, stop_file, stem, tokenize_re)
-        self.qe = query_expansion.QueryExpander()
+        self.qe = QueryExpander()
 
     def tokenize_free_form(self, query):
         open_quote = -1
