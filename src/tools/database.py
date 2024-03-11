@@ -298,7 +298,7 @@ class Database:
             t.stop()
             return author_df
 
-    def update_sentiments(self, sentiments: pd.DataFrame, reset_sentiments=False):
+    def update_sentiment_scores(self, sentiments: pd.DataFrame, reset_sentiments=False):
         query = db.text(f'UPDATE articles \
                         SET positive = :positive, negative = :negative, neutral= :neutral \
                         WHERE article_id = :article_id')
