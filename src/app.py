@@ -30,7 +30,7 @@ def process_params(request_args):
         value = request_args.get(param)
         if value == None:
             return {'error': {'status': 400, 'message': f"{param} parameter is required"}}
-        elif value == "" or not re.match(r'^[a-zA-Z0-9_(),"\' -]*$', value):
+        elif value == "" or not re.match(r'^[a-zA-Z0-9_(),"\' .:-]*$', value):
             return {'error': {'status': 400, 'message': f'Invalid value: {value} for required parameter: {param}'}}
         processed_params[param] = value.lower()
 
@@ -62,6 +62,9 @@ def process_params(request_args):
         regex = q_req+words+q_req
         if not re.fullmatch(regex, processed_params['q']):
             return {'error': {'status': 400, 'message': f"Invalid value: {processed_params['q']} for search type: {processed_params['type']}"}}
+    elif processed_params['type'] == 'publication':
+        if not processed_params['q'].startswith('publication:'):
+            {'error': {'status': 400, 'message': f"Invalid value: {processed_params['q']} for search type: {processed_params['type']}"}}
     else: #general case
         if value == "" or not re.match(r'^[a-zA-Z0-9_ "]*$', value):
             return {'error': {'status': 400, 'message': f"Invalid value: {processed_params['q']} for search type: {processed_params['type']}"}}
@@ -334,6 +337,7 @@ def get_results():
         results = results.keys()
 
     elif search_type == "publication":
+        search_query = search_query.split(":")[1].strip()
         publications = [search_query]
         print(f'publications: {publications}')
 
