@@ -5,7 +5,7 @@ from category_predictor import CategoryPredictor
 from sentiment_predictor import SentimentPredictor
 import pandas as pd
 
-def populate_category_and_sentiment(articles):
+def populate_category_and_sentiment(articles, sent_scores=False):
     db = Database()
 
     cat_predictor = CategoryPredictor('category')
@@ -17,44 +17,37 @@ def populate_category_and_sentiment(articles):
     t = Timer('Populate category in {:.4f}s')
     t.start()
 
-    cat_df = {
-        'article_id': [],
-        'section': []
-    }
+    
+    articles.fillna("", inplace=True)
+    articles['text'] = articles['title'] + '\n' + articles['article'][:400]
 
-    cat_df = pd.DataFrame(cat_df)
+    texts = pd.DataFrame(columns=['text'])
 
-    sent_df = {
-        'article_id': [],
-        'positive': [],
-        'negative': [],
-        'neutral': []
-    }
+    cat_df = pd.DataFrame(columns=['section'])
+    cat_df['section'] = cat_df['section'].tolist() + cat_predictor(texts)
 
-    sent_df = pd.DataFrame(sent_df)
+    cat_df = pd.concat([articles['article_id'], cat_df['section']], axis=1)
 
-    for idx, row in articles.iterrows():
-        title = row['title'] if row['title'] != None else ''
-        article = row['article'] if row['article'] != None else ''
-        content = title + '\n' + article
-
-        cat_new_row = {
-            'article_id': row['article_id'],
-            'section': cat_predictor.predict(content)
-        }
-
-        cat_df = pd.concat([cat_df, pd.DataFrame([cat_new_row])], ignore_index=True)
-
-        sent = sent_predictor(content)
-        sent_new_row = {
-            'article_id': row['article_id'],
-            'positive': sent['Positive'],
-            'negative': sent['Neg'],
-            'neutral': sent['Neu']
-        }
-
-        sent_df = pd.concat([sent_df, pd.DataFrame([sent_new_row])], ignore_index=True)
 
     db.update_sections(cat_df)
-    db.update_sentiments(sent_df)
+    if sent_scores:
+        sent_df = pd.DataFrame(columns=['positive', 'negative', 'neutral'])
+        sent_pred_scores = sent_predictor.predict_scores(texts)
+
+        sent_df['positive'] = sent_pred_scores['Positive']
+        sent_df['negative'] = sent_pred_scores['Neg']
+        sent_df['neutral'] = sent_pred_scores['Neu']
+
+        sent_df = pd.concat([articles['article_id'], sent_df], axis=1)
+
+        db.update_sentiment_scores(sent_df)
+    else:
+        # To be implement to update only a single sentiment
+        sent_df = pd.DataFrame(columns=['sentiment'])
+
+        sent_df['sentiment'] = sent_predictor.predict_sentiment(texts)
+
+        sent_df = pd.concat([articles['article_id'], sent_df], axis=1)
+
+        db.update_sentiments(sent_df)
     t.stop()
