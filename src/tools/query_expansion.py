@@ -1,16 +1,12 @@
 
 import nltk
 from nltk.corpus import wordnet
-from nltk.corpus import wordnet
 import timer
 
 class QueryExpander:
     def __init__(self):
-        print("Downloading NLTK packages...")
         nltk.download('wordnet')
-        nltk.download('averaged_perceptron_tagger')
-        print("NLTK packages downloaded successfully.")
-
+        nltk.download('averaged_perceptron_tagger')  
 
     def expand_query(self, query):  #assumed format of this is that it is a query before it is normalized and stopped, and stemmed and returns a list of tokens with the full token at the start
         #this version of the query expander uses word pos tagging to get the synonyms of the words in the query
@@ -45,8 +41,6 @@ class QueryExpander:
         clean_synonyms = []
         for word in synonyms:
             if '_' in word:
-               
-                
                 clean_synonyms.append(word.lower().replace('_',' '))
             else:
                 clean_synonyms.append(word.lower())
@@ -73,10 +67,8 @@ class QueryExpander:
         return output
 
 if __name__ == '__main__':
-
     qe = QueryExpander()
     query = ['call', 'denver', 'direct']
-    
 
     print(qe.expand_query(query))
     #['call', 'denver', 'direct', 'phone', 'telephone', 'cry', 'outcry', 'yell', 'shout', 'vociferation', 'claim', 'birdcall', 'birdsong', 'song', 'margin', 'option', 'mile', 'high', 'city', 'capital'] all syns
