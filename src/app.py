@@ -30,9 +30,9 @@ def process_params(request_args):
         value = request_args.get(param)
         if value == None:
             return {'error': {'status': 400, 'message': f"{param} parameter is required"}}
-        elif value == "" or not re.match(r'^[a-zA-Z0-9_(),"\' .:-]*$', value):
+        elif value == "" or not re.match(r'^[a-zA-Z0-9_(),"\' .:-]*$', replace_curly_quotes(value)):
             return {'error': {'status': 400, 'message': f'Invalid value: {value} for required parameter: {param}'}}
-        processed_params[param] = value.lower()
+        processed_params[param] = replace_curly_quotes(value).lower()
 
     #check if type is valid
     if processed_params['type'] not in ['phrase', 'boolean', 'proximity', 'freeform', 'publication']:
@@ -41,9 +41,9 @@ def process_params(request_args):
     #define some reusable regex
     s = r'^\(\s*'
     q_req = r'"'
-    word = r'[a-zA-Z0-9_\'-]+'
-    words = r'[a-zA-Z0-9_\' -]+'
-    word_or_phrase = r'("[a-zA-Z0-9_\' -]+"|[a-zA-Z0-9_\'-]+)'
+    word = r'[a-zA-Z0-9_\'.:-]+'
+    words = r'[a-zA-Z0-9_\' .:-]+'
+    word_or_phrase = r'("[a-zA-Z0-9_\' .:-]+"|[a-zA-Z0-9_\'.:-]+)'
     comma = r'\s*,\s*'
     valid_digit = r'[0-9]+'
     boolean_operator = r'(AND|OR|and|or)'
@@ -66,7 +66,7 @@ def process_params(request_args):
         if not processed_params['q'].startswith('publication:'):
             {'error': {'status': 400, 'message': f"Invalid value: {processed_params['q']} for search type: {processed_params['type']}"}}
     else: #general case
-        if value == "" or not re.match(r'^[a-zA-Z0-9_ "]*$', value):
+        if value == "" or not re.match(r'^[a-zA-Z0-9_ .:-]*("[a-zA-Z0-9_ .:-]*")?[a-zA-Z0-9_ .:-]*$', value):
             return {'error': {'status': 400, 'message': f"Invalid value: {processed_params['q']} for search type: {processed_params['type']}"}}
 
     #check if page is valid
@@ -93,9 +93,9 @@ def process_params(request_args):
             if ',' in value:
                 split_values = value.split(',')
                 for split_value in split_values:
-                    if split_value == "" or not re.match("^[a-zA-Z0-9_\' ]*$", split_value):
+                    if split_value == "" or not re.match("^[a-zA-Z0-9_\' ]*$", replace_curly_quotes(split_value)):
                         return {'error': {'status': 400, 'message': f'Invalid value: {split_value} for parameter: {param}'}}
-                    processed_values.append(split_value.lower())
+                    processed_values.append(replace_curly_quotes(split_value).lower())
             else:
                 if value == "" or not re.match("^[a-zA-Z0-9_\' ]*$", value):
                     return {'error': {'status': 400, 'message': f'Invalid value: {value} for parameter: {param}'}}
@@ -112,6 +112,15 @@ def process_params(request_args):
         processed_params[param] = value
 
     return processed_params
+
+#replace curly quotes if found
+def replace_curly_quotes(string):
+    if '“' in string or '”' in string or '‘' in string or '’' in string:
+        # Replace opening curly quotes with straight quotes
+        string = re.sub(r'[“‘]', '"', string)
+        # Replace closing curly quotes with straight quotes
+        string = re.sub(r'[”’]', '"', string)
+    return string
 
 #get first 50 words of article
 def get_document_snippet(article):
@@ -338,6 +347,9 @@ def get_results():
 
     elif search_type == "publication":
         search_query = search_query.split(":")[1].strip()
+        existing_pubs = db.get_publications()
+        if search_query not in existing_pubs:
+            return jsonify({'status': 404, 'message': "Could not find publication"}), 404
         publications = [search_query]
         print(f'publications: {publications}')
 
