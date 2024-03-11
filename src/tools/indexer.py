@@ -26,7 +26,7 @@ class Indexer:
             article = str(row.article) if row.article is not None else ""
             text = title+' '+article
             text = self.preprocessing(text)
-            for position,word in enumerate(text.split(), start=1):
+            for position,word in enumerate(text, start=1):
                 if word not in self.index_data:
                     self.index_data[word] = {}
                 if doc_no not in self.index_data[word]:
