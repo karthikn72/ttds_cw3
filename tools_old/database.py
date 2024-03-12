@@ -494,5 +494,46 @@ class Database:
                 return
             else:
                 print("Invalid input. Please enter 'y' or 'n'.")
+
+    def reset_article_length_table(self):
+        sql_paths = ["tools/databases/create_article_length_table.sql"]
+        while True:
+            confirm = input("Are you sure you want to reset the article_length_table? (y/n): ").lower()
+            if confirm in ['y', 'n']:
+                if confirm == 'y':
+                    with self.engine.connect() as db_conn:
+                        for sql_path in sql_paths:
+                            with open(sql_path) as file:
+                                query = db.text(file.read())
+                                db_conn.execute(query)
+                        db_conn.commit()
+                    print("Index reset")
+                else:
+                    print("Cancelled index reset")
+                return
+            else:
+                print("Invalid input. Please enter 'y' or 'n'.")
+    def build_article_length_table(self, index: pd.DataFrame):
+        with self.engine.connect() as db_conn:
+            try:
+                self.add_doc_table(doc_table=index, conn=db_conn)
+                db_conn.commit()
+                return "Index build successful"
+            except Exception as e:
+                db_conn.rollback()
+                print("!!!!! CANCELLED INDEXING !!!!!")
+                raise e
+    def add_article_length_table(self, doc_table, conn):
+        t = Timer('Built doc table in {:.4f}s')
+        t.start()
+        doc_table.to_sql('article_length_table', 
+                conn, 
+                if_exists='append', 
+                index=False, 
+                dtype={'article_id': INTEGER, 
+                    'doc_length': INTEGER}, 
+                method='multi')
+        t.stop()
                 
+                                
                 
