@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 import os
 from functools import lru_cache
 
-from tools.tokenizer import QueryTokenizer, InvalidQueryError
+from tools.tokenizer import QueryTokenizer
 from tools.retrieval import Retrieval
 from tools.database import Database
 
@@ -226,7 +226,7 @@ def process_search_query(processed_params_frozenset):
         try:
             print(f'search_query: {search_query}')
             terms, exp_terms = q.tokenize_free_form(search_query)
-        except (InvalidQueryError) as e:
+        except (ValueError) as e:
             raise HandleRequestError(str(e), 404)
         except (Exception) as e:
             raise HandleRequestError("Error during tokenization", 404)
@@ -254,7 +254,7 @@ def process_search_query(processed_params_frozenset):
             print(f't1: {t1}, t2: {t2}, op: {op}')
             t1, exp_t1 = q.tokenize_free_form(t1)
             t2, exp_t2 = q.tokenize_free_form(t2)
-        except (InvalidQueryError) as e:
+        except (ValueError) as e:
             raise HandleRequestError(str(e), 404)
         except (Exception) as e:
             raise HandleRequestError("Error during tokenization", 404)
@@ -277,7 +277,7 @@ def process_search_query(processed_params_frozenset):
             print(f't1: {t1}, t2: {t2}, k: {k}')
             t1 = q.process_word(t1)
             t2 = q.process_word(t2)
-        except (InvalidQueryError) as e:
+        except (ValueError) as e:
             raise HandleRequestError(str(e), 404)
         except (Exception) as e:
             raise HandleRequestError("Error during tokenization", 404)
@@ -295,7 +295,7 @@ def process_search_query(processed_params_frozenset):
         try:
             print(f'search_query: {search_query}')
             terms, exp_terms = q.tokenize_free_form(search_query)
-        except (InvalidQueryError) as e:
+        except (ValueError) as e:
             raise HandleRequestError(str(e), 404)
         except (Exception) as e:
             raise HandleRequestError("Error during tokenization", 404)
