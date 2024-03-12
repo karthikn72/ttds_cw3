@@ -67,12 +67,12 @@ class SentimentPredictor():
             return sentiments
 
 
-        dataset = T5Dataset(self.class_name, self.tokenizer, df)
+        dataset = T5Dataset(self.class_name, self.tokenizer, text_df)
         loader = DataLoader(dataset, batch_size=32, shuffle=False)
         self.model.model.eval()
         attention = None
         scores = []
-        for batch in loader:
+        for batch in tqdm(loader):
             attention = self.model.model.generate(input_ids=batch['source_ids'], 
                                   attention_mask=batch['source_mask'], 
                                   max_length=2, output_scores=True, return_dict_in_generate=True)
@@ -99,7 +99,7 @@ class SentimentPredictor():
         loader = DataLoader(dataset, batch_size=16, shuffle=False)
         self.model.model.eval()
         outputs = []
-        for batch in loader:
+        for batch in tqdm(loader):
             outs = self.model.model.generate(input_ids=batch['source_ids'], 
                                     attention_mask=batch['source_mask'], 
                                     max_length=8)

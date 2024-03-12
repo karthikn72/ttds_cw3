@@ -21,10 +21,10 @@ def populate_category_and_sentiment(articles, sent_scores=False):
     articles.fillna("", inplace=True)
     articles['text'] = articles['title'] + '\n' + articles['article'][:400]
 
-    texts = pd.DataFrame(columns=['text'])
+    texts = pd.DataFrame(articles['text'])
 
     cat_df = pd.DataFrame(columns=['section'])
-    cat_df['section'] = cat_df['section'].tolist() + cat_predictor(texts)
+    cat_df['section'] = cat_predictor.predict(texts)
 
     cat_df = pd.concat([articles['article_id'], cat_df['section']], axis=1)
 
@@ -33,7 +33,8 @@ def populate_category_and_sentiment(articles, sent_scores=False):
     if sent_scores:
         sent_df = pd.DataFrame(columns=['positive', 'negative', 'neutral'])
         sent_pred_scores = sent_predictor.predict_scores(texts)
-
+        print(sent_pred_scores.columns)
+        print(sent_pred_scores)
         sent_df['positive'] = sent_pred_scores['Positive']
         sent_df['negative'] = sent_pred_scores['Neg']
         sent_df['neutral'] = sent_pred_scores['Neu']

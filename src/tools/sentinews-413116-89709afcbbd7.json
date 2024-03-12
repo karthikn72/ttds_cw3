@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "sentinews-413116",
+  "private_key_id": "89709afcbbd7115cc9dc2c14ccb869073256b307",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDDvj9dPXw5w2PO\nZgKbTeiuWJCgX/pVR4h11j1tkqaZLVAHwkebkDfwARCLok3mx8lN7xtAmrrTCSxK\nigk6Drd50cqdHqeuLjjf1yadxUCS5Gz+Y1hLMquBDTlEAdSoXhI/dheEXtcgwAdK\nX+ol4etKRJRjybfaXpz/EuALBxCsI85b88KgzjUCltbp9NSXG87XkU+LU97MoMes\njKxBVhQctIAM+1Dcph8YQ7CwRVOYfePPyvJxp0N8zMbPUHpOBYnXVi6RysF79w0J\ng0P11Y4QQEmO0syw77yq6UK2ZHh75SAVFaWdtRI5NaaPwfm5tPXvqNEfqBRNYTCr\n08Ula3ADAgMBAAECggEAOIMvthKvT9n6cbd/3yiyGcvWDYdINeDOI/8zgvQJB0ZO\nyb6sf9w2WiNkjHvSc+OQWeDDhHZno9ANKoQJv+pJzHDmR1B3ZtFPeEicjIZLa11p\nnlQ+RI+fdkXEF79TjzyBljLY/U2IXJs0P6PLbR55mNqN4PV3ECOqvfXMG0Lx7FB0\ngLNFi5s1ah8Vf54TiefJW3Oq9OGz1zR4RyIawOTzDfkMxRvfPENZrQbqywsBSuHO\nDJNFrl3utdA+D7/MpK7p0MIljUngKwGhiW+ylbzyUuJPcP6lINY86k9kKurW5XpY\nW/fCSjZfr5XPK37icQYl1QOSaOFpdNaHJEkNWlE1GQKBgQDxKe+4g+8Q41rjg3N3\nH0W2xo+uw7iCJgMTEhn32XXthB/Xoha+gHHIkb/SfWI0+VWli6Dr2bxR9E5mZWq7\nGDDg7uDxEzGmCMvWfONMfE4eBjBxg1gF7sRxL2r5T6kWez0vD2KFWE3IhgLg0IIX\nE03q5gEliySqkQi04ON6iYk5RwKBgQDPyPxkSp6kwp1wa80hcxU4ncILmszioCT/\nk/02VXOrG/toYNFhsO89zRfArU8Ok6RTxhMFea79xIbSLGtWE3vzZRG5KnMYby4g\n0b8Egv4pe6Mc6Hn5+e9AmM78gagNEiIo3p+nKj1qApJg2aVOf5c2Lri2VI9Jqpg1\nuUQS38TxZQKBgH0WfHHfdPv0gWsq/pQWE2nnehVzDVvsbYHRzMhi8ikddAq710I+\ni0Y2WyHJyUui3Eq+rtxGlsiHiLbR+ddLh+bT4LcKdqEhROFe6+L7QuWN3kiykNCa\n9SekKb9hE1pG2Ah12WtCzy2oXQvQ+vkPGUYywPuBPaZ/Dd4MG9GuTw/3AoGAJyY7\nR7o3gduZRmFJWRAR44T11rHoAJsj3XPItcAL9yVijRwQ11M7AG3wF8GPr7Npts8P\nLmzq561rqZXs817gb8+PM1AoN2ZbTpu2XedAdBhzdzLmKI9K4OTpuvHC9BOClCi9\n9AUlZR/u7IiVeODZYMAU1WXBSaP24chyZwv6U3ECgYAMLGmYjaOuE2c7puK5EdEK\nfBP5k0gldXnv7Dakch+Jf+Q4NmQes6a2eH5HOLSqG/pHadpgLuxJFRciauVkAh9D\nllYalBNkyx7oXOMM9hyplnfYavyz/VtWvy7NiPYznnYkZpbQXUei6JEX373hpYKL\nQAayumkLeUTUxUEPbC6l3g==\n-----END PRIVATE KEY-----\n",
+  "client_email": "shen-toni-chen@sentinews-413116.iam.gserviceaccount.com",
+  "client_id": "115668993730741157350",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/shen-toni-chen%40sentinews-413116.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

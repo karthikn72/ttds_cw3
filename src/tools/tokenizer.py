@@ -1,7 +1,7 @@
 import re
 from nltk.stem import PorterStemmer
 import os
-from .query_expansion import QueryExpander
+from query_expansion import QueryExpander
 
 from autocorrect import Speller
 
