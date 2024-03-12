@@ -515,7 +515,7 @@ class Database:
     def build_article_length_table(self, index: pd.DataFrame):
         with self.engine.connect() as db_conn:
             try:
-                self.add_doc_table(doc_table=index, conn=db_conn)
+                self.add_article_table(doc_table=index, conn=db_conn)
                 db_conn.commit()
                 return "Index build successful"
             except Exception as e:
