@@ -1,7 +1,7 @@
 import re
 from nltk.stem import PorterStemmer
 import os
-from .query_expansion import QueryExpander
+from query_expansion import QueryExpander
 
 from autocorrect import Speller
 
@@ -9,10 +9,6 @@ MODULE_DIR = os.path.dirname(os.path.realpath(__file__))
 
 DEFAULT_STOPWORD_FILE = os.path.join(MODULE_DIR, 'resources', 'ttds_2023_english_stop_words.txt')
 DEFAULT_TOKENIZE_RULE = r'\w+'
-
-class InvalidQueryError(Exception):
-    def __init__(self, message):
-        super().__init__(message)
 
 class Tokenizer:
     def __init__(self, 
@@ -65,7 +61,7 @@ q = QueryTokenizer()
     * q.tokenize_free_form(query) - returns a list of tokens, grouping phrases within the query into a list
     * Output Eg: ['stori', 'book', ['middl', 'east'], 'piec', ['man', 'america', 'hunt']]
                 also returns expanded query => ['narr', 'narrat', 'tale', 'adult', 'male']
-    * Raises - InvalidQueryError, when query after processing is empty
+    * Raises - ValueError, when query after processing is empty
 
 2. Boolean queries - operand1, operand2, operator
     * These queries have 2 free form queries combined by a boolean operator (AND/OR)
@@ -79,7 +75,7 @@ q = QueryTokenizer()
     * To tokenize:
         processed_word1 = q.process_word(word1)
         processed_word2 = q.process_word(word2)
-    * Raises - InvalidQueryError, when word is polluted with non-alphanum chars, and when word is a stop word
+    * Raises - ValueError, when word is polluted with non-alphanum chars, and when word is a stop word
     * Make sure to check if proximity is > 0 in the API before calling the retrieval function.
 
 '''
@@ -111,15 +107,15 @@ class QueryTokenizer(Tokenizer):
                     start = i+1
         processed = processed + self.__tokenize_raw_query(query[start:])
         if processed==[]:
-            raise InvalidQueryError("Query after processing is empty")
+            raise ValueError("Query seems to contain no specific keywords.")
         return processed, self.__query_expansion(query)
     
     def process_word(self, word):
         processed = self.__tokenize_raw_query(word)
         if processed==[]:
-            raise InvalidQueryError("Word after processing is empty")
+            raise ValueError("Word seems to not be a specific keyword.")
         if len(processed)>1:
-            raise InvalidQueryError("Invalid query word")
+            raise ValueError("Word seems to contain special characters.")
         return processed[0]
     
     def __tokenize_raw_query(self, term, should_stem=True):
