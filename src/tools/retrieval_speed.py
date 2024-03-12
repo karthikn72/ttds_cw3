@@ -66,16 +66,20 @@ class Retrieval:
                     doc_scores[doc] = doc_scores.get(doc, 0) + row['tfidf']
             elif type(term)==list:
                 phrase_docs = self.__phrase_search(term)
+                relevant_index = self.index[self.index['article_id'].isin(phrase_docs)]
+                lessrelevant_index = self.index[~self.index['article_id'].isin(phrase_docs)]
                 for w in term:
-                    for doc in phrase_docs:
-                        doc_scores[doc] = doc_scores.get(doc, 0) + self.index[(self.index['word'] == w) & (self.index['article_id'] == doc)]['tfidf']
+                    relevant_term_index = relevant_index[relevant_index['word'] == w]
+                    for idx, row in relevant_term_index.iterrows():
+                        doc = row['article_id']
+                        doc_scores[doc] = doc_scores.get(doc, 0) + row['tfidf']
 
-                for w in term:
-                    term_index = self.index[self.index.word==w]
-                    no_phrase_docs = set(self.index[self.index.word==w]['article_id'].values) - phrase_docs
-                    for doc in no_phrase_docs:
-                        doc_scores[doc] = doc_scores.get(doc, 0) + term_index[term_index['article_id'] == doc]['tfidf']*0.6
-        
+                    lessrelevant_term_index = lessrelevant_index[lessrelevant_index['word'] == w]
+                    for idx, row in lessrelevant_term_index.iterrows():
+                        doc = row['article_id']
+                        doc_scores[doc] = doc_scores.get(doc, 0) + row['tfidf'] * 0.6
+            
+
         t1 = time.time()
         print(3, t1-start)
         start = t1
@@ -90,6 +94,7 @@ class Retrieval:
         t1 = time.time()
         print(4, t1-start)
         start = t1
+
 
         return doc_scores
     
@@ -188,7 +193,7 @@ class Retrieval:
     
 if __name__ == '__main__':
 
-    query = 'Climate change'
+    query = '"Climate change"' 
     qtokenizer = QueryTokenizer()
     query_terms, expanded_query = qtokenizer.tokenize_free_form(query)
 
