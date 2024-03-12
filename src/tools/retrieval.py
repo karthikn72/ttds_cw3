@@ -52,7 +52,7 @@ class Retrieval:
         print(2, t1-start)
         start = t1
         
-        doc_scores = defaultdict(lambda: float)
+        doc_scores = defaultdict(lambda: 0)
 
         if len(self.index)==0:
             return doc_scores
@@ -106,7 +106,7 @@ class Retrieval:
         else:
             docs = docs1.keys() | docs2.keys()
         
-        docs_scores = defaultdict(lambda: float)
+        docs_scores = defaultdict(lambda: 0)
         for doc in docs:
             if doc not in docs_scores:
                 docs_scores[doc] = 0
@@ -117,7 +117,7 @@ class Retrieval:
     def proximity_retrieval(self, word1, word2, proximity):
         self.index = self.db.get_index_by_words([word1, word2])
 
-        doc_scores = defaultdict(lambda: float)
+        doc_scores = defaultdict(lambda: 0)
 
         if len(self.index)==0 or len(self.index['word'].unique())!=2:
             return doc_scores
