@@ -66,16 +66,16 @@ class Retrieval:
                     doc_scores[doc] = doc_scores.get(doc, 0) + row['tfidf']
             elif type(term)==list:
                 phrase_docs = self.__phrase_search(term)
-                relevant_index = self.index[self.index['article_id'].isin(phrase_docs)]
-                lessrelevant_index = self.index[~self.index['article_id'].isin(phrase_docs)]
+                phrase_index = self.index[self.index['article_id'].isin(phrase_docs)]
+                non_phrase_index = self.index[~self.index['article_id'].isin(phrase_docs)]
                 for w in term:
-                    relevant_term_index = relevant_index[relevant_index['word'] == w]
-                    for idx, row in relevant_term_index.iterrows():
+                    phrase_term_index = phrase_index[phrase_index['word'] == w]
+                    for idx, row in phrase_term_index.iterrows():
                         doc = row['article_id']
                         doc_scores[doc] = doc_scores.get(doc, 0) + row['tfidf']
 
-                    lessrelevant_term_index = lessrelevant_index[lessrelevant_index['word'] == w]
-                    for idx, row in lessrelevant_term_index.iterrows():
+                    non_phrase_term_index = non_phrase_index[non_phrase_index['word'] == w]
+                    for idx, row in non_phrase_term_index.iterrows():
                         doc = row['article_id']
                         doc_scores[doc] = doc_scores.get(doc, 0) + row['tfidf'] * 0.6
             
