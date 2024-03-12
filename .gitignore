@@ -11,3 +11,5 @@ src/__pycache__
 src/gunicorn
 src/tools/__pycache__
 .venv/
+categories_model
+sentiment_model

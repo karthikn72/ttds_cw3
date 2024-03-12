@@ -1,5 +1,5 @@
 import os
-from .timer import Timer
+from timer import Timer
 import random
 from datetime import datetime
 import pandas as pd
@@ -339,7 +339,7 @@ class Database:
     def add_words(self, index, conn):
         self.words = db.Table('words', self.metadata, autoload_with=self.engine)
         word_list = [{'word':word} for word in index.word.unique()]
-        chunk_size = 10000
+        chunk_size = 25000
         for i in range(0, len(word_list), chunk_size):
             chunk = word_list[i:i+chunk_size]
             query = insert(self.words).values(chunk).on_conflict_do_nothing()
