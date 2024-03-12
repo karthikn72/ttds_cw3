@@ -147,7 +147,7 @@ class Retrieval:
             return set([])
         
         if len(terms)==1:
-            return set(self.index[self.index['word']==terms[0]]['article_id'])
+            return set(self.index[self.index['word']==terms[0]]['article_id'].unique())
 
         for i in range(0, len(terms)-1):
             term1 = terms[i]
@@ -157,12 +157,12 @@ class Retrieval:
                 return set([])
             
             if i==0:
-                docs1 = set(self.index[self.index['word']==term1]['article_id'].values)
+                docs1 = set(self.index[self.index['word']==term1]['article_id'].unique())
                 term1_dict = {doc: np.asarray(self.index[(self.index['word']==term1)&(self.index['article_id']==doc)]['positions'].values[0]) for doc in docs1} 
             else:
                 docs1 = set(output_dict.keys())
                 term1_dict = output_dict
-            docs2 = set(self.index[self.index['word']==term2]['article_id'].values)
+            docs2 = set(self.index[self.index['word']==term2]['article_id'].unique())
             term2_dict = {doc: np.asarray(self.index[(self.index['word']==term2)&(self.index['article_id']==doc)]['positions'].values[0]) for doc in docs2} 
             shared_docs = docs1 & docs2
 
