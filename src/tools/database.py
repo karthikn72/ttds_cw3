@@ -495,7 +495,7 @@ class Database:
             else:
                 print("Invalid input. Please enter 'y' or 'n'.")
     def reset_article_length_table(self):
-        sql_paths = ["tools/databases/create_doc_length_table.sql"]
+        sql_paths = ["tools/databases/create_article_length_table.sql"]
         while True:
             confirm = input("Are you sure you want to reset the doc_length_table? (y/n): ").lower()
             if confirm in ['y', 'n']:
