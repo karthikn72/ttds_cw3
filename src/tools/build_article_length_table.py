@@ -28,4 +28,4 @@ def build_article_length_table(test=True, limit=10000, fresh=True):
     return "Indexing complete"
 
 if __name__ == '__main__':
-    build_article_length_table(test=True, fresh=True)
+    build_article_length_table(test=False, fresh=True)

@@ -525,7 +525,7 @@ class Database:
     def add_article_length_table(self, doc_table, conn):
         t = Timer('Built doc table in {:.4f}s')
         t.start()
-        doc_table.to_sql('doc_length_table', 
+        doc_table.to_sql('article_length_table', 
                 conn, 
                 if_exists='append', 
                 index=False, 
