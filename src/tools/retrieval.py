@@ -5,10 +5,11 @@ import sys
 import os
 from .database import Database
 import pandas as pd
+import time
 
 import numpy as np
 
-from .tokenizer import Tokenizer, QueryTokenizer
+from tokenizer import Tokenizer, QueryTokenizer
 
     # {
     #     word: {
@@ -37,13 +38,21 @@ class Retrieval:
         return flat_list
 
     def free_form_retrieval(self, query_terms, expanded_query):
+        start = time.time()
         self.index = self.db.get_index_by_words(self.__flatten_query_terms(query_terms))
+        t1 = time.time()
+        print(1, t1-start)
+        start = t1
 
         if len(self.index)==0 or len(self.index.article_id.unique())<=20:
             index_expanded = self.db.get_index_by_words(expanded_query)
             self.index = pd.concat([self.index, index_expanded], axis=0)
+
+        t1 = time.time()
+        print(2, t1-start)
+        start = t1
         
-        doc_scores = defaultdict(lambda: float)
+        doc_scores = defaultdict(lambda: 0)
 
         if len(self.index)==0:
             return doc_scores
@@ -71,12 +80,20 @@ class Retrieval:
                             doc_scores[doc] = 0
                         doc_scores[doc] += term_index[term_index['article_id'] == doc]['tfidf'].values[0]*0.6
         
+        t1 = time.time()
+        print(3, t1-start)
+        start = t1
+
         for term in expanded_query:
             term_index = self.index[self.index['word']==term]
             for doc in term_index['article_id']:
                 if doc not in doc_scores:
                     doc_scores[doc] = 0
                 doc_scores[doc] += term_index[term_index.article_id==doc]['tfidf'].values[0]*0.4
+
+        t1 = time.time()
+        print(4, t1-start)
+        start = t1
 
         return doc_scores
     
@@ -89,7 +106,7 @@ class Retrieval:
         else:
             docs = docs1.keys() | docs2.keys()
         
-        docs_scores = defaultdict(lambda: float)
+        docs_scores = defaultdict(lambda: 0)
         for doc in docs:
             if doc not in docs_scores:
                 docs_scores[doc] = 0
@@ -100,7 +117,7 @@ class Retrieval:
     def proximity_retrieval(self, word1, word2, proximity):
         self.index = self.db.get_index_by_words([word1, word2])
 
-        doc_scores = defaultdict(lambda: float)
+        doc_scores = defaultdict(lambda: 0)
 
         if len(self.index)==0 or len(self.index['word'].unique())!=2:
             return doc_scores
@@ -175,10 +192,17 @@ class Retrieval:
     
 if __name__ == '__main__':
 
-    query = '"pioneers like Ada Lovelace"'
+    query = 'Climate change'
     qtokenizer = QueryTokenizer()
     query_terms, expanded_query = qtokenizer.tokenize_free_form(query)
 
+    start_time = time.time()
+
     r = Retrieval()
     ans = r.free_form_retrieval(query_terms, expanded_query)
-    print(ans)
+    end_time = time.time()
+
+    # Calculate elapsed time
+    print('Time taken', end_time - start_time, 's')
+    # print(ans)
+

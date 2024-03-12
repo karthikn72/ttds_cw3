@@ -27,9 +27,9 @@ class Counter:
             doc_no = row.article_id
             text = title+' '+article
             text = self.__preprocessing(text)
-            self.article_lengths[doc_no] = len(text.split())
+            self.article_lengths[doc_no] = len(text)
         # Convert the dictionary to a DataFrame
-        self.article_lengths = pd.DataFrame(list(self.article_lengths.items()), columns=['doc_id', 'doc_length'])
+        self.article_lengths = pd.DataFrame(list(self.article_lengths.items()), columns=['article_id', 'doc_length'])
         return "lengths computed"
     def get_lengths(self):
         return self.article_lengths

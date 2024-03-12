@@ -1,19 +1,10 @@
 
 import nltk
 from nltk.corpus import wordnet
-from tokenizer import Tokenizer, QueryTokenizer
-from nltk.corpus import wordnet
 import timer
 
 class QueryExpander:
-    
-    
-    
-    
-    
-    
     def __init__(self):
-        
         nltk.download('wordnet')
         nltk.download('averaged_perceptron_tagger')  
 
@@ -50,8 +41,6 @@ class QueryExpander:
         clean_synonyms = []
         for word in synonyms:
             if '_' in word:
-               
-                
                 clean_synonyms.append(word.lower().replace('_',' '))
             else:
                 clean_synonyms.append(word.lower())
@@ -78,10 +67,8 @@ class QueryExpander:
         return output
 
 if __name__ == '__main__':
-
     qe = QueryExpander()
     query = ['call', 'denver', 'direct']
-    
 
     print(qe.expand_query(query))
     #['call', 'denver', 'direct', 'phone', 'telephone', 'cry', 'outcry', 'yell', 'shout', 'vociferation', 'claim', 'birdcall', 'birdsong', 'song', 'margin', 'option', 'mile', 'high', 'city', 'capital'] all syns

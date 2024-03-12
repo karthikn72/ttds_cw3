@@ -3,9 +3,10 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import pandas as pd
 import time
-import threading
+from threading import Thread
 from datetime import datetime, timedelta
 import os
+from functools import lru_cache
 
 from tools.tokenizer import QueryTokenizer
 from tools.retrieval import Retrieval
@@ -16,6 +17,33 @@ CORS(app)
 
 # Load database
 db = Database()
+
+class HandleRequestError(Exception):
+    def __init__(self, message, status):
+        self.message = message
+        self.status = status
+        super().__init__(self.message)
+
+class ParamsProcessingError(Exception):
+    def __init__(self, message, status):
+        self.message = message
+        self.status = status
+        super().__init__(self.message)
+
+class HandleRequestThread(Thread):
+    def __init__(self, processed_params):
+        Thread.__init__(self)
+        self.processed_params = processed_params
+        self.results = None
+        self.error = None
+
+    def run(self):
+        try:
+            self.results = handle_request(self.processed_params)
+        except HandleRequestError as e:
+            self.error = e
+        except Exception as e:
+            self.error = HandleRequestError(e, 500)
 
 #process parameters
 def process_params(request_args):
@@ -29,21 +57,21 @@ def process_params(request_args):
     for param in required_params:
         value = request_args.get(param)
         if value == None:
-            return {'error': {'status': 400, 'message': f"{param} parameter is required"}}
-        elif value == "" or not re.match(r'^[a-zA-Z0-9_(),"\' -]*$', value):
-            return {'error': {'status': 400, 'message': f'Invalid value: {value} for required parameter: {param}'}}
-        processed_params[param] = value.lower()
+            raise ParamsProcessingError(f"{param} parameter is required", 400)
+        elif value == "" or not re.match(r'^[a-zA-Z0-9_(),"\' .:-]*$', replace_curly_quotes(value)):
+            raise ParamsProcessingError(f'Invalid value: {value} for required parameter: {param}', 400)
+        processed_params[param] = replace_curly_quotes(value).lower()
 
     #check if type is valid
     if processed_params['type'] not in ['phrase', 'boolean', 'proximity', 'freeform', 'publication']:
-        return {'error': {'status': 400, 'message': f"Invalid value for type parameter"}}
+        raise ParamsProcessingError(f"Invalid value for type parameter", 400)
     
     #define some reusable regex
     s = r'^\(\s*'
     q_req = r'"'
-    word = r'[a-zA-Z0-9_\'-]+'
-    words = r'[a-zA-Z0-9_\' -]+'
-    word_or_phrase = r'("[a-zA-Z0-9_\' -]+"|[a-zA-Z0-9_\'-]+)'
+    word = r'[a-zA-Z0-9_\'.:-]+'
+    words = r'[a-zA-Z0-9_\' .:-]+'
+    word_or_phrase = r'("[a-zA-Z0-9_\' .:-]+"|[a-zA-Z0-9_\'.:-]+)'
     comma = r'\s*,\s*'
     valid_digit = r'[0-9]+'
     boolean_operator = r'(AND|OR|and|or)'
@@ -53,32 +81,35 @@ def process_params(request_args):
     if processed_params['type'] == 'proximity':
         regex = s+word+comma+word+comma+valid_digit+e
         if not re.fullmatch(regex, processed_params['q']):
-            return {'error': {'status': 400, 'message': f"Invalid value: {processed_params['q']} for search type: {processed_params['type']}"}}
+            raise ParamsProcessingError(f"Invalid value: {processed_params['q']} for search type: {processed_params['type']}", 400)
     elif processed_params['type'] == 'boolean':
         regex = s+word_or_phrase+comma+boolean_operator+comma+word_or_phrase+e
         if not re.fullmatch(regex, processed_params['q']):
-            return {'error': {'status': 400, 'message': f"Invalid value: {processed_params['q']} for search type: {processed_params['type']}"}}
+            raise ParamsProcessingError(f"Invalid value: {processed_params['q']} for search type: {processed_params['type']}", 400)
     elif processed_params['type'] == 'phrase':
         regex = q_req+words+q_req
         if not re.fullmatch(regex, processed_params['q']):
-            return {'error': {'status': 400, 'message': f"Invalid value: {processed_params['q']} for search type: {processed_params['type']}"}}
+            raise ParamsProcessingError(f"Invalid value: {processed_params['q']} for search type: {processed_params['type']}", 400)
+    elif processed_params['type'] == 'publication':
+        if not processed_params['q'].startswith('publication:'):
+            raise ParamsProcessingError("Invalid value: {processed_params['q']} for search type: {processed_params['type']}",400)
     else: #general case
-        if value == "" or not re.match(r'^[a-zA-Z0-9_ "]*$', value):
-            return {'error': {'status': 400, 'message': f"Invalid value: {processed_params['q']} for search type: {processed_params['type']}"}}
+        if value == "" or not re.match(r'^[a-zA-Z0-9_ .:-]*("[a-zA-Z0-9_ .:-]*")?[a-zA-Z0-9_ .:-]*$', value):
+            raise ParamsProcessingError(f"Invalid value: {processed_params['q']} for search type: {processed_params['type']}", 400)
 
     #check if page is valid
     if not processed_params['page'].isdigit():
-        return {'error': {'status': 400, 'message': f"Invalid value for page parameter"}}
+        raise ParamsProcessingError(f"Invalid value for page parameter", 400)
 
     #check if request is valid
     if processed_params['request'] not in ['articles', 'meta']:
-        return {'error': {'status': 400, 'message': f"Invalid value for request parameter"}}
+        raise ParamsProcessingError(f"Invalid value for request parameter", 400)
 
     #check if there is a sortBy in the request args, if not set sortBy to None
     if request_args.get('sortBy') != None:
         processed_params['sortBy'] = request_args.get('sortBy').lower()
         if processed_params['sortBy'] not in ['relevance', 'ascendingdate', 'descendingdate']:
-            return {'error': {'status': 400, 'message': f"Invalid value for sortBy parameter"}}
+            raise ParamsProcessingError(f"Invalid value for sortBy parameter", 400)
     else:
         processed_params['sortBy'] = None
 
@@ -90,12 +121,12 @@ def process_params(request_args):
             if ',' in value:
                 split_values = value.split(',')
                 for split_value in split_values:
-                    if split_value == "" or not re.match("^[a-zA-Z0-9_\' ]*$", split_value):
-                        return {'error': {'status': 400, 'message': f'Invalid value: {split_value} for parameter: {param}'}}
-                    processed_values.append(split_value.lower())
+                    if split_value == "" or not re.match("^[a-zA-Z0-9_\' ]*$", replace_curly_quotes(split_value)):
+                        raise ParamsProcessingError(f'Invalid value: {split_value} for parameter: {param}', 400)
+                    processed_values.append(replace_curly_quotes(split_value).lower())
             else:
                 if value == "" or not re.match("^[a-zA-Z0-9_\' ]*$", value):
-                    return {'error': {'status': 400, 'message': f'Invalid value: {value} for parameter: {param}'}}
+                    raise ParamsProcessingError(f'Invalid value: {value} for parameter: {param}', 400)
                 processed_values.append(value.lower())
         processed_params[param] = processed_values
 
@@ -105,10 +136,19 @@ def process_params(request_args):
             try:
                 datetime.strptime(value, '%Y-%m-%d')
             except ValueError:
-                return {'error': {'status': 400, 'message': f'Invalid date format: {value}. Expected YYYY-MM-DD'}}
+                raise ParamsProcessingError('Invalid date format: {value}. Expected YYYY-MM-DD', 400)
         processed_params[param] = value
 
     return processed_params
+
+#replace curly quotes if found
+def replace_curly_quotes(string):
+    if '“' in string or '”' in string or '‘' in string or '’' in string:
+        # Replace opening curly quotes with straight quotes
+        string = re.sub(r'[“‘]', '"', string)
+        # Replace closing curly quotes with straight quotes
+        string = re.sub(r'[”’]', '"', string)
+    return string
 
 #get first 50 words of article
 def get_document_snippet(article):
@@ -156,87 +196,19 @@ def sort_by_relevance(results_df, relevance_order, start, end):
     results_df[categorical_columns] = results_df[categorical_columns].astype('object')
     return results_df
 
-@app.route('/')
-def index():
-    return "This is the Sentinews API.."
+def convert_to_immutable(processed_params):
+    immutable_params = {}
+    for key, value in processed_params.items():
+        if isinstance(value, list):
+            immutable_params[key] = tuple(value)
+        else:
+            immutable_params[key] = value
+    return frozenset(immutable_params.items())
 
-@app.route('/unique_publications')
-def get_unique_publications():
-    publications = db.get_publications()
-    return jsonify({
-        'status': 200,
-        'unique_publications': publications
-        })
+@lru_cache(maxsize=500)
+def process_search_query(processed_params_frozenset):
+    processed_params = dict(processed_params_frozenset)
 
-@app.route('/get_live')
-def get_live():  
-    #get type parameter
-    type = request.args.get('type')
-    if type == None:
-        return jsonify({'status': 400, 'message': "Expected type parameter"}), 400
-    elif type.lower() not in ['digest', 'trending']:
-        return jsonify({'status': 400, 'message': "Invalid value for type parameter"}), 400
-    
-    start_time = time.time()
-    if type.lower() == 'digest':
-        #set date internally to be current day, for now use hardcoded date that returns results
-        hardcoded_date = "2018-03-05"
-        date = datetime.strptime(hardcoded_date, "%Y-%m-%d")
-        results_df = db.get_articles(start_date=date, end_date=date, limit=100)
-
-    elif type.lower() == 'trending':
-        return jsonify({'status': 400, 'message': "trending not implemented yet"}), 400
-
-    if results_df.empty:
-        return jsonify({'status': 404, 'message': "No articles found"}), 404
-    
-    results_df = format_results(results_df)
-    
-    end_time = time.time()
-    retrieval_time = end_time - start_time
-    return jsonify({
-        'status': 200,
-        'retrieval_time': retrieval_time,
-        'articles' : results_df.to_dict('records')
-        })
-
-@app.route('/get_saved_articles')
-def get_saved_articles():
-    # Expect a list of article ids
-    article_ids_string = request.args.get('article_ids')  # Get the parameter as a string
-    if article_ids_string:
-        article_ids = [int(id) for id in article_ids_string.strip('[]').split(',')]  # Convert to list of integers
-    else:
-        return jsonify({'status': 400, 'message': "Expected article_ids"}), 400
-    
-    start_time = time.time()
-    results_df = db.get_articles(article_ids=article_ids, limit=100)
-
-    if results_df.empty:
-        return jsonify({'status': 404, 'message': "No articles found"}), 404
-
-    results_df = format_results(results_df)
-
-    end_time = time.time()
-    retrieval_time = end_time - start_time
-    return jsonify({
-        'status': 200,
-        'retrieval_time': retrieval_time,
-        'saved_articles' : results_df.to_dict('records')
-        })
-
-#get results based on search query
-@app.route('/search', methods=['GET'])
-def get_results():
-    start_time = time.time()  #start timing query search time 
-
-    # Retrieve the arguments for each parameter 
-    processed_params = process_params(request.args)
-    if 'error' in processed_params:
-        return jsonify(processed_params['error']), processed_params['error']['status']
-    
-    print(f"Processed params: {processed_params}")
-    
     #get search query
     search_query = processed_params['q']
     
@@ -244,19 +216,27 @@ def get_results():
     q = QueryTokenizer()
     r = Retrieval()
 
+    results = []
+    results_scores = []
+    pubs_q = []
+
     #identify the type of search 
     search_type = processed_params['type']
     if search_type == "phrase":
         try:
             print(f'search_query: {search_query}')
             terms, exp_terms = q.tokenize_free_form(search_query)
-        except (ValueError, Exception) as e:
-            return jsonify({'status': 404, 'message': "Unable to tokenize query"}), 404
+        except (ValueError) as e:
+            raise HandleRequestError(str(e), 404)
+        except (Exception) as e:
+            raise HandleRequestError("Error during tokenization", 404)
         try:
             print(f'terms: {terms}, expanded_terms: {exp_terms}')
             results = r.free_form_retrieval(terms, exp_terms)
-        except (KeyError, Exception) as e:
-            return jsonify({'status': 404, 'message': "Could not find term in index"}), 404
+        except (KeyError) as e:
+            raise HandleRequestError("Could not find term in index", 404)
+        except (Exception) as e:
+            raise HandleRequestError("Error during retrieval", 404)
         results_scores = results
         results = results.keys()
 
@@ -269,19 +249,22 @@ def get_results():
         elif op.strip().lower() == "or":
             op = "OR"
         else:
-            return jsonify({'status': 400, 'message': "Invalid boolean operator"}), 400
-        
+            raise HandleRequestError("Invalid boolean operator", 400)
         try:
             print(f't1: {t1}, t2: {t2}, op: {op}')
             t1, exp_t1 = q.tokenize_free_form(t1)
             t2, exp_t2 = q.tokenize_free_form(t2)
-        except (ValueError, Exception) as e:
-            return jsonify({'status': 404, 'message': "Error during tokenization"}), 404
+        except (ValueError) as e:
+            raise HandleRequestError(str(e), 404)
+        except (Exception) as e:
+            raise HandleRequestError("Error during tokenization", 404)
         try:
             print(f't1: {t1}, exp_t1: {exp_t1}, t2: {t2}, exp_t2: {exp_t2}, op: {op}')
             results = r.bool_retrieval(t1, exp_t1, t2, exp_t2, op)
-        except (KeyError, Exception) as e:
-            return jsonify({'status': 404, 'message': "Could not find term in index"}), 404
+        except (KeyError) as e:
+            raise HandleRequestError("Could not find term in index", 404)
+        except (Exception) as e:
+            raise HandleRequestError("Error during retrieval", 404)
         results_scores = results
         results = results.keys()
 
@@ -289,18 +272,22 @@ def get_results():
         parts = search_query.strip("()").split(",")
         t1, t2, k = [part.strip() for part in parts]
         if int(k) < 1:
-            return jsonify({'status': 400, 'message': "Invalid value for k"}), 400
+            raise HandleRequestError("Invalid value for k", 400)
         try:
             print(f't1: {t1}, t2: {t2}, k: {k}')
             t1 = q.process_word(t1)
             t2 = q.process_word(t2)
-        except (ValueError, Exception) as e:
-            return jsonify({'status': 404, 'message': "Unable to tokenize query"}), 404
+        except (ValueError) as e:
+            raise HandleRequestError(str(e), 404)
+        except (Exception) as e:
+            raise HandleRequestError("Error during tokenization", 404)
         try:
             print(f't1: {t1}, t2: {t2}, k: {k}')
             results = r.proximity_retrieval(t1, t2, int(k))
-        except (KeyError, Exception) as e:
-            return jsonify({'status': 404, 'message': "Could not find term in index"}), 404
+        except (KeyError) as e:
+            raise HandleRequestError("Could not find term in index", 404)
+        except (Exception) as e:
+            raise HandleRequestError("Error during retrieval", 404)
         results_scores = results
         results = results.keys()
 
@@ -308,23 +295,42 @@ def get_results():
         try:
             print(f'search_query: {search_query}')
             terms, exp_terms = q.tokenize_free_form(search_query)
-        except (ValueError, Exception) as e:
-            print(e)
-            return jsonify({'status': 404, 'message': "Error during tokenization"}), 404
+        except (ValueError) as e:
+            raise HandleRequestError(str(e), 404)
+        except (Exception) as e:
+            raise HandleRequestError("Error during tokenization", 404)
         try:
             print(f'terms: {terms}, exp_terms: {exp_terms}')
             results = r.free_form_retrieval(terms, exp_terms)
-        except (KeyError, Exception) as e:
-            return jsonify({'status': 404, 'message': "Could not find term in index"}), 404
+        except (KeyError) as e:
+            raise HandleRequestError("Could not find term in index", 404)
+        except (Exception) as e:
+            raise HandleRequestError("Error during retrieval", 404)
         results_scores = results
         results = results.keys()
 
     elif search_type == "publication":
-        publications = [search_query]
-        print(f'publications: {publications}')
+        search_query = search_query.split(":")[1].strip()
+        existing_pubs = db.get_publications()
+        existing_pubs = [pub.strip().lower() for pub in existing_pubs]
+        if search_query not in existing_pubs:
+            raise HandleRequestError("Could not find publication", 404)
+        pubs_q = [search_query]
+        print(f'publications: {pubs_q}')
 
     else:
-        return jsonify({'status': 400, 'message': "Invalid search type"}), 400
+        raise HandleRequestError("Invalid search type", 400)
+    
+    return results, results_scores, pubs_q
+
+def handle_request(processed_params):
+    start_time = time.time()  #start timing query search time 
+
+    try: 
+        immutable_params = convert_to_immutable(processed_params)
+        results, results_scores, publications = process_search_query(immutable_params)
+    except HandleRequestError as e:
+        raise e
 
     #check for date range
     if processed_params['from'] != None and processed_params['to'] != None: 
@@ -332,7 +338,7 @@ def get_results():
             start_date = datetime.strptime(processed_params['from'], '%Y-%m-%d')
             end_date = datetime.strptime(processed_params['to'], '%Y-%m-%d')
         except ValueError:
-            return jsonify({'status': 400, 'message': "Invalid date format. Expected YYYY-MM-DD"}), 400
+            raise HandleRequestError("Invalid date format. Expected YYYY-MM-DD", 400)
     else:
         start_date = None
         end_date = None
@@ -340,7 +346,7 @@ def get_results():
     #check for sortBy 
     sort_by_date = None
     relevance_order = []
-    if search_type == "publication":
+    if processed_params['type'] == "publication":
         if processed_params['sortBy'] == None or processed_params['sortBy'] == "descendingdate":
             sort_by_date = "desc" #default for publication search
         elif processed_params['sortBy'] == "ascendingdate":
@@ -358,25 +364,30 @@ def get_results():
     #apply filters if they exist
     authors = processed_params['author'] if processed_params['author'] else None
     sentiments = processed_params['sentiment'] if processed_params['sentiment'] else None
-    if search_type != "publication":
+    if processed_params['type'] != "publication":
         publications = processed_params['publication'] if processed_params['publication'] else None
     sections = processed_params['category'] if processed_params['category'] else None
 
     #get results from database
-    if search_type == "publication":
+    if processed_params['type'] == "publication":
         try:
             print(f'publications: {publications}, start_date: {start_date}, end_date: {end_date}, sort_by_date: {sort_by_date}, sections: {sections}')
             results_df = db.get_articles(publications=publications, start_date=start_date, end_date=end_date, sort_by_date=sort_by_date, sections=sections, limit=10000)
         except (Exception) as e:
-            print(e)
-            return jsonify({'status': 404, 'message': 'error fetching articles'}), 404
+            raise HandleRequestError('error fetching articles', 404)
     else:
         if results == []:
-            return jsonify({'status': 404, 'message': "Words could not be found in the index"}), 404
+            raise HandleRequestError("Words could not be found in the index", 404)
         results_df = db.get_articles(article_ids=results, publications=publications, start_date=start_date, end_date=end_date, sort_by_date=sort_by_date, sections=sections, limit=10000)
 
+    end_time = time.time()  #end timing
+    retrieval_time = end_time - start_time  #to calculate retrieval time
+
+    return results_df, relevance_order, retrieval_time
+
+def process_results(processed_params, results_df, relevance_order, retrieval_time):
     if results_df.empty:
-        if processed_params['publications'] or processed_params['from'] or processed_params['to'] or processed_params['category']:
+        if processed_params['publication'] or processed_params['from'] or processed_params['to'] or processed_params['category']:
             return jsonify({'status': 200, 'message': "No articles found with filter conditions"}), 200
         else:
             return jsonify({'status': 404, 'message': "No articles found for docid"}), 404
@@ -407,20 +418,142 @@ def get_results():
     if processed_params['request'] == None or processed_params['request'] == "meta":
         filter_options = get_filter_options(return_results_df)
 
-    end_time = time.time()  #end timing
-    retrieval_time = end_time - start_time  #to calculate retrieval time
-
     #prepare response
     response = {
         'status': 200,
         'retrieval_time': retrieval_time,
-        'total_results': len(results_df),
+        'total_results': len(return_results_df),
         'results': return_results_df.to_dict('records')
     }
     if 'filter_options' in locals(): #only include filter options if they exist (ie if request is all or not specified)
         response['filter_options'] = filter_options
 
     return jsonify(response), 200
+
+@app.route('/')
+def index():
+    return "This is the Sentinews API.."
+
+#get results based on search query
+@app.route('/search', methods=['GET'])
+def get_results():
+    # Retrieve the arguments for each parameter 
+    try:
+        processed_params = process_params(request.args)
+    except ParamsProcessingError as e:
+        return jsonify({'status': e.status, 'message': e.message}), e.status
+    
+    print(f"Processed params: {processed_params}")
+    
+    # Create a new thread for handle_request
+    thread = HandleRequestThread(processed_params)
+    thread.start()
+
+    # Wait for the thread to finish
+    thread.join()
+
+    # Get the results from the thread
+    if thread.error is not None:
+        return jsonify({'status': thread.error.status, 'message': str(thread.error)}), thread.error.status
+
+    if thread.results is not None:
+        results_df, relevance_order, retrieval_time = thread.results
+        return process_results(processed_params, results_df, relevance_order, retrieval_time)
+    else:
+        return jsonify({'status': 500, 'message': "An error occurred"}), 500
+    
+@app.route('/unique_publications')
+def get_unique_publications():
+    publications = db.get_publications()
+    return jsonify({
+        'status': 200,
+        'unique_publications': publications
+        })
+
+def get_digest(current_date):
+    results_df = db.get_articles(start_date=current_date, end_date=current_date, limit=100)
+    return results_df
+
+def get_trending(current_date):
+    results_df = db.get_articles(start_date=current_date, end_date=current_date, limit=200)
+    if not results_df.empty:
+        results_df = results_df.sample(n=5)
+    return results_df
+
+@app.route('/get_live')
+def get_live():  
+    #get type parameter
+    type = request.args.get('type')
+    if type == None:
+        return jsonify({'status': 400, 'message': "Expected type parameter"}), 400
+    elif type.lower() not in ['digest', 'trending']:
+        return jsonify({'status': 400, 'message': "Invalid value for type parameter"}), 400
+    
+    start_time = time.time()
+    # current_date = datetime.now()
+    # for now use hardcoded date
+    current_date = datetime(2018, 6, 1)
+
+    if type.lower() == 'digest':
+        results_df = get_digest(current_date)
+
+    elif type.lower() == 'trending':
+        results_df = get_trending(current_date)
+
+    if results_df.empty:
+        current_date = (datetime.now() - timedelta(days=1))
+        if type.lower() == 'digest':
+            results_df = get_digest(current_date)
+        elif type.lower() == 'trending':
+            results_df = get_trending(current_date)
+
+    if results_df.empty:
+        return jsonify({'status': 404, 'message': "No articles found"}), 404
+    
+    results_df = format_results(results_df)
+    
+    end_time = time.time()
+    retrieval_time = end_time - start_time
+
+    if type.lower() == 'digest':
+        return jsonify({
+            'status': 200,
+            'retrieval_time': retrieval_time,
+            'digest' : results_df.to_dict('records'),
+            'date': current_date
+            })
+    elif type.lower() == 'trending':
+        #just return id and title
+        return jsonify({
+            'status': 200,
+            'trending' : results_df[['article_id', 'title']].to_dict('records'),
+            'date': current_date
+            })
+
+@app.route('/get_saved_articles')
+def get_saved_articles():
+    # Expect a list of article ids
+    article_ids_string = request.args.get('article_ids')  # Get the parameter as a string
+    if article_ids_string:
+        article_ids = [int(id) for id in article_ids_string.strip('[]').split(',')]  # Convert to list of integers
+    else:
+        return jsonify({'status': 400, 'message': "Expected article_ids"}), 400
+    
+    start_time = time.time()
+    results_df = db.get_articles(article_ids=article_ids, limit=100)
+
+    if results_df.empty:
+        return jsonify({'status': 404, 'message': "No articles found"}), 404
+
+    results_df = format_results(results_df)
+
+    end_time = time.time()
+    retrieval_time = end_time - start_time
+    return jsonify({
+        'status': 200,
+        'retrieval_time': retrieval_time,
+        'saved_articles' : results_df.to_dict('records')
+        })
 
 if __name__ == '__main__':
     app.run()

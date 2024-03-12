@@ -4,40 +4,52 @@ from timer import Timer
 from sentiment_predictor import SentimentPredictor
 import pandas as pd
 
-def populate_sentiment(limit=1000):
+def populate_sentiment(limit=1000, sent_scores=False):
     db = Database()
     N = 10000
 
-    predictor = SentimentPredictor('predicted_class')
-    predictor.load_model()
+    sent_predictor = SentimentPredictor('predicted_class')
+    sent_predictor.load_model()
 
     t = Timer('Populate sentiment in {:.4f}s')
     t.start()
-    df = {
-        'article_id': [],
-        'positive': [],
-        'negative': [],
-        'neutral': []
-    }
 
-    df = pd.DataFrame(df)
     for i in range(0, N + 1, limit):
         articles = db.get_articles(limit=limit,offset=i)
-        for idx, row in articles.iterrows():
-            title = row['title'] if row['title'] != None else ''
-            article = row['article'] if row['article'] != None else ''
-            content = title + '\n' + article
 
-            sent = predictor.predict(content)
-            new_row = {
-                'article_id': row['article_id'],
-                'positive': sent['Positive'],
-                'negative': sent['Neg'],
-                'neutral': sent['Neu']
-            }
+        articles.fillna("", inplace=True)
 
-            df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
+        articles['text'] = articles['title'] + '\n' + articles['article'][:400]
 
-        db.update_sentiments(df)
-        df = df.drop(df.index)
+        article_df = pd.DataFrame(columns=['text'])
+
+        print(articles['text'])
+        texts = pd.DataFrame(articles['text'])
+
+        if sent_scores:
+            sent_df = pd.DataFrame(columns=['positive', 'negative', 'neutral'])
+            sent_pred_scores = sent_predictor.predict_scores(texts)
+
+            sent_df['positive'] = sent_pred_scores['Positive']
+            sent_df['negative'] = sent_pred_scores['Neg']
+            sent_df['neutral'] = sent_pred_scores['Neu']
+
+            sent_df = pd.concat([articles['article_id'], sent_df], axis=1)
+
+            # db.update_sentiment_scores(sent_df)
+            sent_df = sent_df.drop(sent_df.index)
+        else:
+            # To be implement to update only a single sentiment
+            sent_df = pd.DataFrame(columns=['sentiment'])
+
+            sent_df['sentiment'] = sent_predictor.predict_sentiment(texts)
+
+            sent_df = pd.concat([articles['article_id'], sent_df], axis=1)
+
+            # print(sent_df)
+            db.update_sentiments(sent_df)
+            sent_df = sent_df.drop(sent_df.index)
     t.stop()
+
+if __name__ == '__main__':
+    populate_sentiment(10, sent_scores=False)
