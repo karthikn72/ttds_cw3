@@ -387,7 +387,7 @@ def handle_request(processed_params):
 
 def process_results(processed_params, results_df, relevance_order, retrieval_time):
     if results_df.empty:
-        if processed_params['publications'] or processed_params['from'] or processed_params['to'] or processed_params['category']:
+        if processed_params['publication'] or processed_params['from'] or processed_params['to'] or processed_params['category']:
             return jsonify({'status': 200, 'message': "No articles found with filter conditions"}), 200
         else:
             return jsonify({'status': 404, 'message': "No articles found for docid"}), 404
@@ -422,7 +422,7 @@ def process_results(processed_params, results_df, relevance_order, retrieval_tim
     response = {
         'status': 200,
         'retrieval_time': retrieval_time,
-        'total_results': len(results_df),
+        'total_results': len(return_results_df),
         'results': return_results_df.to_dict('records')
     }
     if 'filter_options' in locals(): #only include filter options if they exist (ie if request is all or not specified)
