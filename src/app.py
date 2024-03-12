@@ -6,6 +6,7 @@ import time
 from threading import Thread
 from datetime import datetime, timedelta
 import os
+from functools import lru_cache
 
 from tools.tokenizer import QueryTokenizer, InvalidQueryError
 from tools.retrieval import Retrieval
@@ -41,6 +42,8 @@ class HandleRequestThread(Thread):
             self.results = handle_request(self.processed_params)
         except HandleRequestError as e:
             self.error = e
+        except Exception as e:
+            self.error = HandleRequestError(e, 500)
 
 #process parameters
 def process_params(request_args):
@@ -193,8 +196,19 @@ def sort_by_relevance(results_df, relevance_order, start, end):
     results_df[categorical_columns] = results_df[categorical_columns].astype('object')
     return results_df
 
-def handle_request(processed_params):
-    start_time = time.time()  #start timing query search time 
+def convert_to_immutable(processed_params):
+    immutable_params = {}
+    for key, value in processed_params.items():
+        if isinstance(value, list):
+            immutable_params[key] = tuple(value)
+        else:
+            immutable_params[key] = value
+    return frozenset(immutable_params.items())
+
+@lru_cache(maxsize=500)
+def process_search_query(processed_params_frozenset):
+    processed_params = dict(processed_params_frozenset)
+
     #get search query
     search_query = processed_params['q']
     
@@ -294,13 +308,25 @@ def handle_request(processed_params):
     elif search_type == "publication":
         search_query = search_query.split(":")[1].strip()
         existing_pubs = db.get_publications()
+        existing_pubs = [pub.strip().lower() for pub in existing_pubs]
         if search_query not in existing_pubs:
             raise HandleRequestError("Could not find publication", 404)
         publications = [search_query]
         print(f'publications: {publications}')
 
     else:
-        return {'error': {'status': 400, 'message': "Invalid search type"}}
+        raise HandleRequestError("Invalid search type", 400)
+    
+    return results, results_scores
+
+def handle_request(processed_params):
+    start_time = time.time()  #start timing query search time 
+
+    try: 
+        immutable_params = convert_to_immutable(processed_params)
+        results, results_scores = process_search_query(immutable_params)
+    except HandleRequestError as e:
+        raise e
 
     #check for date range
     if processed_params['from'] != None and processed_params['to'] != None: 
@@ -316,7 +342,7 @@ def handle_request(processed_params):
     #check for sortBy 
     sort_by_date = None
     relevance_order = []
-    if search_type == "publication":
+    if processed_params['type'] == "publication":
         if processed_params['sortBy'] == None or processed_params['sortBy'] == "descendingdate":
             sort_by_date = "desc" #default for publication search
         elif processed_params['sortBy'] == "ascendingdate":
@@ -334,12 +360,12 @@ def handle_request(processed_params):
     #apply filters if they exist
     authors = processed_params['author'] if processed_params['author'] else None
     sentiments = processed_params['sentiment'] if processed_params['sentiment'] else None
-    if search_type != "publication":
+    if processed_params['type'] != "publication":
         publications = processed_params['publication'] if processed_params['publication'] else None
     sections = processed_params['category'] if processed_params['category'] else None
 
     #get results from database
-    if search_type == "publication":
+    if processed_params['type'] == "publication":
         try:
             print(f'publications: {publications}, start_date: {start_date}, end_date: {end_date}, sort_by_date: {sort_by_date}, sections: {sections}')
             results_df = db.get_articles(publications=publications, start_date=start_date, end_date=end_date, sort_by_date=sort_by_date, sections=sections, limit=10000)
@@ -426,10 +452,12 @@ def get_results():
     if thread.error is not None:
         return jsonify({'status': thread.error.status, 'message': str(thread.error)}), thread.error.status
 
-    results_df, relevance_order, retrieval_time = thread.results
-
-    return process_results(processed_params, results_df, relevance_order, retrieval_time)
-
+    if thread.results is not None:
+        results_df, relevance_order, retrieval_time = thread.results
+        return process_results(processed_params, results_df, relevance_order, retrieval_time)
+    else:
+        return jsonify({'status': 500, 'message': "An error occurred"}), 500
+    
 @app.route('/unique_publications')
 def get_unique_publications():
     publications = db.get_publications()
@@ -437,6 +465,16 @@ def get_unique_publications():
         'status': 200,
         'unique_publications': publications
         })
+
+def get_digest(current_date):
+    results_df = db.get_articles(start_date=current_date, end_date=current_date, limit=100)
+    return results_df
+
+def get_trending(current_date):
+    results_df = db.get_articles(start_date=current_date, end_date=current_date, limit=200)
+    if not results_df.empty:
+        results_df = results_df.sample(n=5)
+    return results_df
 
 @app.route('/get_live')
 def get_live():  
@@ -448,14 +486,22 @@ def get_live():
         return jsonify({'status': 400, 'message': "Invalid value for type parameter"}), 400
     
     start_time = time.time()
+    # current_date = datetime.now()
+    # for now use hardcoded date
+    current_date = datetime(2018, 6, 1)
+
     if type.lower() == 'digest':
-        #set date internally to be current day, for now use hardcoded date that returns results
-        hardcoded_date = "2018-03-05"
-        date = datetime.strptime(hardcoded_date, "%Y-%m-%d")
-        results_df = db.get_articles(start_date=date, end_date=date, limit=100)
+        results_df = get_digest(current_date)
 
     elif type.lower() == 'trending':
-        return jsonify({'status': 400, 'message': "trending not implemented yet"}), 400
+        results_df = get_trending(current_date)
+
+    if results_df.empty:
+        current_date = (datetime.now() - timedelta(days=1))
+        if type.lower() == 'digest':
+            results_df = get_digest(current_date)
+        elif type.lower() == 'trending':
+            results_df = get_trending(current_date)
 
     if results_df.empty:
         return jsonify({'status': 404, 'message': "No articles found"}), 404
@@ -464,11 +510,21 @@ def get_live():
     
     end_time = time.time()
     retrieval_time = end_time - start_time
-    return jsonify({
-        'status': 200,
-        'retrieval_time': retrieval_time,
-        'articles' : results_df.to_dict('records')
-        })
+
+    if type.lower() == 'digest':
+        return jsonify({
+            'status': 200,
+            'retrieval_time': retrieval_time,
+            'digest' : results_df.to_dict('records'),
+            'date': current_date
+            })
+    elif type.lower() == 'trending':
+        #just return id and title
+        return jsonify({
+            'status': 200,
+            'trending' : results_df[['article_id', 'title']].to_dict('records'),
+            'date': current_date
+            })
 
 @app.route('/get_saved_articles')
 def get_saved_articles():
