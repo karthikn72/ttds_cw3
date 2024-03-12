@@ -216,6 +216,10 @@ def process_search_query(processed_params_frozenset):
     q = QueryTokenizer()
     r = Retrieval()
 
+    results = []
+    results_scores = []
+    pubs_q = []
+
     #identify the type of search 
     search_type = processed_params['type']
     if search_type == "phrase":
@@ -311,20 +315,20 @@ def process_search_query(processed_params_frozenset):
         existing_pubs = [pub.strip().lower() for pub in existing_pubs]
         if search_query not in existing_pubs:
             raise HandleRequestError("Could not find publication", 404)
-        publications = [search_query]
-        print(f'publications: {publications}')
+        pubs_q = [search_query]
+        print(f'publications: {pubs_q}')
 
     else:
         raise HandleRequestError("Invalid search type", 400)
     
-    return results, results_scores
+    return results, results_scores, pubs_q
 
 def handle_request(processed_params):
     start_time = time.time()  #start timing query search time 
 
     try: 
         immutable_params = convert_to_immutable(processed_params)
-        results, results_scores = process_search_query(immutable_params)
+        results, results_scores, publications = process_search_query(immutable_params)
     except HandleRequestError as e:
         raise e
 
