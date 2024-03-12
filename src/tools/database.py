@@ -1,5 +1,5 @@
 import os
-from timer import Timer
+from .timer import Timer
 import random
 from datetime import datetime
 import pandas as pd
