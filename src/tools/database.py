@@ -512,7 +512,7 @@ class Database:
                 return
             else:
                 print("Invalid input. Please enter 'y' or 'n'.")
-    def build_doc_length_table(self, index: pd.DataFrame):
+    def build_article_length_table(self, index: pd.DataFrame):
         with self.engine.connect() as db_conn:
             try:
                 self.add_doc_table(doc_table=index, conn=db_conn)
@@ -522,7 +522,7 @@ class Database:
                 db_conn.rollback()
                 print("!!!!! CANCELLED INDEXING !!!!!")
                 raise e
-    def add_doc_length_table(self, doc_table, conn):
+    def add_article_length_table(self, doc_table, conn):
         t = Timer('Built doc table in {:.4f}s')
         t.start()
         doc_table.to_sql('doc_length_table', 
