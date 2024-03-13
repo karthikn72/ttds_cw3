@@ -98,10 +98,12 @@ class QueryTokenizer(Tokenizer):
         open_quote = -1
         start = 0
         processed = []
+        non_phrase_words = ''
         for i in range(len(query)):
             if query[i]=='"':
                 if open_quote==-1:
                     processed = processed + self.__tokenize_raw_query(query[start:i])
+                    non_phrase_words += query[start:i]+' '
                     open_quote=i+1
                     start = i+1
                 else:
@@ -111,9 +113,10 @@ class QueryTokenizer(Tokenizer):
                     open_quote = -1
                     start = i+1
         processed = processed + self.__tokenize_raw_query(query[start:])
+        non_phrase_words += query[start:]+' '
         if processed==[]:
             raise ValueError("Query seems to contain no specific keywords.")
-        return processed, self.__query_expansion(query)
+        return processed, self.__query_expansion(non_phrase_words)
     
     def process_word(self, word):
         processed = self.__tokenize_raw_query(word)

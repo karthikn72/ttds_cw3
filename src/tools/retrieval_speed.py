@@ -3,16 +3,13 @@ import heapq
 import pickle
 import sys
 import os
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.dirname(SCRIPT_DIR))
-
-from tools.database import Database
+from database import Database
 import pandas as pd
 import time
 
 import numpy as np
 
-from tools.tokenizer import Tokenizer, QueryTokenizer
+from tokenizer import Tokenizer, QueryTokenizer
 
     # {
     #     word: {
@@ -43,13 +40,17 @@ class Retrieval:
     def free_form_retrieval(self, query_terms, expanded_query):
         start = time.time()
         self.index = self.db.get_index_by_words(self.__flatten_query_terms(query_terms))
+        t1 = time.time()
+        print(1, t1-start)
+        start = t1
 
         if len(self.index)==0 or len(self.index.article_id.unique())<=20:
             index_expanded = self.db.get_index_by_words(expanded_query)
             self.index = pd.concat([self.index, index_expanded], axis=0)
+        
 
         t1 = time.time()
-        print('Time taken to retrieve index (including expanded query)', t1-start)
+        print(2, t1-start)
         start = t1
         
         doc_scores = defaultdict(lambda: 0)
@@ -57,44 +58,43 @@ class Retrieval:
         if len(self.index)==0:
             return doc_scores
 
-        query_words = list(filter(lambda x: type(x)==str, query_terms))
-        
-        doc_scores = self.__bow_retrieval(query_words, doc_scores)
-        doc_scores = self.__bow_retrieval(query_words, doc_scores, 0.5)
+        for term in query_terms:
+            if type(term) == str:
+                term_index = self.index[self.index['word']==term]
+                for idx, row in term_index.iterrows():
+                    doc = row['article_id']
+                    doc_scores[doc] = doc_scores.get(doc, 0) + row['tfidf']
+            elif type(term)==list:
+                phrase_docs = self.__phrase_search(term)
+                phrase_index = self.index[self.index['article_id'].isin(phrase_docs)]
+                non_phrase_index = self.index[~self.index['article_id'].isin(phrase_docs)]
+                for w in term:
+                    phrase_term_index = phrase_index[phrase_index['word'] == w]
+                    for idx, row in phrase_term_index.iterrows():
+                        doc = row['article_id']
+                        doc_scores[doc] = doc_scores.get(doc, 0) + row['tfidf']
+
+                    non_phrase_term_index = non_phrase_index[non_phrase_index['word'] == w]
+                    for idx, row in non_phrase_term_index.iterrows():
+                        doc = row['article_id']
+                        doc_scores[doc] = doc_scores.get(doc, 0) + row['tfidf'] * 0.6
+            
 
         t1 = time.time()
-        print('To retrieve docs and scores for non-phrase terms', t1-start)
+        print(3, t1-start)
         start = t1
-        
-        query_phrases = list(filter(lambda x: type(x)==list, query_terms))
-        
-        phrase_docs = set([])
-        docs_have_queries = list(map(lambda x: self.__phrase_search(x), query_phrases))
-        
-        t1 = time.time()
-        print('Phrase searches', t1-start)
-        start = t1
-        
-        for x in docs_have_queries:
-            phrase_docs = phrase_docs & x
 
-        new_doc_scores = defaultdict(lambda: 0)
-        for phrase in query_phrases:
-            for w in phrase:
-                for doc in phrase_docs:
-                    if doc not in new_doc_scores:
-                        new_doc_scores[doc] = doc_scores[doc]
-                    new_doc_scores[doc] += self.index[(self.index['word'] == w) & (self.index['article_id'] == doc)]['tfidf'].values[0]
-
-        return doc_scores
-
-    def __bow_retrieval(self, query_words, doc_scores, weight=1):
-        for term in query_words:
+        for term in expanded_query:
             term_index = self.index[self.index['word']==term]
             for doc in term_index['article_id']:
                 if doc not in doc_scores:
                     doc_scores[doc] = 0
-                doc_scores[doc] += term_index[term_index.article_id==doc]['tfidf'].values[0] * weight
+                doc_scores[doc] += term_index[term_index.article_id==doc]['tfidf'].values[0]*0.4
+
+        t1 = time.time()
+        print(4, t1-start)
+        start = t1
+
 
         return doc_scores
     
@@ -152,7 +152,7 @@ class Retrieval:
             return set([])
         
         if len(terms)==1:
-            return set(self.index[self.index['word']==terms[0]]['article_id'])
+            return set(self.index[self.index['word']==terms[0]]['article_id'].unique())
 
         for i in range(0, len(terms)-1):
             term1 = terms[i]
@@ -162,12 +162,12 @@ class Retrieval:
                 return set([])
             
             if i==0:
-                docs1 = set(self.index[self.index['word']==term1]['article_id'].values)
+                docs1 = set(self.index[self.index['word']==term1]['article_id'].unique())
                 term1_dict = {doc: np.asarray(self.index[(self.index['word']==term1)&(self.index['article_id']==doc)]['positions'].values[0]) for doc in docs1} 
             else:
                 docs1 = set(output_dict.keys())
                 term1_dict = output_dict
-            docs2 = set(self.index[self.index['word']==term2]['article_id'].values)
+            docs2 = set(self.index[self.index['word']==term2]['article_id'].unique())
             term2_dict = {doc: np.asarray(self.index[(self.index['word']==term2)&(self.index['article_id']==doc)]['positions'].values[0]) for doc in docs2} 
             shared_docs = docs1 & docs2
 
@@ -193,7 +193,7 @@ class Retrieval:
     
 if __name__ == '__main__':
 
-    query = 'Climate change'
+    query = '"Climate change"' 
     qtokenizer = QueryTokenizer()
     query_terms, expanded_query = qtokenizer.tokenize_free_form(query)
 
