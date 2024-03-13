@@ -1,7 +1,12 @@
 import re
 from nltk.stem import PorterStemmer
 import os
-from .query_expansion import QueryExpander
+import sys
+
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.dirname(SCRIPT_DIR))
+
+from tools.query_expansion import QueryExpander
 
 from autocorrect import Speller
 
@@ -31,7 +36,7 @@ class Tokenizer:
             tokens = self.stopping(tokens)
         if self.stem:
             tokens = self.normalise(tokens)
-        return tokens
+        return [token for token in tokens if len(token) < 255]
     
     # Remove stop words
     def stopping(self, tokens):

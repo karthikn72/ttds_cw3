@@ -5,6 +5,7 @@ import pandas as pd
 import numpy as np
 import timer
 from tokenizer import Tokenizer
+from tqdm import tqdm
 
 class Indexer:
     
@@ -18,8 +19,8 @@ class Indexer:
     
     def indexing(self, article_df):
         self.index_data = {}
-        
-        for row in article_df.itertuples():
+        n = len(article_df)
+        for row in tqdm(article_df.itertuples(), total=n):
             doc_no = row.article_id
             #row is in a df object. concat the title and article as a string
             title = str(row.title) if row.title is not None else ""

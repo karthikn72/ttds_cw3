@@ -3,13 +3,16 @@ import heapq
 import pickle
 import sys
 import os
-from .database import Database
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.dirname(SCRIPT_DIR))
+
+from tools.database import Database
 import pandas as pd
 import time
 
 import numpy as np
 
-from tokenizer import Tokenizer, QueryTokenizer
+from tools.tokenizer import Tokenizer, QueryTokenizer
 
     # {
     #     word: {
