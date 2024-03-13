@@ -40,16 +40,13 @@ class Retrieval:
     def free_form_retrieval(self, query_terms, expanded_query):
         start = time.time()
         self.index = self.db.get_index_by_words(self.__flatten_query_terms(query_terms))
-        t1 = time.time()
-        print(1, t1-start)
-        start = t1
 
         if len(self.index)==0 or len(self.index.article_id.unique())<=20:
             index_expanded = self.db.get_index_by_words(expanded_query)
             self.index = pd.concat([self.index, index_expanded], axis=0)
 
         t1 = time.time()
-        print(2, t1-start)
+        print('Time taken to retrieve index (including expanded query)', t1-start)
         start = t1
         
         doc_scores = defaultdict(lambda: 0)
@@ -57,43 +54,44 @@ class Retrieval:
         if len(self.index)==0:
             return doc_scores
 
-        for term in query_terms:
-            if type(term) == str:
-                term_index = self.index[self.index['word']==term]
-                for doc in term_index['article_id']:
-                    if doc not in doc_scores:
-                        doc_scores[doc] = 0
-                    doc_scores[doc] += term_index[term_index.article_id==doc]['tfidf'].values[0]
-            elif type(term)==list:
-                phrase_docs = self.__phrase_search(term)
-                for w in term:
-                    for doc in phrase_docs:
-                        if doc not in doc_scores:
-                            doc_scores[doc] = 0
-                        doc_scores[doc] += self.index[(self.index['word'] == w) & (self.index['article_id'] == doc)]['tfidf'].values[0]
+        query_words = list(filter(lambda x: type(x)==str, query_terms))
+        
+        doc_scores = self.__bow_retrieval(query_words, doc_scores)
+        doc_scores = self.__bow_retrieval(query_words, doc_scores, 0.5)
 
-                for w in term:
-                    term_index = self.index[self.index.word==w]
-                    no_phrase_docs = set(self.index[self.index.word==w]['article_id'].values) - phrase_docs
-                    for doc in no_phrase_docs:
-                        if doc not in doc_scores:
-                            doc_scores[doc] = 0
-                        doc_scores[doc] += term_index[term_index['article_id'] == doc]['tfidf'].values[0]*0.6
+        t1 = time.time()
+        print('To retrieve docs and scores for non-phrase terms', t1-start)
+        start = t1
+        
+        query_phrases = list(filter(lambda x: type(x)==list, query_terms))
+        
+        phrase_docs = set([])
+        docs_have_queries = list(map(lambda x: self.__phrase_search(x), query_phrases))
         
         t1 = time.time()
-        print(3, t1-start)
+        print('Phrase searches', t1-start)
         start = t1
+        
+        for x in docs_have_queries:
+            phrase_docs = phrase_docs & x
 
-        for term in expanded_query:
+        new_doc_scores = defaultdict(lambda: 0)
+        for phrase in query_phrases:
+            for w in phrase:
+                for doc in phrase_docs:
+                    if doc not in new_doc_scores:
+                        new_doc_scores[doc] = doc_scores[doc]
+                    new_doc_scores[doc] += self.index[(self.index['word'] == w) & (self.index['article_id'] == doc)]['tfidf'].values[0]
+
+        return doc_scores
+
+    def __bow_retrieval(self, query_words, doc_scores, weight=1):
+        for term in query_words:
             term_index = self.index[self.index['word']==term]
             for doc in term_index['article_id']:
                 if doc not in doc_scores:
                     doc_scores[doc] = 0
-                doc_scores[doc] += term_index[term_index.article_id==doc]['tfidf'].values[0]*0.4
-
-        t1 = time.time()
-        print(4, t1-start)
-        start = t1
+                doc_scores[doc] += term_index[term_index.article_id==doc]['tfidf'].values[0] * weight
 
         return doc_scores
     
