@@ -13,7 +13,7 @@ from tools.retrieval import Retrieval
 from tools.database import Database
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "https://sentinews-413116.web.app"}})
+CORS(app)
 
 # Load database
 db = Database()
@@ -561,4 +561,4 @@ def get_saved_articles():
         })
 
 if __name__ == '__main__':
-    app.run(ssl_context=('cert.pem', 'key.pem'))
+    app.run()
