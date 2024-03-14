@@ -179,7 +179,7 @@ def get_filter_options(results):
     #get the unique values for each category
     filter_options = {
         'authors': [author for author in unique_authors if author != "" and author is not None],
-        'publications': results[(results['publication_name'] != "") & (results['publication_name']['publication_name'] is not None)].unique().tolist(),
+        'publications': results[(results['publication_name'] != "") & (results['publication_name'] is not None)]['publication_name'].unique().tolist(),
         'sections': results[(results['section_name'] != "") & (results['section_name'] is not None)]['section_name'].unique().tolist()
     }
     return filter_options
