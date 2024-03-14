@@ -1,0 +1,174 @@
+.App {
+  background-color: #eee;
+  min-height: 100vh;
+}
+
+.nav-link {
+    margin-right: 15px;
+    margin-left: 15px;
+    font-weight: bold !important;
+    color: white !important;
+    transition: all 0.5s ease-out !important;
+}
+
+.nav-link:hover {
+    opacity: 0.5;
+}
+
+.wrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 90vh;
+}
+
+.cover {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.button-deco {
+    background-color: black !important;
+    color: white !important;
+}
+
+.search-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 40px;
+    overflow: hidden;
+}
+
+.icon-segment {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
+.icon-segment .icon {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: black;
+}
+
+.icon-segment .icon-right {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: black;
+}
+
+.icon-segment .filter-icon {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: black;
+}
+
+.icon-segment .filter-toggle {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: black;
+}
+
+.search-box input {
+    display: block;
+    appearance: none;
+    outline: none;
+    border: none;
+    padding: 16px;
+    padding-left: 48px;
+    padding-right: 85px;
+    overflow: auto;
+    width: 100%;
+}
+
+.filter-title {
+    font-weight: bold;
+    padding-left: 10px;
+    padding-top: 20px;
+}
+
+.vertical-line {
+    border-left: 2px solid black;
+    height: 100%;
+    margin: 0 10px;
+}
+
+.divider {
+    height: 50%;
+    width: 1.5px;
+    background-color: grey;
+}
+
+.advanced-search-title {
+    font-weight: bold;
+    text-align: left;
+}
+
+.cover .error-text {
+    text-align: center;
+    font-weight: bold;
+    padding-left: 2%;
+    padding-right: 2%;
+    font-size: 15px;
+}
+
+.article-publication {
+    text-transform: uppercase;
+    margin-bottom: 3px !important;
+    font-weight: bold !important;
+}
+
+.article-title {
+    font-size: 16px !important;
+}
+
+.article-chip {
+    margin-top: 5px !important;
+    margin-bottom: 9px !important;
+}
+
+.article-snippet {
+    text-align: justify;
+}
+
+.article-footer {
+    text-transform: uppercase;
+    margin-top: 5px !important;
+    font-size: 14px !important;
+    font-weight: bold !important;
+}
+
+.article-icon {
+    color: black !important;
+}
+
+.sentiment-status {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+}
+
+.center-page {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    width: 90%;
+    max-width: 1000px;
+}
+
+.trending-text {
+    font-size: 15px !important;
+    font-weight: bold !important;
+    text-align: center;
+}
