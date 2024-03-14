@@ -174,14 +174,13 @@ def format_results(results_df):
     return results_df
     
 def get_filter_options(results):
-    flat_authors = [author for sublist in results['author_names'].tolist() for author in sublist]
-    unique_authors = pd.Series(flat_authors).unique().tolist()
+    unique_authors = results['author_names'].explode().unique()
     
     #get the unique values for each category
     filter_options = {
         'authors': [author for author in unique_authors if author != "" and author is not None],
-        'publications': [publication for publication in results['publication_name'].unique().tolist() if publication != "" and publication is not None],
-        'sections': [section for section in results['section_name'].unique().tolist() if section != "" and section is not None]
+        'publications': results[results['publication_name'] != "" and results['publication_name'] is not None].unique().tolist(),
+        'sections': results[results['section_name'] != "" and results['section_name'] is not None].unique().tolist()
     }
     return filter_options
 
