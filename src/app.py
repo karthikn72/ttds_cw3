@@ -186,6 +186,8 @@ def get_filter_options(results):
     return filter_options
 
 def sort_by_relevance(results_df, relevance_order, start, end):
+    #remove any article ids not in results_df from relevance_order (if filters were applied)
+    relevance_order = [article_id for article_id in relevance_order if article_id in results_df['article_id'].tolist()]
     # get 100 in order of relevance
     relevance_order = relevance_order[start:end]
     results_df = results_df[results_df['article_id'].isin(relevance_order)]
@@ -372,13 +374,13 @@ def handle_request(processed_params):
     if processed_params['type'] == "publication":
         try:
             print(f'publications: {publications}, start_date: {start_date}, end_date: {end_date}, sort_by_date: {sort_by_date}, sections: {sections}')
-            results_df = db.get_articles(publications=publications, start_date=start_date, end_date=end_date, sort_by_date=sort_by_date, sections=sections, limit=10000)
+            results_df = db.get_articles(publications=publications, start_date=start_date, end_date=end_date, sort_by_date=sort_by_date, sections=sections, limit=5000)
         except (Exception) as e:
             raise HandleRequestError('error fetching articles', 404)
     else:
         if results == []:
             raise HandleRequestError("Words could not be found in the index", 404)
-        results_df = db.get_articles(article_ids=results, publications=publications, start_date=start_date, end_date=end_date, sort_by_date=sort_by_date, sections=sections, limit=10000)
+        results_df = db.get_articles(article_ids=results, publications=publications, start_date=start_date, end_date=end_date, sort_by_date=sort_by_date, sections=sections, limit=5000)
 
     end_time = time.time()  #end timing
     retrieval_time = end_time - start_time  #to calculate retrieval time
@@ -410,19 +412,22 @@ def process_results(processed_params, results_df, relevance_order, retrieval_tim
         if start >= len(results_df):
             return jsonify({'status': 404, 'message': "No articles found for page"}), 404
         if relevance_order:
+            print(f'start: {start}, end: {end}')
+            print(f'len of all results: {len(results_df)}')
+            print(f'len of page results: {len(results_df[start:end])}')
             return_results_df = sort_by_relevance(results_df, relevance_order, start, end)
             return_results_df = format_results(return_results_df)
         else:
             return_results_df = format_results(results_df[start:end])
 
     if processed_params['request'] == None or processed_params['request'] == "meta":
-        filter_options = get_filter_options(return_results_df)
+        filter_options = get_filter_options(results_df)
 
     #prepare response
     response = {
         'status': 200,
         'retrieval_time': retrieval_time,
-        'total_results': len(return_results_df),
+        'total_results': len(results_df),
         'results': return_results_df.to_dict('records')
     }
     if 'filter_options' in locals(): #only include filter options if they exist (ie if request is all or not specified)
