@@ -169,5 +169,5 @@ class QueryTokenizer(Tokenizer):
 if __name__ == '__main__':
     q = QueryTokenizer()
     # print(q.tokenize_bool('"middle east" AND pece')) # ([['middl', 'east']], ['piec'], 'AND')
-    print(q.tokenize_free_form('story book "middle east" piece "man America hunting"'))
+    print(q.tokenize_free_form('the song "Rewrite the stars"'))
     # print(q.tokenize_free_form('story book "middle east" piece "man America hunting"'))
