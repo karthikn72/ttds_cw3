@@ -187,7 +187,7 @@ def get_filter_options(results):
 
 def sort_by_relevance(results_df, relevance_order, start, end):
     #remove any article ids not in results_df from relevance_order (if filters were applied)
-    relevance_order = [article_id for article_id in relevance_order if article_id in results_df['article_id'].tolist()]
+    relevance_order = results_df[results_df.article_id.isin(relevance_order)]['article_id']
     # get 100 in order of relevance
     relevance_order = relevance_order[start:end]
     results_df = results_df[results_df['article_id'].isin(relevance_order)]
