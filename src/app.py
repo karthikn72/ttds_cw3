@@ -179,9 +179,9 @@ def get_filter_options(results):
     
     #get the unique values for each category
     filter_options = {
-        'authors': [author for author in unique_authors if author != ""],
-        'publications': [publication for publication in results['publication_name'].unique().tolist() if publication != ""],
-        'sections': [section for section in results['section_name'].unique().tolist() if section != ""]
+        'authors': [author for author in unique_authors if author != "" and author is not None],
+        'publications': [publication for publication in results['publication_name'].unique().tolist() if publication != "" and publication is not None],
+        'sections': [section for section in results['section_name'].unique().tolist() if section != "" and section is not None]
     }
     return filter_options
 
@@ -421,7 +421,7 @@ def process_results(processed_params, results_df, relevance_order, retrieval_tim
             return_results_df = format_results(results_df[start:end])
 
     if processed_params['request'] == None or processed_params['request'] == "meta":
-        filter_options = get_filter_options(results_df)
+        filter_options = get_filter_options(format_results(results_df))
 
     #prepare response
     response = {
