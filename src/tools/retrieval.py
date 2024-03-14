@@ -60,7 +60,7 @@ class Retrieval:
         query_words = list(filter(lambda x: type(x)==str, query_terms))
         
         doc_scores = self.__bow_retrieval(query_words, doc_scores)
-        doc_scores = self.__bow_retrieval(query_words, doc_scores, 0.5)
+        doc_scores = self.__bow_retrieval(expanded_query, doc_scores, 0.5)
 
         t1 = time.time()
         print('To retrieve docs and scores for non-phrase terms', t1-start)
