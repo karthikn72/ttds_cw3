@@ -1,0 +1,19 @@
+{
+  "files": {
+    "main.css": "/static/css/main.5f0b56cb.css",
+    "main.js": "/static/js/main.4d15efff.js",
+    "static/media/globe-logo.png": "/static/media/globe-logo.86d3dab64848a978b67d.png",
+    "static/media/logo.png": "/static/media/logo.587594133020949a0341.png",
+    "static/media/404.svg": "/static/media/404.bc72b4045cc69dcc24188687c16f0e86.svg",
+    "static/media/no-results.svg": "/static/media/no-results.f31c22892f6e0539a9a4cc2d37c09e65.svg",
+    "static/media/empty-articles-saved.svg": "/static/media/empty-articles-saved.e7a933b183b43bea5758efb05dfa75ce.svg",
+    "static/media/narrow-filters.svg": "/static/media/narrow-filters.01d5385ec77d31a8e2dad4b00c7b89d7.svg",
+    "index.html": "/index.html",
+    "main.5f0b56cb.css.map": "/static/css/main.5f0b56cb.css.map",
+    "main.4d15efff.js.map": "/static/js/main.4d15efff.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.5f0b56cb.css",
+    "static/js/main.4d15efff.js"
+  ]
+}
