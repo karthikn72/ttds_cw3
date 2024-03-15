@@ -402,7 +402,7 @@ def process_results(processed_params, results_df, relevance_order, retrieval_tim
         # fill sentiment column only if positive, neutral and negative columns for a row are not 0.0
         results_df['sentiment'] = results_df.apply(apply_idxmax, axis=1)
         # change first letter of sentiment to capital letter
-        results_df['sentiment'] = results_df['sentiment'].str.capitalize()
+        results_df['sentiment'] = results_df['sentiment'].apply(lambda x: x.capitalize() if isinstance(x, str) else x)
         
         #filter with pandas in the API
         if processed_params['author']:
@@ -485,12 +485,12 @@ def get_unique_publications():
         'unique_publications': publications
         })
 
-def get_digest(current_date):
-    results_df = db.get_articles(start_date=current_date, end_date=current_date, limit=100)
+def get_digest():
+    results_df = db.get_articles(sort_by_date="desc", limit=100)
     return results_df
 
-def get_trending(current_date):
-    results_df = db.get_articles(start_date=current_date, end_date=current_date, limit=200)
+def get_trending():
+    results_df = db.get_articles(limit=1000)
     if not results_df.empty:
         results_df = results_df.sample(n=5)
     return results_df
@@ -505,25 +505,19 @@ def get_live():
         return jsonify({'status': 400, 'message': "Invalid value for type parameter"}), 400
     
     start_time = time.time()
-    # current_date = datetime.now()
-    # for now use hardcoded date
-    current_date = datetime(2018, 6, 1)
 
     if type.lower() == 'digest':
-        results_df = get_digest(current_date)
-
+        results_df = get_digest()
     elif type.lower() == 'trending':
-        results_df = get_trending(current_date)
-
-    if results_df.empty:
-        current_date = (datetime.now() - timedelta(days=1))
-        if type.lower() == 'digest':
-            results_df = get_digest(current_date)
-        elif type.lower() == 'trending':
-            results_df = get_trending(current_date)
+        results_df = get_trending()
 
     if results_df.empty:
         return jsonify({'status': 404, 'message': "No articles found"}), 404
+    
+    # fill sentiment column only if positive, neutral and negative columns for a row are not 0.0
+    results_df['sentiment'] = results_df.apply(apply_idxmax, axis=1)
+    # change first letter of sentiment to capital letter
+    results_df['sentiment'] = results_df['sentiment'].apply(lambda x: x.capitalize() if isinstance(x, str) else x)
     
     results_df = format_results(results_df)
     
@@ -534,15 +528,13 @@ def get_live():
         return jsonify({
             'status': 200,
             'retrieval_time': retrieval_time,
-            'digest' : results_df.to_dict('records'),
-            'date': current_date
+            'digest' : results_df.to_dict('records')
             })
     elif type.lower() == 'trending':
         #just return id and title
         return jsonify({
             'status': 200,
-            'trending' : results_df[['article_id', 'title']].to_dict('records'),
-            'date': current_date
+            'trending' : results_df[['article_id', 'title']].to_dict('records')
             })
 
 @app.route('/get_saved_articles')
@@ -559,6 +551,11 @@ def get_saved_articles():
 
     if results_df.empty:
         return jsonify({'status': 404, 'message': "No articles found"}), 404
+    
+    # fill sentiment column only if positive, neutral and negative columns for a row are not 0.0
+    results_df['sentiment'] = results_df.apply(apply_idxmax, axis=1)
+    # change first letter of sentiment to capital letter
+    results_df['sentiment'] = results_df['sentiment'].apply(lambda x: x.capitalize() if isinstance(x, str) else x)
 
     results_df = format_results(results_df)
 
