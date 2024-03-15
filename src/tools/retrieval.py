@@ -119,15 +119,15 @@ class Retrieval:
         else:
             docs = docs1.keys() | docs2.keys()
         
-        docs_scores = defaultdict(lambda: 0)
+        doc_scores = defaultdict(lambda: 0)
         for doc in docs:
-            if doc not in docs_scores:
-                docs_scores[doc] = 0
-            docs_scores[doc] = docs1[doc]+docs2[doc]
+            if doc not in doc_scores:
+                doc_scores[doc] = 0
+            doc_scores[doc] = docs1[doc]+docs2[doc]
 
-        print(f'Length of retrieved articles is {len(doc_scores)}')
+        print(f'Length of retrieved articles is {len(docs_scores)}')
         
-        return docs_scores 
+        return doc_scores 
     
     def proximity_retrieval(self, word1, word2, proximity):
         self.index = self.db.get_index_by_words([word1, word2])
