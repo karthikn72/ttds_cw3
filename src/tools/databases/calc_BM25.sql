@@ -14,11 +14,10 @@ BEGIN
 
     -- Creating a temporary table for BM25 scores
     CREATE TEMPORARY TABLE temp_BM25 AS (
-        WITH log_tf_table AS (
+        WITH tf_table AS (
             SELECT
                 word_id,
                 article_id,
-                LOG(COUNT(*)) + 1 AS log_tf,
                 COUNT(*) AS tf
             FROM
                 (SELECT word_id, article_id, unnest(positions) FROM index_table) AS it
@@ -47,7 +46,7 @@ BEGIN
             tf.article_id,
             idf.idf * (tf.tf * (k1 + 1)) / (tf.tf + k1 * (1 - b + b * (dl.doc_length / avgdl))) AS bm25
         FROM
-            log_tf_table tf
+            tf_table tf
         JOIN
             idf_table idf ON tf.word_id = idf.word_id
         JOIN
