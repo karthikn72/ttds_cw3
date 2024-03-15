@@ -149,8 +149,28 @@ class Retrieval:
         common_docs = word1_docs & word2_docs
 
         docs = set([])
-        for p in range(1, proximity+1):
-            docs = docs | self.__check_adjacent_words(common_docs, word1_doc_pos, word2_doc_pos, p).keys()
+
+        for doc in common_docs:
+            fst_positions = word1_doc_pos[doc]
+            snd_positions = word2_doc_pos[doc]
+
+            fst_idx = 0
+            snd_idx = 0
+
+            while fst_idx != len(fst_positions) and snd_idx != len(snd_positions):
+                fst_pos = fst_positions[fst_idx]
+                snd_pos = snd_positions[snd_idx]
+                
+                if abs(snd_pos - fst_pos) <= proximity:
+                    docs.add(doc)
+                    break
+                elif snd_pos > fst_pos:
+                    fst_idx += 1
+                else:
+                    snd_idx += 1
+
+        # for p in range(1, proximity+1):
+        #     docs = docs | self.__check_adjacent_words(common_docs, word1_doc_pos, word2_doc_pos, p).keys()
 
         for w in [word1, word2]:
             word_index = self.index[self.index['word']==w]
