@@ -265,6 +265,7 @@ def process_search_query(processed_params_frozenset):
         except (KeyError) as e:
             raise HandleRequestError("Could not find term in index", 404)
         except (Exception) as e:
+            print(e)
             raise HandleRequestError("Error during retrieval", 404)
         results_scores = results
         results = results.keys()
