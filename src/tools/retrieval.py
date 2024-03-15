@@ -125,34 +125,63 @@ class Retrieval:
                 doc_scores[doc] = 0
             doc_scores[doc] = docs1[doc]+docs2[doc]
 
-        print(f'Length of retrieved articles is {len(doc_scores)}')
+        print(f'Length of boolean retrieved articles is {len(doc_scores)}')
         
         return doc_scores 
     
     def proximity_retrieval(self, word1, word2, proximity):
+        print("Proximity retrieval called")
         self.index = self.db.get_index_by_words([word1, word2])
 
         doc_scores = defaultdict(lambda: 0)
 
-        if len(self.index)==0 or len(self.index['word'].unique())!=2:
+        words_in_index = set(self.index['word'].unique())
+
+        if len(self.index)==0 or len(words_in_index)!=2:
             return doc_scores
         
-        if (word1 not in self.index['word'].values) or (word2 not in self.index['word'].values):
+        if (word1 not in words_in_index) or (word2 not in words_in_index):
             return doc_scores
 
-        word1_docs = set(self.index[self.index['word']==word1]['article_id'].values)
-        word2_docs = set(self.index[self.index['word']==word2]['article_id'].values)
+        index_w1 = self.index[self.index['word'] == word1]
+        index_w2 = self.index[self.index['word'] == word2]
 
-        word1_doc_pos = {doc: np.asarray(self.index[(self.index['word']==word1)&(self.index['article_id']==doc)]['positions'].values[0]) for doc in word1_docs} 
-        word2_doc_pos = {doc: np.asarray(self.index[(self.index['word']==word2)&(self.index['article_id']==doc)]['positions'].values[0]) for doc in word2_docs} 
+        word1_docs = set(self.index[self.index['word']==word1]['article_id'].unique())
+        word2_docs = set(self.index[self.index['word']==word2]['article_id'].unique())
 
-        common_docs = word1_docs & word2_docs
+        # print("here")
+
+        # common_docs = self.index.groupby('article_id').filter(lambda x: x['word'].nunique() > 1)['article_id'].unique()
+
+        article_count = self.index['article_id'].value_counts()
+        # print(article_count)
+        common_docs = article_count[article_count == 2].index.tolist()
+        # print(type(common_docs))
+        # print(common_docs)
+
+        # print(len(common_docs))
+
+        # word1_doc_pos = {doc: np.asarray(self.index[(self.index['word']==word1)&(self.index['article_id']==doc)]['positions'].values[0]) for doc in common_docs} 
+        # word2_doc_pos = {doc: np.asarray(self.index[(self.index['word']==word2)&(self.index['article_id']==doc)]['positions'].values[0]) for doc in common_docs} 
+
+        # print("Common document gathered")
+
+        # print(len(common_docs))
 
         docs = set([])
 
+        start = time.time()
+
+        common_docs = common_docs[:2000]
+
         for doc in common_docs:
-            fst_positions = word1_doc_pos[doc]
-            snd_positions = word2_doc_pos[doc]
+            # print(doc)
+            # print('here')
+            fst_positions = index_w1[index_w1['article_id'] == doc]['positions'].tolist()[0]
+            snd_positions = index_w2[index_w2['article_id'] == doc]['positions'].tolist()[0]
+            # print(fst_positions)
+            # print(snd_positions)
+            # print('there')
 
             fst_idx = 0
             snd_idx = 0
@@ -160,8 +189,11 @@ class Retrieval:
             while fst_idx != len(fst_positions) and snd_idx != len(snd_positions):
                 fst_pos = fst_positions[fst_idx]
                 snd_pos = snd_positions[snd_idx]
-                
-                if abs(snd_pos - fst_pos) <= proximity:
+
+                # print(fst_pos)
+                # print(snd_pos)
+
+                if abs(snd_pos - fst_pos) <= int(proximity):
                     docs.add(doc)
                     break
                 elif snd_pos > fst_pos:
@@ -169,17 +201,20 @@ class Retrieval:
                 else:
                     snd_idx += 1
 
+        t1 = time.time()
+
+        print(f"Proximity retreival took {t1 - start} s")
+
         # for p in range(1, proximity+1):
         #     docs = docs | self.__check_adjacent_words(common_docs, word1_doc_pos, word2_doc_pos, p).keys()
 
-        for w in [word1, word2]:
-            word_index = self.index[self.index['word']==w]
-            for doc in docs:
-                if doc not in doc_scores:
-                    doc_scores[doc] = 0
-                doc_scores[doc] += word_index[(word_index['word']==w)&(word_index['article_id']==doc)]['tfidf'].values[0]
+        for doc in docs:
+            if doc not in doc_scores:
+                doc_scores[doc] = 0
+            doc_scores[doc] += index_w1[index_w1['article_id'] == doc]['tfidf'].values[0]
+            doc_scores[doc] += index_w2[index_w2['article_id'] == doc]['tfidf'].values[0]
 
-        print(f'Length of retrieved articles is {len(doc_scores)}')
+        print(f'Length of proximity retrieved articles is {len(doc_scores)}')
         return doc_scores
     
     def __phrase_search(self, terms):
@@ -233,14 +268,18 @@ class Retrieval:
     
 if __name__ == '__main__':
 
-    query = "\"germanys merkel backs foreign ministers\""
+    query = "(climate,change,19)"
+    parts = query.strip("()").split(",")
+    t1, t2, k = [part.strip() for part in parts]
+
     qtokenizer = QueryTokenizer()
-    query_terms, expanded_query = qtokenizer.tokenize_free_form(query)
+    t1 = qtokenizer.process_word(t1)
+    t2 = qtokenizer.process_word(t2)
 
     start_time = time.time()
 
     r = Retrieval()
-    ans = r.free_form_retrieval(query_terms, expanded_query)
+    ans = r.proximity_retrieval(t1, t2, k)
     end_time = time.time()
 
     # Calculate elapsed time
