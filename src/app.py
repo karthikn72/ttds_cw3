@@ -165,6 +165,12 @@ def replace_nulls(value):
         return ["" if v is None else v for v in value]
     else:
         return value
+    
+def apply_idxmax(row):
+    if not (row['positive'] == 0.0 and row['neutral'] == 0.0 and row['negative'] == 0.0):
+        return row[['positive', 'neutral', 'negative']].idxmax()
+    else:
+        return None  
 
 #for applying functions to some data (eg get snippet of article)
 def format_results(results_df):
@@ -364,8 +370,6 @@ def handle_request(processed_params):
             sort_by_date = "desc"  
 
     #apply filters if they exist
-    authors = processed_params['author'] if processed_params['author'] else None
-    sentiments = processed_params['sentiment'] if processed_params['sentiment'] else None
     if processed_params['type'] != "publication":
         publications = processed_params['publication'] if processed_params['publication'] else None
     sections = processed_params['category'] if processed_params['category'] else None
@@ -395,7 +399,12 @@ def process_results(processed_params, results_df, relevance_order, retrieval_tim
         else:
             return jsonify({'status': 404, 'message': "No articles found for docid"}), 404
     else:
-        #for now, filter with pandas in the API
+        # fill sentiment column only if positive, neutral and negative columns for a row are not 0.0
+        results_df['sentiment'] = results_df.apply(apply_idxmax, axis=1)
+        # change first letter of sentiment to capital letter
+        results_df['sentiment'] = results_df['sentiment'].str.capitalize()
+        
+        #filter with pandas in the API
         if processed_params['author']:
             authors = [author.lower() for author in processed_params['author']]
             results_df = results_df[results_df['author_names'].apply(lambda x: isinstance(x, list) and any(author in name.lower() for author in authors for name in x if name is not None))]
