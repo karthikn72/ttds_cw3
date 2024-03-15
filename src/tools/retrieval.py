@@ -125,7 +125,7 @@ class Retrieval:
                 doc_scores[doc] = 0
             doc_scores[doc] = docs1[doc]+docs2[doc]
 
-        print(f'Length of retrieved articles is {len(docs_scores)}')
+        print(f'Length of retrieved articles is {len(doc_scores)}')
         
         return doc_scores 
     
