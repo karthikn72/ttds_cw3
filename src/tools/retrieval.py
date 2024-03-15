@@ -172,7 +172,7 @@ class Retrieval:
 
         start = time.time()
 
-        common_docs = common_docs[:2000]
+        common_docs = common_docs[:1000]
 
         for doc in common_docs:
             # print(doc)
