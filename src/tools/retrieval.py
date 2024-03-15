@@ -92,6 +92,8 @@ class Retrieval:
             print('Phrase searches', t1-start)
             start = t1
 
+        print(f'Length of retrieved articles is {len(doc_scores)}')
+
         return doc_scores
 
     def __bow_retrieval(self, query_words, doc_scores, weight=1):
@@ -122,6 +124,8 @@ class Retrieval:
             if doc not in docs_scores:
                 docs_scores[doc] = 0
             docs_scores[doc] = docs1[doc]+docs2[doc]
+
+        print(f'Length of retrieved articles is {len(doc_scores)}')
         
         return docs_scores 
     
@@ -155,6 +159,7 @@ class Retrieval:
                     doc_scores[doc] = 0
                 doc_scores[doc] += word_index[(word_index['word']==w)&(word_index['article_id']==doc)]['tfidf'].values[0]
 
+        print(f'Length of retrieved articles is {len(doc_scores)}')
         return doc_scores
     
     def __phrase_search(self, terms):
@@ -208,7 +213,7 @@ class Retrieval:
     
 if __name__ == '__main__':
 
-    query = 'Climate change'
+    query = "\"germanys merkel backs foreign ministers\""
     qtokenizer = QueryTokenizer()
     query_terms, expanded_query = qtokenizer.tokenize_free_form(query)
 
