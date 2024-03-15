@@ -249,7 +249,7 @@ class Database:
                                         articles.publication_id = p.publication_id'
         add_queries = []
         if article_ids:
-            article_ids = tuple(article_ids) if len(article_ids) > 1 else f'({list(article_ids)[0]})'
+            article_ids = tuple(article_ids) if len(article_ids) > 1 else f'({article_ids[0]})'
             base_query_2 = f'(SELECT article_id, unnest(author_ids) as author_id FROM articles WHERE articles.article_id IN {article_ids}) a'
             add_queries.append(f'articles.article_id IN {article_ids}')
         if sections:

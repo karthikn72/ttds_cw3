@@ -377,6 +377,7 @@ def handle_request(processed_params):
         except (Exception) as e:
             raise HandleRequestError('error fetching articles', 404)
     else:
+        results = list(results)
         if results == []:
             raise HandleRequestError("Words could not be found in the index", 404)
         results_df = db.get_articles(article_ids=results, publications=publications, start_date=start_date, end_date=end_date, sort_by_date=sort_by_date, sections=sections, limit=5000)
