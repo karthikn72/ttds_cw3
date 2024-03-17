@@ -192,7 +192,8 @@ def get_filter_options(results):
 
 def sort_by_relevance(results_df, relevance_order, start, end):
     #remove any article ids not in results_df from relevance_order (if filters were applied)
-    relevance_order = results_df[results_df.article_id.isin(relevance_order)]['article_id']
+    article_id_set = set(results_df['article_id'].values)
+    relevance_order = [article_id for article_id in relevance_order if article_id in article_id_set]    
     # get 100 in order of relevance
     relevance_order = relevance_order[start:end]
     results_df = results_df[results_df['article_id'].isin(relevance_order)]
@@ -360,11 +361,11 @@ def handle_request(processed_params):
         elif processed_params['sortBy'] == "ascendingdate":
             sort_by_date = "asc"
     else:
-        if processed_params['sortBy'] == None or processed_params['sortBy'] == "relevance":
-            sort_by_date = None
-            results_scores = sorted(results_scores.items(), key=lambda x: x[1], reverse=True)
-            relevance_order = [x[0] for x in results_scores]
-        elif processed_params['sortBy'] == "ascendingdate": 
+        sort_by_date = None
+        results_scores = sorted(results_scores.items(), key=lambda x: x[1], reverse=True)
+        print(f'results_scores: {results_scores[:100]}')
+        relevance_order = [x[0] for x in results_scores]
+        if processed_params['sortBy'] == "ascendingdate": 
             sort_by_date = "asc"
         elif processed_params['sortBy'] == "descendingdate":
             sort_by_date = "desc"  
@@ -383,9 +384,10 @@ def handle_request(processed_params):
             raise HandleRequestError('error fetching articles', 404)
     else:
         results = list(results)
+        article_ids_relevance = relevance_order[:5000]
         if results == []:
             raise HandleRequestError("Words could not be found in the index", 404)
-        results_df = db.get_articles(article_ids=results, publications=publications, start_date=start_date, end_date=end_date, sort_by_date=sort_by_date, sections=sections, limit=5000)
+        results_df = db.get_articles(article_ids=article_ids_relevance, publications=publications, start_date=start_date, end_date=end_date, sort_by_date=sort_by_date, sections=sections, limit=5000)
 
     end_time = time.time()  #end timing
     retrieval_time = end_time - start_time  #to calculate retrieval time
@@ -421,10 +423,7 @@ def process_results(processed_params, results_df, relevance_order, retrieval_tim
         end = start + 100
         if start >= len(results_df):
             return jsonify({'status': 404, 'message': "No articles found for page"}), 404
-        if relevance_order:
-            print(f'start: {start}, end: {end}')
-            print(f'len of all results: {len(results_df)}')
-            print(f'len of page results: {len(results_df[start:end])}')
+        if processed_params['sortBy'] == "relevance" or processed_params['sortBy'] == None:
             return_results_df = sort_by_relevance(results_df, relevance_order, start, end)
             return_results_df = format_results(return_results_df)
         else:
