@@ -13,3 +13,4 @@ src/tools/__pycache__
 .venv/
 categories_model
 sentiment_model
+offline-data-retrieved.csv

@@ -8,12 +8,15 @@ BEGIN
 
 -- Step 1: Get the total count of distinct article_ids
 DROP TABLE IF EXISTS article_ids;
-CREATE TABLE article_ids AS SELECT DISTINCT article_id FROM index_table;
+CREATE TABLE article_ids AS (SELECT DISTINCT i.article_id 
+  FROM index_table i, articles a 
+  WHERE i.article_id = a.article_id AND a.added_date > TIMESTAMP '2024-03-14'
+);
 SELECT COUNT(article_id) INTO n FROM article_ids;
 
 -- Set the chunk size (adjust as needed)
 chunk_size := 1000;
-offset_val := 224000;
+offset_val := 0;
 -- Loop through chunks of data
 WHILE offset_val < n LOOP
     -- Step 2: Add the TF-IDF values to the initial table for the current chunk

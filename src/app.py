@@ -363,7 +363,6 @@ def handle_request(processed_params):
     else:
         sort_by_date = None
         results_scores = sorted(results_scores.items(), key=lambda x: x[1], reverse=True)
-        print(f'results_scores: {results_scores[:100]}')
         relevance_order = [x[0] for x in results_scores]
         if processed_params['sortBy'] == "ascendingdate": 
             sort_by_date = "asc"

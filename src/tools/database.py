@@ -8,10 +8,11 @@ from tools.timer import Timer
 import random
 from datetime import datetime
 import pandas as pd
+import numpy as np
 from tqdm import tqdm
 
 import sqlalchemy as db
-from sqlalchemy.dialects.postgresql import insert, ARRAY, INTEGER, TIMESTAMP
+from sqlalchemy.dialects.postgresql import insert, ARRAY, INTEGER, FLOAT, TIMESTAMP
 
 from google.cloud.sql.connector import Connector, IPTypes
 import pg8000
@@ -134,6 +135,7 @@ class Database:
         t.start()
         author_df = conn.execute(query)
         author_df = pd.DataFrame(author_df)
+        author_df['author_id'] = author_df['author_id'].astype(int)
         t.stop()
         return author_df
     
@@ -185,29 +187,34 @@ class Database:
             try:
                 author_df = self.add_authors(articles=articles, conn=db_conn)
                 articles = pd.merge(articles, author_df, on='author', how='left')
-                articles['author_ids'] = articles['author_id'].apply(lambda x: [x])
+                articles['author_id'] = articles['author_id'].fillna(1)
+                articles['author_ids'] = articles['author_id'].apply(lambda x: [int(x)])
                 articles = articles.drop(['author', 'author_id'], axis=1)
                 
                 section_df = self.add_sections(articles=articles, conn=db_conn)
                 articles = pd.merge(articles, section_df, on='section', how='left')
                 articles = articles.drop(['section'], axis=1)
-                
+                articles['section_id'] = articles['section_id'].fillna(1).astype(int)
                 publication_df = self.add_publications(articles=articles, conn=db_conn)
                 articles = pd.merge(articles, publication_df, on='publication', how='left')
+                articles['publication_id'] = articles['publication_id'].fillna(1).astype(int)
                 articles = articles.drop(['publication'], axis=1)
-                
+                print(articles.dtypes)
                 t = Timer('Added articles in {:.4f}s')
                 t.start()
-                chunk_size = 10000
-                if 'imageURL' in articles.columns:
-                    articles = articles.drop(['imageURL'], axis=1)
+                articles = articles[['upload_date', 'title', 'author_ids', 'article', 'section_id', 'publication_id', 'url', 'positive', 'negative', 'neutral']]
                 articles.to_sql('articles', 
                                 db_conn, 
                                 if_exists='append', 
-                                chunksize=10000, 
+                                chunksize=100, 
                                 index=False, 
                                 dtype={'upload_date':TIMESTAMP,
-                                        'author_ids':ARRAY(INTEGER)
+                                       'author_ids':ARRAY(INTEGER),
+                                       'section_id':INTEGER,
+                                       'publication_id':INTEGER,
+                                       'positive':FLOAT,
+                                       'negative':FLOAT,
+                                       'neutral':FLOAT
                                         }, 
                                 method='multi')
                 t.stop()

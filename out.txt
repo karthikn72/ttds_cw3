@@ -1,0 +1,28 @@
+Connected to database in 0.0014s
+Index(['date', 'author', 'title', 'article', 'url', 'section', 'publication',
+       'imageURL', 'positive_score', 'negative_score', 'neutral_score',
+       'upload_date', 'positive', 'negative', 'neutral'],
+      dtype='object')
+Inserted authors in 0.0631s
+Got authors in 0.0742s
+Inserted sections in 0.0577s
+Got sections in 0.0071s
+Inserted publications in 0.0082s
+Got publications in 0.0027s
+date               object
+title              object
+article            object
+url                object
+imageURL           object
+positive_score    float64
+negative_score    float64
+neutral_score     float64
+upload_date        object
+positive          float64
+negative          float64
+neutral           float64
+author_ids         object
+section_id          int64
+publication_id      int64
+dtype: object
+!!!!! CANCELLED ADDING ARTICLES !!!!!

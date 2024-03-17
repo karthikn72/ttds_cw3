@@ -2,6 +2,7 @@
 from database import Database
 from indexer import Indexer
 from timer import Timer
+from datetime import datetime
 # from cat_sent_population import populate_category_and_sentiment
 
 def build_index(test=False, start=0, limit=10000, fresh=False):
@@ -11,14 +12,14 @@ def build_index(test=False, start=0, limit=10000, fresh=False):
     if fresh:
         db.reset_index()
     if test:
-        N = 20000
+        N = 70000
     indexer = Indexer()
     indexer.set_up_stopwords('tools/resources/ttds_2023_english_stop_words.txt')
 
     t = Timer('---> Built index in {:.4f}s')
     t.start()
     for i in range(start, N + 1, limit):
-        articles = db.get_articles(limit=limit,offset=i)
+        articles = db.get_articles(add_start_date=datetime(2024,3,14), limit=limit, offset=i)
         indexer.indexing(articles)
         print(f"--> Locally indexed {i + limit}/{N} articles")
         db.build_index(indexer.get_index())
@@ -29,4 +30,4 @@ def build_index(test=False, start=0, limit=10000, fresh=False):
     return "Indexing complete"
 
 if __name__ == '__main__':
-    build_index(test=False, start=850000)
+    build_index(test=True)
