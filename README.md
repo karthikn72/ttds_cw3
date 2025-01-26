@@ -1,2 +1,3 @@
-# TTDS Coursework 3
-News Search Engine for TTDS Coursework 3
+# SentiNews - Sentiment-based news search engine
+SentiNews is a sentiment-based news search engine that  news search engine allowing users to filter search results based on the positive, neutral or negative sentiments in articles. We built this using a large dataset that curated over 2 million news articles from over 27 sources and used the TF-IDF ranking algorithms to retrieve relevant results. We also trained state-of-the-art transformer models to perform sentiment analysis and categorisation on the articles, and all this information is stored in a Postgres database. Users can enter search queries through the user-friendly front end built using Python’s Flask API and React.js and can filter results
+by sentiment, date, publication, and category.
